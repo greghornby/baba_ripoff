@@ -1,0 +1,17 @@
+import { Level } from "../main/Level.js";
+import { constructs } from "../objects/constructs.js";
+
+const E = null;
+const W = constructs.Wall;
+
+export const level01 = new Level({
+    width: 10,
+    height: 5,
+    sprites: [
+        [E,E,E,E,E,E,W,E,E,E],
+        [E,W,W,W,W,W,W,E,E,E],
+        [E,W,E,E,E,E,E,E,E,E],
+        [E,W,W,W,W,W,W,E,E,E],
+        [E,E,E,E,E,E,W,E,E,E],
+    ]
+});

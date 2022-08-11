@@ -1,0 +1,1 @@
+export type NonAbstract<T> = T extends abstract new(...args: infer A) => infer I ? new(...args: A) => I : T;
