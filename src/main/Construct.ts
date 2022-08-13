@@ -11,6 +11,6 @@ export class Construct {
     }
 }
 
-interface ConstructData {
+export interface ConstructData {
     image: string;
 }
