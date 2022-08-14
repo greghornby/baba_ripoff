@@ -6,6 +6,14 @@ export class Word extends Construct {
 
     static words: Word[] = [];
 
+    static findWordFromText(text: string): Word {
+        const result = this.words.find(word => word.word === text);
+        if (!result) {
+            throw new Error(`Could not Word from text "${text}"`);
+        }
+        return result;
+    }
+
     constructor(
         data: ConstructData,
         public readonly word: string,

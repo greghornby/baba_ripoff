@@ -1,20 +1,69 @@
-import { words } from "../objects/words.js";
-import { IRule, IRuleOutput, IRuleSelector, IRuleVerb, NegatableWord, Rule } from "./Rule.js";
+import { IRuleOutput, IRuleSelector, IRuleVerb, NegatableWord, Rule } from "./Rule.js";
 import { Word, WordBehavior } from "./Word.js";
 
 export class Sentence {
 
     static fromString(text: string) {
-        const words = text.replace(/ +/g, " ").split(" ").map(word => Sentence.findWordFromText(word));
+        const words = text.replace(/ +/g, " ").split(" ").map(word => Word.findWordFromText(word));
         return new Sentence(words);
     }
 
-    static findWordFromText(text: string): Word {
-        const result = (Object.values(words) as Word[]).find(word => word.word === text);
-        if (!result) {
-            throw new Error(`Could not Word from text "${text}"`);
+    static ruleToTextArray(ruleInstance: Rule): string[] {
+        type StringOptArray = (string | undefined)[];
+        const rule = ruleInstance.rule;
+
+        const insertAnds = <T>(
+            _data: T[] | undefined,
+            sorter: (a: T, b: T) => number,
+            mapper: (item: T) => StringOptArray
+        ): StringOptArray => {
+            const fragment: StringOptArray = [];
+            if (!_data) {
+                return fragment;
+            }
+            const data = [..._data].sort(sorter);
+            const dataLength = data.length;
+            for (let i = 0; i < dataLength; i++) {
+                const item = data[i];
+                fragment.push(
+                    ...mapper(item)
+                );
+                if (i !== 0 && i !== dataLength -1) {
+                    fragment.push("and");
+                }
+            }
+            return fragment;
         }
-        return result;
+
+        const sentence: StringOptArray = [
+
+            rule.selector.preCondition?.not ? "not" : undefined,
+            rule.selector.preCondition?.word.word,
+
+            ...insertAnds(
+                rule.selector.nouns,
+                (a, b) => a.word.word.localeCompare(b.word.word),
+                item => [item.not ? "not" : undefined, item.word.word]
+            ),
+
+            rule.selector.postCondition?.not ? "not" : undefined,
+            rule.selector.postCondition?.word.word,
+            ...insertAnds(
+                rule.selector.postCondition?.conditionSelector,
+                (a, b) => a.word.localeCompare(b.word),
+                item => [item.word]
+            ),
+
+            rule.verb.verb.word.word,
+            rule.verb.verb.not ? "not" : undefined,
+
+            ...insertAnds(
+                rule.output.outputs,
+                (a, b) => a.word.word.localeCompare(b.word.word),
+                item => [item.not ? "not" : undefined, item.word.word]
+            )
+        ];
+        return sentence.filter(e => e) as string[];
     }
 
     constructor(public words: Word[]) {}

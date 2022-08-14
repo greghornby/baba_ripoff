@@ -2,14 +2,6 @@ import { IRule } from "../src/main/Rule.js";
 import { Sentence } from "../src/main/Sentence.js";
 import { words } from "../src/objects/words.js";
 
-test("fromString: baba is you", () => {
-    const sentence = Sentence.fromString("baba is you");
-    expect(sentence.words).toHaveLength(3);
-    expect(sentence.words[0]).toBe(words.baba);
-    expect(sentence.words[1]).toBe(words.is);
-    expect(sentence.words[2]).toBe(words.you);
-});
-
 
 function generateSentenceRulesTest(sentenceText: string, ...expectedRules: IRule[]) {
     return test(`getRules: ${sentenceText}`, () => {
