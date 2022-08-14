@@ -18,62 +18,50 @@ function generateSentenceRulesTest(sentenceText: string, ...expectedRules: IRule
 describe("X IS YOU with NOT variants", () => {
 
     generateSentenceRulesTest("baba is you", {
-        selector: {
-            preCondition: undefined,
-            postCondition: undefined,
-            nouns: [{word: words.baba, not: false}]
-        },
-        verb: {verb: words.is},
-        output: {outputs: [{word: words.you, not: false}]}
+        preCondition: undefined,
+        postCondition: undefined,
+        subjects: [{word: words.baba, not: false}],
+        verb: words.is,
+        complements: [{word: words.you, not: false}]
     });
 
     generateSentenceRulesTest("not baba is you", {
-        selector: {
-            preCondition: undefined,
-            postCondition: undefined,
-            nouns: [{word: words.baba, not: true}]
-        },
-        verb: {verb: words.is},
-        output: {outputs: [{word: words.you, not: false}]}
+        preCondition: undefined,
+        postCondition: undefined,
+        subjects: [{word: words.baba, not: true}],
+        verb: words.is,
+        complements: [{word: words.you, not: false}]
     });
 
     generateSentenceRulesTest("baba is not you", {
-        selector: {
-            preCondition: undefined,
-            postCondition: undefined,
-            nouns: [{word: words.baba, not: false}]
-        },
-        verb: {verb: words.is},
-        output: {outputs: [{word: words.you, not: true}]}
+        preCondition: undefined,
+        postCondition: undefined,
+        subjects: [{word: words.baba, not: false}],
+        verb: words.is,
+        complements: [{word: words.you, not: true}]
     });
 
     generateSentenceRulesTest("not baba is not you", {
-        selector: {
-            preCondition: undefined,
-            postCondition: undefined,
-            nouns: [{word: words.baba, not: true}]
-        },
-        verb: {verb: words.is},
-        output: {outputs: [{word: words.you, not: true}]}
+        preCondition: undefined,
+        postCondition: undefined,
+        subjects: [{word: words.baba, not: true}],
+        verb: words.is,
+        complements: [{word: words.you, not: true}]
     });
 
     generateSentenceRulesTest("not not baba is you", {
-        selector: {
-            preCondition: undefined,
-            postCondition: undefined,
-            nouns: [{word: words.baba, not: false}]
-        },
-        verb: {verb: words.is},
-        output: {outputs: [{word: words.you, not: false}]}
+        preCondition: undefined,
+        postCondition: undefined,
+        subjects: [{word: words.baba, not: false}],
+        verb: words.is,
+        complements: [{word: words.you, not: false}]
     });
 
     generateSentenceRulesTest("not not not baba is you", {
-        selector: {
-            preCondition: undefined,
-            postCondition: undefined,
-            nouns: [{word: words.baba, not: true}]
-        },
-        verb: {verb: words.is},
-        output: {outputs: [{word: words.you, not: false}]}
+        preCondition: undefined,
+        postCondition: undefined,
+        subjects: [{word: words.baba, not: true}],
+        verb: words.is,
+        complements: [{word: words.you, not: false}]
     });
 });

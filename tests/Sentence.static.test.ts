@@ -29,34 +29,28 @@ test("sentece to asSimplifiedSentence", () => {
 test("complex rule to asSimplifiedSentence", () => {
 
     const rule = new Rule({
-        selector: {
-            preCondition: [
-                {word: words.lonely, not: false},
-                {word: words.idle, not: true},
-            ],
-            postCondition: [
-                {word: words.facing, not: false, selector: [words.wall]},
-                {word: words.near, not: true, selector: [words.leaf]},
-            ],
-            nouns: [
-                {word: words.baba, not: false},
-                {word: words.leaf, not: true}
-            ],
-        },
-        verb: {
-            verb: words.is
-        },
-        output: {
-            outputs: [
-                {word: words.leaf, not: true},
-                {word: words.you, not: false}
-            ]
-        }
+        preCondition: [
+            {word: words.lonely, not: false},
+            {word: words.powered, not: true},
+        ],
+        postCondition: [
+            {word: words.facing, not: false, selector: [words.wall]},
+            {word: words.near, not: true, selector: [words.leaf]},
+        ],
+        subjects: [
+            {word: words.baba, not: false},
+            {word: words.leaf, not: true}
+        ],
+        verb: words.is,
+        complements: [
+            {word: words.leaf, not: true},
+            {word: words.you, not: false},
+        ]
     });
 
     const getSimplifiedText = Sentence.ruleToTextArray(rule);
 
-    const expectedText = `not idle and lonely baba and not leaf facing wall and not near leaf is not leaf and you`;
+    const expectedText = `lonely and not powered baba and not leaf facing wall and not near leaf is not leaf and you`;
 
     expect(getSimplifiedText.join(" ")).toBe(expectedText);
 });

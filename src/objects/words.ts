@@ -26,7 +26,7 @@ export const words = {
         prefixCondition: true
     }),
 
-    idle: new Word({image: placeHolderImage}, "idle", {
+    powered: new Word({image: placeHolderImage}, "powered", {
         prefixCondition: true
     }),
 

@@ -7,23 +7,11 @@ export class Rule {
 }
 
 export interface IRule {
-    selector: IRuleSelector;
-    verb: IRuleVerb;
-    output: IRuleOutput;
-}
-
-export interface IRuleSelector {
     preCondition?: NegatableWord[];
     postCondition?: (NegatableWord & {selector: Word[]})[];
-    nouns: NegatableWord[];
-}
-
-export interface IRuleVerb {
+    subjects: NegatableWord[];
     verb: Word;
-}
-
-export interface IRuleOutput {
-    outputs: NegatableWord[];
+    complements: NegatableWord[];
 }
 
 export interface NegatableWord {

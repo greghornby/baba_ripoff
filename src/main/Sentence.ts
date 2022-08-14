@@ -1,4 +1,4 @@
-import { IRuleOutput, IRuleSelector, IRuleVerb, NegatableWord, Rule } from "./Rule.js";
+import { IRule, NegatableWord, Rule } from "./Rule.js";
 import { Word, WordBehavior } from "./Word.js";
 
 export class Sentence {
@@ -38,19 +38,19 @@ export class Sentence {
         const sentence: StringOptArray = [
 
             ...insertAnds(
-                rule.selector.preCondition,
+                rule.preCondition,
                 (a, b) => a.word.word.localeCompare(b.word.word),
                 item => [item.not ? "not" : undefined, item.word.word]
             ),
 
             ...insertAnds(
-                rule.selector.nouns,
+                rule.subjects,
                 (a, b) => a.word.word.localeCompare(b.word.word),
                 item => [item.not ? "not" : undefined, item.word.word]
             ),
 
             ...insertAnds(
-                rule.selector.postCondition,
+                rule.postCondition,
                 (a, b) => a.word.word.localeCompare(b.word.word),
                 item => [
                     item.not ? "not" : undefined,
@@ -63,10 +63,10 @@ export class Sentence {
                 ]
             ),
 
-            rule.verb.verb.word,
+            rule.verb.word,
 
             ...insertAnds(
-                rule.output.outputs,
+                rule.complements,
                 (a, b) => a.word.word.localeCompare(b.word.word),
                 item => [item.not ? "not" : undefined, item.word.word]
             )
@@ -81,11 +81,11 @@ export class Sentence {
 
         let wordsRemaining = [...this.words];
         while (wordsRemaining.length) {
-            let preCondition: IRuleSelector["preCondition"];
-            let selectorNouns: IRuleSelector["nouns"];
-            let postCondition: IRuleSelector["postCondition"];
-            let verb: IRuleVerb["verb"];
-            let outputs: IRuleOutput["outputs"];
+            let preCondition: IRule["preCondition"];
+            let subjects: IRule["subjects"];
+            let postCondition: IRule["postCondition"];
+            let verb: IRule["verb"];
+            let complements: IRule["complements"];
             const startResult = this.findRuleStart(wordsRemaining);
             if (!startResult) {
                 break;
@@ -100,7 +100,7 @@ export class Sentence {
             if (!nounsResult) {
                 continue;
             }
-            selectorNouns = nounsResult.data;
+            subjects = nounsResult.data;
             wordsRemaining = nounsResult.wordsRemaining;
             let verbResult = this.parseVerbFragment(wordsRemaining);
             if (!verbResult) {
@@ -108,25 +108,19 @@ export class Sentence {
             }
             verb = verbResult.data;
             wordsRemaining = verbResult.wordsRemaining;
-            let outputsResult = this.parseSimpleConjuctionWords(wordsRemaining, ["noun", "tag"]);
-            if (!outputsResult) {
+            let complementsResult = this.parseSimpleConjuctionWords(wordsRemaining, ["noun", "tag"]);
+            if (!complementsResult) {
                 continue;
             }
-            outputs = outputsResult.data;
-            wordsRemaining = outputsResult.wordsRemaining;
+            complements = complementsResult.data;
+            wordsRemaining = complementsResult.wordsRemaining;
 
             const rule = new Rule({
-                selector: {
-                    preCondition: preCondition,
-                    nouns: selectorNouns,
-                    postCondition: postCondition
-                },
-                verb: {
-                    verb: verb
-                },
-                output: {
-                    outputs: outputs
-                }
+                preCondition: preCondition,
+                subjects: subjects,
+                postCondition: postCondition,
+                verb: verb,
+                complements: complements
             });
             rules.push(rule);
         }
@@ -163,7 +157,7 @@ export class Sentence {
     }
 
 
-    parsePreConditionFragment(words: Word[]): IFragmentOutput<IRuleSelector["preCondition"]> {
+    parsePreConditionFragment(words: Word[]): IFragmentOutput<IRule["preCondition"]> {
         let validIndex = -1;
         let not = false;
         let checkForAnd = false;
@@ -264,12 +258,12 @@ export class Sentence {
     }
 
 
-    parsePostConditionFragment(words: Word[]): IFragmentOutput<IRuleSelector["postCondition"]> {
+    parsePostConditionFragment(words: Word[]): IFragmentOutput<IRule["postCondition"]> {
         return undefined as any;
     }
 
 
-    parseVerbFragment(words: Word[]): IFragmentOutput<IRuleVerb["verb"]> {
+    parseVerbFragment(words: Word[]): IFragmentOutput<IRule["verb"]> {
         const word = words[0];
         if (word.behavior.verb) {
             return {
