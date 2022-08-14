@@ -23,7 +23,7 @@ describe("X IS YOU with NOT variants", () => {
             postCondition: undefined,
             nouns: [{word: words.baba, not: false}]
         },
-        verb: {verb: {word: words.is, not: false}},
+        verb: {verb: words.is},
         output: {outputs: [{word: words.you, not: false}]}
     });
 
@@ -33,7 +33,7 @@ describe("X IS YOU with NOT variants", () => {
             postCondition: undefined,
             nouns: [{word: words.baba, not: true}]
         },
-        verb: {verb: {word: words.is, not: false}},
+        verb: {verb: words.is},
         output: {outputs: [{word: words.you, not: false}]}
     });
 
@@ -43,8 +43,8 @@ describe("X IS YOU with NOT variants", () => {
             postCondition: undefined,
             nouns: [{word: words.baba, not: false}]
         },
-        verb: {verb: {word: words.is, not: true}},
-        output: {outputs: [{word: words.you, not: false}]}
+        verb: {verb: words.is},
+        output: {outputs: [{word: words.you, not: true}]}
     });
 
     generateSentenceRulesTest("not baba is not you", {
@@ -53,8 +53,8 @@ describe("X IS YOU with NOT variants", () => {
             postCondition: undefined,
             nouns: [{word: words.baba, not: true}]
         },
-        verb: {verb: {word: words.is, not: true}},
-        output: {outputs: [{word: words.you, not: false}]}
+        verb: {verb: words.is},
+        output: {outputs: [{word: words.you, not: true}]}
     });
 
     generateSentenceRulesTest("not not baba is you", {
@@ -63,7 +63,7 @@ describe("X IS YOU with NOT variants", () => {
             postCondition: undefined,
             nouns: [{word: words.baba, not: false}]
         },
-        verb: {verb: {word: words.is, not: false}},
+        verb: {verb: words.is},
         output: {outputs: [{word: words.you, not: false}]}
     });
 
@@ -73,7 +73,7 @@ describe("X IS YOU with NOT variants", () => {
             postCondition: undefined,
             nouns: [{word: words.baba, not: true}]
         },
-        verb: {verb: {word: words.is, not: false}},
+        verb: {verb: words.is},
         output: {outputs: [{word: words.you, not: false}]}
     });
 });

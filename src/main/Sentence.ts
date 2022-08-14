@@ -28,7 +28,7 @@ export class Sentence {
                 fragment.push(
                     ...mapper(item)
                 );
-                if (i !== 0 && i !== dataLength -1) {
+                if (dataLength > 1 && i !== dataLength -1) {
                     fragment.push("and");
                 }
             }
@@ -37,8 +37,11 @@ export class Sentence {
 
         const sentence: StringOptArray = [
 
-            rule.selector.preCondition?.not ? "not" : undefined,
-            rule.selector.preCondition?.word.word,
+            ...insertAnds(
+                rule.selector.preCondition,
+                (a, b) => a.word.word.localeCompare(b.word.word),
+                item => [item.not ? "not" : undefined, item.word.word]
+            ),
 
             ...insertAnds(
                 rule.selector.nouns,
@@ -46,16 +49,21 @@ export class Sentence {
                 item => [item.not ? "not" : undefined, item.word.word]
             ),
 
-            rule.selector.postCondition?.not ? "not" : undefined,
-            rule.selector.postCondition?.word.word,
             ...insertAnds(
-                rule.selector.postCondition?.conditionSelector,
-                (a, b) => a.word.localeCompare(b.word),
-                item => [item.word]
+                rule.selector.postCondition,
+                (a, b) => a.word.word.localeCompare(b.word.word),
+                item => [
+                    item.not ? "not" : undefined,
+                    item.word.word,
+                    ...insertAnds(
+                        item.selector,
+                        (a, b) => a.word.localeCompare(b.word),
+                        item => [item.word]
+                    )
+                ]
             ),
 
-            rule.verb.verb.word.word,
-            rule.verb.verb.not ? "not" : undefined,
+            rule.verb.verb.word,
 
             ...insertAnds(
                 rule.output.outputs,
@@ -156,42 +164,54 @@ export class Sentence {
 
 
     parsePreConditionFragment(words: Word[]): IFragmentOutput<IRuleSelector["preCondition"]> {
+        let validIndex = -1;
         let not = false;
-        let conditionWord: Word | undefined;
+        let checkForAnd = false;
+        let conditions: NegatableWord[] = [];
         const fragment: Word[] = [];
         let i: number;
         for (i = 0; i < words.length; i++) {
             const word = words[i];
             const behavior = word.behavior;
-            if (behavior.not) {
-                fragment.push(word);
-                not = !not;
-            } else if (behavior.prefixCondition) {
-                fragment.push(word);
-                conditionWord = word;
-                break;
+            if (checkForAnd) {
+                if (behavior.and) {
+                    fragment.push(word);
+                    checkForAnd = false;
+                    validIndex = -1;
+                    continue;
+                } else {
+                    break;
+                }
             } else {
-                break;
+                if (behavior.not) {
+                    fragment.push(word);
+                    not = !not;
+                } else if (behavior.prefixCondition) {
+                    fragment.push(word);
+                    conditions.push({word: word, not: not});
+                    not = false;
+                    validIndex = i;
+                    break;
+                } else {
+                    break;
+                }
             }
         }
-        if (conditionWord) {
-            return {
-                data: {
-                    word: conditionWord,
-                    not: not
-                },
-                fragment: fragment,
-                wordsRemaining: words.slice(i+1)
-            };
-        } else {
+        if (validIndex < 0) {
             return false;
+        } else {
+            return {
+                data: conditions,
+                fragment: fragment,
+                wordsRemaining: words.slice(validIndex+1)
+            };
         }
     }
 
 
     parseSimpleConjuctionWords(words: Word[], allowedTypes: WordType[]): IFragmentOutput<NegatableWord[]> {
         let validIndex = -1;
-        let shouldBeAnd = false;
+        let checkForAnd = false;
         let not = false;
         const fragment: Word[] = [];
         const listWords: NegatableWord[] = [];
@@ -199,10 +219,10 @@ export class Sentence {
         for (i = 0; i < words.length; i++) {
             const word = words[i];
             const behavior = word.behavior;
-            if (shouldBeAnd) {
+            if (checkForAnd) {
                 if (behavior.and) {
                     fragment.push(word);
-                    shouldBeAnd = false;
+                    checkForAnd = false;
                     validIndex = -1;
                     continue;
                 } else {
@@ -224,7 +244,7 @@ export class Sentence {
                 if (currentWordIsAllowed) {
                     fragment.push(word);
                     listWords.push({word, not});
-                    shouldBeAnd = true;
+                    checkForAnd = true;
                     not = false;
                     validIndex = i;
                     continue;
@@ -250,49 +270,15 @@ export class Sentence {
 
 
     parseVerbFragment(words: Word[]): IFragmentOutput<IRuleVerb["verb"]> {
-        let validIndex = -1;
-        let verb: Word | undefined;
-        let checkForNot = false;
-        let not = false;
-        const fragment: Word[] = [];
-        let i: number;
-        for (i = 0; i < words.length; i++) {
-            const word = words[i];
-            const behavior = word.behavior;
-            if (!checkForNot) {
-                if (behavior.verb) {
-                    verb = word;
-                    fragment.push(word);
-                    checkForNot = true;
-                    validIndex = i;
-                    continue;
-                } else {
-                    validIndex = -1;
-                    break;
-                }
-            } else {
-                if (behavior.not) {
-                    fragment.push(word);
-                    not = !not;
-                    validIndex = i;
-                    continue;
-                } else {
-                    break;
-                }
-            }
-        }
-
-        if (validIndex < 0) {
-            return false;
-        } else {
+        const word = words[0];
+        if (word.behavior.verb) {
             return {
-                data: {
-                    not: not,
-                    word: verb!
-                },
-                fragment: fragment,
-                wordsRemaining: words.slice(validIndex+1)
+                data: word,
+                fragment: [word],
+                wordsRemaining: words.slice(1)
             };
+        } else {
+            return false;
         }
     }
 }

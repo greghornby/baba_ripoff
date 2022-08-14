@@ -23,6 +23,14 @@ export class Word extends Construct {
         this.word = this.word.toLowerCase();
         Word.words.push(this);
     }
+
+    toJSON() {
+        return {
+            ...super.toJSON(),
+            word: this.word,
+            behavior: this.behavior
+        };
+    }
 }
 
 
@@ -36,6 +44,6 @@ export interface WordBehavior {
     and?: boolean;
     prefixCondition?: boolean;
     postCondition?: {
-        wordType: keyof WordBehavior;
+        wordTypes: (keyof WordBehavior)[];
     };
 }

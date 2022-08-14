@@ -7,7 +7,7 @@
   "scripts": {
     "tsc": "tsc",
     "webpack": "webpack",
-    "jest": "jest"
+    "jest": "jest --detectOpenHandles"
   },
   "dependencies": {
     "pixi.js": "^6.5.1"

@@ -13,15 +13,13 @@ export interface IRule {
 }
 
 export interface IRuleSelector {
-    preCondition?: NegatableWord;
-    postCondition?: NegatableWord & {
-        conditionSelector: Word[];
-    };
+    preCondition?: NegatableWord[];
+    postCondition?: (NegatableWord & {selector: Word[]})[];
     nouns: NegatableWord[];
 }
 
 export interface IRuleVerb {
-    verb: NegatableWord;
+    verb: Word;
 }
 
 export interface IRuleOutput {

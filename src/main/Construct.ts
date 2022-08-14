@@ -9,6 +9,10 @@ export class Construct {
         this.imageBase64 = data.image;
         this.pixiTexture = pixi.Texture.from(data.image);
     }
+
+    toJSON() {
+        return {};
+    }
 }
 
 export interface ConstructData {
