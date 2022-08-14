@@ -21,7 +21,7 @@ export interface IRuleSelector {
 }
 
 export interface IRuleVerb {
-    verb: Word;
+    verb: NegatableWord;
 }
 
 export interface IRuleOutput {

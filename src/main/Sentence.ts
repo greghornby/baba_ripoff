@@ -1,7 +1,22 @@
+import { words } from "../objects/words.js";
 import { IRule, IRuleOutput, IRuleSelector, IRuleVerb, NegatableWord, Rule } from "./Rule.js";
 import { Word, WordBehavior } from "./Word.js";
 
 export class Sentence {
+
+    static fromString(text: string) {
+        const words = text.replace(/ +/g, " ").split(" ").map(word => Sentence.findWordFromText(word));
+        return new Sentence(words);
+    }
+
+    static findWordFromText(text: string): Word {
+        const result = (Object.values(words) as Word[]).find(word => word.word === text);
+        if (!result) {
+            throw new Error(`Could not Word from text "${text}"`);
+        }
+        return result;
+    }
+
     constructor(public words: Word[]) {}
 
     getRules(): Rule[] {
@@ -70,18 +85,23 @@ export class Sentence {
         for (i = 0; i < words.length; i++) {
             const word = words[i];
             const behavior = word.behavior;
+            let allowed = false;
             for (const allowedWord of allowedStartingWords) {
-                if (!behavior[allowedWord]) {
-                    discardedFragment.push(word);
-                } else {
+                if (behavior[allowedWord]) {
+                    allowed = true;
                     break;
                 }
+            }
+            if (!allowed) {
+                discardedFragment.push(word);
+            } else {
+                break;
             }
         }
         return {
             data: undefined,
             fragment: discardedFragment,
-            wordsRemaining: words.slice(i+1)
+            wordsRemaining: words.slice(i)
         };
     }
 
@@ -121,7 +141,7 @@ export class Sentence {
 
 
     parseSimpleConjuctionWords(words: Word[], allowedTypes: WordType[]): IFragmentOutput<NegatableWord[]> {
-        let valid = false;
+        let validIndex = -1;
         let shouldBeAnd = false;
         let not = false;
         const fragment: Word[] = [];
@@ -134,7 +154,7 @@ export class Sentence {
                 if (behavior.and) {
                     fragment.push(word);
                     shouldBeAnd = false;
-                    valid = false;
+                    validIndex = -1;
                     continue;
                 } else {
                     break;
@@ -157,19 +177,19 @@ export class Sentence {
                     listWords.push({word, not});
                     shouldBeAnd = true;
                     not = false;
-                    valid = true;
+                    validIndex = i;
                     continue;
                 }
             }
         }
 
-        if (!valid) {
+        if (validIndex < 0) {
             return false;
         } else {
             return {
                 data: listWords,
                 fragment: fragment,
-                wordsRemaining: words.slice(i+1)
+                wordsRemaining: words.slice(validIndex+1)
             };
         }
     }
@@ -181,7 +201,50 @@ export class Sentence {
 
 
     parseVerbFragment(words: Word[]): IFragmentOutput<IRuleVerb["verb"]> {
-        return undefined as any;
+        let validIndex = -1;
+        let verb: Word | undefined;
+        let checkForNot = false;
+        let not = false;
+        const fragment: Word[] = [];
+        let i: number;
+        for (i = 0; i < words.length; i++) {
+            const word = words[i];
+            const behavior = word.behavior;
+            if (!checkForNot) {
+                if (behavior.verb) {
+                    verb = word;
+                    fragment.push(word);
+                    checkForNot = true;
+                    validIndex = i;
+                    continue;
+                } else {
+                    validIndex = -1;
+                    break;
+                }
+            } else {
+                if (behavior.not) {
+                    fragment.push(word);
+                    not = !not;
+                    validIndex = i;
+                    continue;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        if (validIndex < 0) {
+            return false;
+        } else {
+            return {
+                data: {
+                    not: not,
+                    word: verb!
+                },
+                fragment: fragment,
+                wordsRemaining: words.slice(validIndex+1)
+            };
+        }
     }
 }
 
