@@ -7,7 +7,7 @@ export class Word extends Construct {
     static words: Word[] = [];
 
     static findWordFromText(text: string): Word {
-        const result = this.words.find(word => word.word === text);
+        const result = this.words.find(word => word._string === text);
         if (!result) {
             throw new Error(`Could not Word from text "${text}"`);
         }
@@ -16,18 +16,18 @@ export class Word extends Construct {
 
     constructor(
         data: ConstructData,
-        public readonly word: string,
+        public readonly _string: string,
         public behavior: WordBehavior
     ) {
         super(data);
-        this.word = this.word.toLowerCase();
+        this._string = this._string.toLowerCase();
         Word.words.push(this);
     }
 
     toJSON() {
         return {
             ...super.toJSON(),
-            word: this.word,
+            word: this._string,
             behavior: this.behavior
         };
     }

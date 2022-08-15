@@ -9,9 +9,9 @@ export class Rule {
 export interface IRule {
     preCondition?: NegatableWord[];
     postCondition?: (NegatableWord & {selector: Word[]})[];
-    subjects: NegatableWord[];
+    subject: NegatableWord;
     verb: Word;
-    complements: NegatableWord[];
+    complement: NegatableWord;
 }
 
 export interface NegatableWord {

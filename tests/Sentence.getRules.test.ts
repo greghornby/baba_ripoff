@@ -20,48 +20,48 @@ describe("X IS YOU with NOT variants", () => {
     generateSentenceRulesTest("baba is you", {
         preCondition: undefined,
         postCondition: undefined,
-        subjects: [{word: words.baba, not: false}],
+        subject: {word: words.baba, not: false},
         verb: words.is,
-        complements: [{word: words.you, not: false}]
+        complement: {word: words.you, not: false}
     });
 
     generateSentenceRulesTest("not baba is you", {
         preCondition: undefined,
         postCondition: undefined,
-        subjects: [{word: words.baba, not: true}],
+        subject: {word: words.baba, not: true},
         verb: words.is,
-        complements: [{word: words.you, not: false}]
+        complement: {word: words.you, not: false}
     });
 
     generateSentenceRulesTest("baba is not you", {
         preCondition: undefined,
         postCondition: undefined,
-        subjects: [{word: words.baba, not: false}],
+        subject: {word: words.baba, not: false},
         verb: words.is,
-        complements: [{word: words.you, not: true}]
+        complement: {word: words.you, not: true}
     });
 
     generateSentenceRulesTest("not baba is not you", {
         preCondition: undefined,
         postCondition: undefined,
-        subjects: [{word: words.baba, not: true}],
+        subject: {word: words.baba, not: true},
         verb: words.is,
-        complements: [{word: words.you, not: true}]
+        complement: {word: words.you, not: true}
     });
 
     generateSentenceRulesTest("not not baba is you", {
         preCondition: undefined,
         postCondition: undefined,
-        subjects: [{word: words.baba, not: false}],
+        subject: {word: words.baba, not: false},
         verb: words.is,
-        complements: [{word: words.you, not: false}]
+        complement: {word: words.you, not: false}
     });
 
     generateSentenceRulesTest("not not not baba is you", {
         preCondition: undefined,
         postCondition: undefined,
-        subjects: [{word: words.baba, not: true}],
+        subject: {word: words.baba, not: true},
         verb: words.is,
-        complements: [{word: words.you, not: false}]
+        complement: {word: words.you, not: false}
     });
 });

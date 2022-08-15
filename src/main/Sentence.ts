@@ -39,37 +39,31 @@ export class Sentence {
 
             ...insertAnds(
                 rule.preCondition,
-                (a, b) => a.word.word.localeCompare(b.word.word),
-                item => [item.not ? "not" : undefined, item.word.word]
+                (a, b) => a.word._string.localeCompare(b.word._string),
+                item => [item.not ? "not" : undefined, item.word._string]
             ),
 
-            ...insertAnds(
-                rule.subjects,
-                (a, b) => a.word.word.localeCompare(b.word.word),
-                item => [item.not ? "not" : undefined, item.word.word]
-            ),
+            rule.subject.not ? "not" : undefined,
+            rule.subject.word._string,
 
             ...insertAnds(
                 rule.postCondition,
-                (a, b) => a.word.word.localeCompare(b.word.word),
+                (a, b) => a.word._string.localeCompare(b.word._string),
                 item => [
                     item.not ? "not" : undefined,
-                    item.word.word,
+                    item.word._string,
                     ...insertAnds(
                         item.selector,
-                        (a, b) => a.word.localeCompare(b.word),
-                        item => [item.word]
+                        (a, b) => a._string.localeCompare(b._string),
+                        item => [item._string]
                     )
                 ]
             ),
 
-            rule.verb.word,
+            rule.verb._string,
 
-            ...insertAnds(
-                rule.complements,
-                (a, b) => a.word.word.localeCompare(b.word.word),
-                item => [item.not ? "not" : undefined, item.word.word]
-            )
+            rule.complement.not ? "not" : undefined,
+            rule.complement.word._string
         ];
         return sentence.filter(e => e) as string[];
     }
@@ -82,10 +76,10 @@ export class Sentence {
         let wordsRemaining = [...this.words];
         while (wordsRemaining.length) {
             let preCondition: IRule["preCondition"];
-            let subjects: IRule["subjects"];
+            let subjects: IRule["subject"][];
             let postCondition: IRule["postCondition"];
             let verb: IRule["verb"];
-            let complements: IRule["complements"];
+            let complements: IRule["complement"][];
             const startResult = this.findRuleStart(wordsRemaining);
             if (!startResult) {
                 break;
@@ -115,14 +109,19 @@ export class Sentence {
             complements = complementsResult.data;
             wordsRemaining = complementsResult.wordsRemaining;
 
-            const rule = new Rule({
-                preCondition: preCondition,
-                subjects: subjects,
-                postCondition: postCondition,
-                verb: verb,
-                complements: complements
-            });
-            rules.push(rule);
+            for (const subject of subjects) {
+                for (const complement of complements) {
+
+                    const rule = new Rule({
+                        preCondition: preCondition,
+                        subject: subject,
+                        postCondition: postCondition,
+                        verb: verb,
+                        complement: complement
+                    });
+                    rules.push(rule);
+                }
+            }
         }
 
         return rules;

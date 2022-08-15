@@ -37,20 +37,14 @@ test("complex rule to asSimplifiedSentence", () => {
             {word: words.facing, not: false, selector: [words.wall]},
             {word: words.near, not: true, selector: [words.leaf]},
         ],
-        subjects: [
-            {word: words.baba, not: false},
-            {word: words.leaf, not: true}
-        ],
+        subject: {word: words.baba, not: true},
         verb: words.is,
-        complements: [
-            {word: words.leaf, not: true},
-            {word: words.you, not: false},
-        ]
+        complement: {word: words.you, not: true}
     });
 
     const getSimplifiedText = Sentence.ruleToTextArray(rule);
 
-    const expectedText = `lonely and not powered baba and not leaf facing wall and not near leaf is not leaf and you`;
+    const expectedText = `lonely and not powered not baba facing wall and not near leaf is not you`;
 
     expect(getSimplifiedText.join(" ")).toBe(expectedText);
 });
