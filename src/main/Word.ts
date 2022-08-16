@@ -9,7 +9,7 @@ export class Word extends Construct {
     static findWordFromText(text: string): Word {
         const result = this.words.find(word => word._string === text);
         if (!result) {
-            throw new Error(`Could not Word from text "${text}"`);
+            throw new Error(`Could not find Word from text "${text}"`);
         }
         return result;
     }

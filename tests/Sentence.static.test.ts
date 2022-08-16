@@ -2,6 +2,8 @@ import { Rule } from "../src/main/Rule.js";
 import { Sentence } from "../src/main/Sentence.js";
 import { words } from "../src/objects/words.js";
 
+const $Word = Rule.word;
+
 test("fromString: baba is you", () => {
     const sentence = Sentence.fromString("baba is you");
     expect(sentence.words).toHaveLength(3);
@@ -30,16 +32,16 @@ test("complex rule to asSimplifiedSentence", () => {
 
     const rule = new Rule({
         preCondition: [
-            {word: words.lonely, not: false},
-            {word: words.powered, not: true},
+            $Word(words.lonely),
+            $Word.not(words.powered),
         ],
         postCondition: [
-            {word: words.facing, not: false, selector: [words.wall]},
-            {word: words.near, not: true, selector: [words.leaf]},
+            {...$Word(words.facing), selector: [$Word(words.wall)]},
+            {...$Word.not(words.near), selector: [$Word(words.leaf)]},
         ],
-        subject: {word: words.baba, not: true},
+        subject: $Word.not(words.baba),
         verb: words.is,
-        complement: {word: words.you, not: true}
+        complement: $Word.not(words.you)
     });
 
     const getSimplifiedText = Sentence.ruleToTextArray(rule);

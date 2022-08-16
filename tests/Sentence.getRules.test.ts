@@ -1,10 +1,11 @@
-import { IRule } from "../src/main/Rule.js";
+import { IRule, Rule } from "../src/main/Rule.js";
 import { Sentence } from "../src/main/Sentence.js";
 import { words } from "../src/objects/words.js";
 
+const $Word = Rule.word;
 
-function generateSentenceRulesTest(sentenceText: string, ...expectedRules: IRule[]) {
-    return test(`getRules: ${sentenceText}`, () => {
+function generateSentenceRulesTest(fn: jest.It, sentenceText: string, ...expectedRules: IRule[]) {
+    return fn(`getRules: ${sentenceText}`, () => {
         const sentence = Sentence.fromString(sentenceText);
         const rules = sentence.getRules();
         expect(rules).toHaveLength(expectedRules.length);
@@ -17,7 +18,7 @@ function generateSentenceRulesTest(sentenceText: string, ...expectedRules: IRule
 
 describe("X IS YOU with NOT variants", () => {
 
-    generateSentenceRulesTest("baba is you", {
+    generateSentenceRulesTest(test, "baba is you", {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: false},
@@ -25,7 +26,7 @@ describe("X IS YOU with NOT variants", () => {
         complement: {word: words.you, not: false}
     });
 
-    generateSentenceRulesTest("not baba is you", {
+    generateSentenceRulesTest(test, "not baba is you", {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: true},
@@ -33,7 +34,7 @@ describe("X IS YOU with NOT variants", () => {
         complement: {word: words.you, not: false}
     });
 
-    generateSentenceRulesTest("baba is not you", {
+    generateSentenceRulesTest(test, "baba is not you", {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: false},
@@ -41,7 +42,7 @@ describe("X IS YOU with NOT variants", () => {
         complement: {word: words.you, not: true}
     });
 
-    generateSentenceRulesTest("not baba is not you", {
+    generateSentenceRulesTest(test, "not baba is not you", {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: true},
@@ -49,7 +50,7 @@ describe("X IS YOU with NOT variants", () => {
         complement: {word: words.you, not: true}
     });
 
-    generateSentenceRulesTest("not not baba is you", {
+    generateSentenceRulesTest(test, "not not baba is you", {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: false},
@@ -57,11 +58,45 @@ describe("X IS YOU with NOT variants", () => {
         complement: {word: words.you, not: false}
     });
 
-    generateSentenceRulesTest("not not not baba is you", {
+    generateSentenceRulesTest(test, "not not not baba is you", {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: true},
         verb: words.is,
         complement: {word: words.you, not: false}
+    });
+});
+
+
+describe("X [Post Condition] IS YOU", () => {
+
+    generateSentenceRulesTest(test, "baba facing wall and leaf is you", {
+        preCondition: undefined,
+        postCondition: [{...$Word(words.facing), selector: [$Word(words.wall), $Word(words.leaf)]}],
+        subject: $Word(words.baba),
+        verb: words.is,
+        complement: $Word(words.you)
+    });
+
+
+    generateSentenceRulesTest(test, "baba facing wall and on leaf is you", {
+        preCondition: undefined,
+        subject: $Word(words.baba),
+        postCondition: [
+            {...$Word(words.facing), selector: [$Word(words.wall)]},
+            {...$Word(words.on), selector: [$Word(words.leaf)]}
+        ],
+        verb: words.is,
+        complement: $Word(words.you)
+    });
+
+
+    //this rule should break and just become "leaf on leaf is you"
+    generateSentenceRulesTest(test.skip, "baba facing wall and leaf on leaf is you", {
+        preCondition: undefined,
+        subject: $Word(words.leaf),
+        postCondition: [{...$Word(words.on), selector: [$Word(words.leaf)]}],
+        verb: words.is,
+        complement: $Word(words.you)
     });
 });

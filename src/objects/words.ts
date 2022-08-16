@@ -22,12 +22,20 @@ export const words = {
         not: true
     }),
 
+    and: new Word({image: placeHolderImage}, "and", {
+        and: true
+    }),
+
     lonely: new Word({image: placeHolderImage}, "lonely", {
         prefixCondition: true
     }),
 
     powered: new Word({image: placeHolderImage}, "powered", {
         prefixCondition: true
+    }),
+
+    on: new Word({image: placeHolderImage}, "on", {
+        postCondition: {wordTypes: ["noun"]}
     }),
 
     facing: new Word({image: placeHolderImage}, "facing", {
