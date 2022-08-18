@@ -1,56 +1,99 @@
 import { Word } from "../main/Word.js";
 import { constructs } from "./constructs.js";
-import imagesWall from "./../images/wall.png";
+import { textures } from "./textures.js";
 
-const placeHolderImage = imagesWall;
+const texturePlaceholder = textures.missing;
 
 export const words = {
 
-    baba: new Word({image: placeHolderImage}, "baba", {
-        noun: {selector: (construct) => construct === constructs.baba}
-    }),
+    text: new Word("text", {
+		texture: texturePlaceholder,
+		behavior: {
+            noun: {selector: (construct) => construct instanceof Word}
+		}
+	}),
 
-    is: new Word({image: placeHolderImage}, "is", {
-        verb: true
-    }),
+    baba: new Word("baba", {
+		texture: texturePlaceholder,
+		behavior: {
+            noun: {selector: (construct) => construct === constructs.baba}
+		}
+	}),
 
-    you: new Word({image: placeHolderImage}, "you", {
-        tag: true
-    }),
+    is: new Word("is", {
+		texture: texturePlaceholder,
+		behavior: {
+            verb: true
+		}
+	}),
 
-    not: new Word({image: placeHolderImage}, "not", {
-        not: true
-    }),
+    you: new Word("you", {
+		texture: texturePlaceholder,
+		behavior: {
+            tag: true
+		}
+	}),
 
-    and: new Word({image: placeHolderImage}, "and", {
-        and: true
-    }),
+    not: new Word("not", {
+		texture: texturePlaceholder,
+		behavior: {
+            not: true
+		}
+	}),
 
-    lonely: new Word({image: placeHolderImage}, "lonely", {
-        prefixCondition: true
-    }),
+    and: new Word("and", {
+		texture: texturePlaceholder,
+		behavior: {
+            and: true
+		}
+	}),
 
-    powered: new Word({image: placeHolderImage}, "powered", {
-        prefixCondition: true
-    }),
+    lonely: new Word("lonely", {
+		texture: texturePlaceholder,
+		behavior: {
+            prefixCondition: true
+		}
+	}),
 
-    on: new Word({image: placeHolderImage}, "on", {
-        postCondition: {wordTypes: ["noun"]}
-    }),
+    powered: new Word("powered", {
+		texture: texturePlaceholder,
+		behavior: {
+            prefixCondition: true
+		}
+	}),
 
-    facing: new Word({image: placeHolderImage}, "facing", {
-        postCondition: {wordTypes: ["noun"]}
-    }),
+    on: new Word("on", {
+		texture: texturePlaceholder,
+		behavior: {
+            postCondition: {wordTypes: ["noun"]}
+		}
+	}),
 
-    near: new Word({image: placeHolderImage}, "near", {
-        postCondition: {wordTypes: ["noun"]}
-    }),
+    facing: new Word("facing", {
+		texture: texturePlaceholder,
+		behavior: {
+            postCondition: {wordTypes: ["noun"]}
+		}
+	}),
 
-    wall: new Word({image: placeHolderImage}, "wall", {
-        noun: {selector: (construct) => construct === constructs.wall}
-    }),
+    near: new Word("near", {
+		texture: texturePlaceholder,
+		behavior: {
+            postCondition: {wordTypes: ["noun"]}
+		}
+	}),
 
-    leaf: new Word({image: placeHolderImage}, "leaf", {
-        noun: {selector: (construct) => construct === constructs.leaf}
-    }),
+    wall: new Word("wall", {
+		texture: texturePlaceholder,
+		behavior: {
+            noun: {selector: (construct) => construct === constructs.wall}
+		}
+	}),
+
+    leaf: new Word("leaf", {
+		texture: texturePlaceholder,
+		behavior: {
+            noun: {selector: (construct) => construct === constructs.leaf}
+		}
+	}),
 }

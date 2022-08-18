@@ -1,13 +1,15 @@
 import * as pixi from "pixi.js";
+import type { Word } from "./Word.js";
+
 
 export class Construct {
-    public imageBase64: string;
-    public pixiTexture: pixi.Texture;
+    public texture: pixi.Texture;
+    public associatedWord: () => Word;
     constructor(
         data: ConstructData
     ) {
-        this.imageBase64 = data.image;
-        this.pixiTexture = pixi.Texture.from(data.image);
+        this.texture = data.texture;
+        this.associatedWord = data.associatedWord;
     }
 
     toJSON() {
@@ -16,5 +18,6 @@ export class Construct {
 }
 
 export interface ConstructData {
-    image: string;
+    texture: pixi.Texture;
+    associatedWord: () => Word;
 }

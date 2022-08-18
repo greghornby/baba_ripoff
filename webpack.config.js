@@ -4,6 +4,9 @@ import ResolveTypeScriptPlugin from "resolve-typescript-plugin";
 export default {
     entry: './src/index.ts',
     devtool: "eval-cheap-source-map",
+    experiments: {
+        topLevelAwait: true,
+    },
     module: {
         rules: [
             {
@@ -13,7 +16,7 @@ export default {
             },
             {
                 test: /\.png$/,
-                use: 'url-loader',
+                use: 'url-loader'
             }
         ],
     },
@@ -22,6 +25,10 @@ export default {
     },
     output: {
         filename: 'index.js',
-        path: path.join(path.dirname(new URL(import.meta.url).pathname), "build"),
+        path: fromRoot("build"),
     },
+}
+
+function fromRoot(filepath) {
+    return path.join(path.dirname(new URL(import.meta.url).pathname), filepath);
 }

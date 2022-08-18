@@ -1,20 +1,24 @@
 import { Construct } from "../main/Construct.js";
-import imagesWall from "./../images/wall.png";
+import { Word } from "../main/Word.js";
+import { textures } from "./textures.js";
 
-const placeholderImage = imagesWall;
+const texturePlaceholder = textures.missing;
 
 export const constructs = {
 
     baba: new Construct({
-        image: placeholderImage
+        texture: texturePlaceholder,
+        associatedWord: () => Word.findWordFromText("baba")
     }),
 
     wall: new Construct({
-        image: imagesWall
+        texture: textures.objects.wall,
+        associatedWord: () => Word.findWordFromText("wall")
     }),
 
     leaf: new Construct({
-        image: placeholderImage
+        texture: texturePlaceholder,
+        associatedWord: () => Word.findWordFromText("leaf")
     }),
 
 }

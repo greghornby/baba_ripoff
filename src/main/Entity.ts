@@ -26,7 +26,7 @@ export class Entity {
 
     updateConstruct(construct: Construct) {
         this.construct = construct;
-        this.pixiSprite.texture = construct.pixiTexture;
+        this.pixiSprite.texture = construct.texture;
     }
 
 

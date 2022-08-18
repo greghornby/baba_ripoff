@@ -1,5 +1,4 @@
 import { Construct, ConstructData } from "./Construct.js";
-import { Entity } from "./Entity.js";
 import { Level } from "./Level.js";
 
 export class Word extends Construct {
@@ -14,13 +13,18 @@ export class Word extends Construct {
         return result;
     }
 
+    public behavior: WordBehavior
+
     constructor(
-        data: ConstructData,
         public readonly _string: string,
-        public behavior: WordBehavior
+        data: Omit<ConstructData, "associatedWord"> & {behavior: WordBehavior},
     ) {
-        super(data);
+        super({
+            ...data,
+            associatedWord: () => this
+        });
         this._string = this._string.toLowerCase();
+        this.behavior = data.behavior;
         Word.words.push(this);
     }
 
