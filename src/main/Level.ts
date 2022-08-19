@@ -1,26 +1,36 @@
 import { Construct } from "./Construct.js";
-import { getApp } from "../util/getApp.js";
 import * as pixi from "pixi.js";
 import { Entity } from "./Entity.js";
-import { NonAbstract } from "../util/utilTypes.js";
+import { App } from "./App.js";
+import { AppEvents } from "./AppEvent.js";
 
 export class Level {
 
     public TILE_SIZE: number = 50;
 
-    // Init Data
     public width: number;
+    public pixelWidth: number;
     public height: number;
+    public pixelHeight: number;
     public sprites: (Construct | null)[][];
 
     public container!: pixi.Container;
+    public resizeListener!: EventListener;
+
 
     public entities: Set<Entity> = new Set();
 
     constructor(public initData: InitLevelData) {
         this.width = initData.width;
+        this.pixelWidth = this.width * this.TILE_SIZE;
         this.height = initData.height;
+        this.pixelHeight = this.height * this.TILE_SIZE;
         this.sprites = initData.sprites;
+    }
+
+
+    quitLevel() {
+        globalThis.removeEventListener(AppEvents.resize, this.resizeListener);
     }
 
 
@@ -30,18 +40,13 @@ export class Level {
 
 
     public load() {
-        const app = getApp();
-        for (const child of app.stage.children) {
-            app.stage.removeChild(child)
+        const app = App.get();
+        const pixiApp = app.pixiApp;
+        for (const child of pixiApp.stage.children) {
+            pixiApp.stage.removeChild(child)
         }
         this.container = new pixi.Container();
-        Object.assign<pixi.Container, Partial<pixi.Container>>(this.container, {
-            width: app.screen.width,
-            height: app.screen.height,
-            x: 0,
-            y: 0
-        });
-        app.stage.addChild(this.container);
+        pixiApp.stage.addChild(this.container);
         for (let y = 0; y < this.sprites.length; y++) {
             const row = this.sprites[y];
             for (let x = 0; x < row.length; x++) {
@@ -56,6 +61,45 @@ export class Level {
                 }
             }
         }
+
+        const border = new pixi.Graphics();
+        border.zIndex = Infinity;
+        this.container.addChild(border);
+        pixiApp.ticker.add(() => {
+            border.clear();
+            border.lineStyle(2, 0x999999, 0.8);
+            for (let x = 0; x <= this.width; x++) {
+                border.moveTo(x * this.TILE_SIZE, 0);
+                border.lineTo(x * this.TILE_SIZE, this.pixelHeight);
+            }
+            for (let y = 0; y <= this.height; y++) {
+                border.moveTo(0, y * this.TILE_SIZE);
+                border.lineTo(this.pixelWidth, y * this.TILE_SIZE);
+            }
+        });
+
+        this.fitContainerToScreen();
+        this.resizeListener = () => this.fitContainerToScreen();
+        globalThis.addEventListener(AppEvents.resize, this.resizeListener);
+    }
+
+
+    fitContainerToScreen(): void {
+        const app = App.get();
+        const view = app.pixiApp.view;
+
+        this.container.pivot.set(this.pixelWidth/2, this.pixelHeight/2);
+        Object.assign<pixi.Container, Partial<pixi.Container>>(this.container, {
+            x: view.width / 2,
+            y: view.height / 2,
+        });
+
+        const xMult = view.width / this.pixelWidth;
+        const yMult = view.height / this.pixelHeight;
+
+        const scaleMultiplier = this.pixelHeight * xMult > view.height ? yMult : xMult;
+
+        this.container.scale = {x: scaleMultiplier, y: scaleMultiplier};
     }
 
 

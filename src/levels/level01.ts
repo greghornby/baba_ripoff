@@ -6,7 +6,7 @@ const W = constructs.wall;
 
 export const level01 = new Level({
     width: 10,
-    height: 5,
+    height: 10,
     sprites: [
         [E,E,E,E,E,E,W,E,E,E],
         [E,W,W,W,W,W,W,E,E,E],
