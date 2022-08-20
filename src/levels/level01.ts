@@ -1,26 +1,45 @@
 import { Level } from "../main/Level.js";
+import { Rule } from "../main/Rule.js";
 import { constructs } from "../objects/constructs.js";
 import { words } from "../objects/words.js";
+import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
 
-const E = null;
-const [W, B] = [constructs.wall, constructs.baba];
-
-const [b,i,y] = [words.baba, words.is, words.you];
-const [w,s] = [words.wall, words.stop];
-
-export const level01 = new Level({
+export const level01 = () => new Level({
     width: 10,
     height: 10,
-    sprites: [
-        [E,E,W,w,i,s,W,E,E,E],
-        [E,W,W,W,W,W,W,E,E,E],
-        [E,W,E,B,E,E,E,E,E,E],
-        [E,W,W,W,W,W,W,E,E,E],
-        [E,E,E,E,E,E,E,E,E,E],
-        [E,E,E,E,E,E,E,E,E,E],
-        [E,E,E,b,i,y,E,E,E,E],
-        [E,E,E,E,E,E,E,E,E,E],
-        [E,E,E,E,E,E,E,E,E,E],
-        [E,E,E,E,E,E,E,E,E,E],
+    sprites: makeLevelGridFromString(`
+        __WwisW
+        _WWWWWW
+        _W_B
+        _WWWWWW
+        _
+        _
+        ___biy
+    `, {
+        _: null,
+        W: constructs.wall,
+        B: constructs.baba,
+        b: words.baba,
+        i: words.is,
+        y: words.you,
+        w: words.wall,
+        s: words.stop
+    }),
+    defaultRules: [
+        new Rule({
+            subject: Rule.word(words.baba),
+            verb: words.is,
+            complement: Rule.word(words.you),
+        }),
+        new Rule({
+            subject: Rule.word(words.wall),
+            verb: words.is,
+            complement:Rule.word(words.stop),
+        }),
+        new Rule({
+            subject: Rule.word(words.text),
+            verb: words.is,
+            complement: Rule.word(words.push),
+        })
     ]
 });

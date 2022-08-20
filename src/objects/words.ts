@@ -41,6 +41,13 @@ export const words = {
 		}
 	}),
 
+	push: new Word("push", {
+		texture: texturePlaceholder,
+		behavior: {
+            tag: true
+		}
+	}),
+
     not: new Word("not", {
 		texture: texturePlaceholder,
 		behavior: {

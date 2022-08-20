@@ -1,24 +1,27 @@
 import { Construct } from "./Construct.js";
 import * as pixi from "pixi.js";
 import { Level } from "./Level.js";
+import { LevelController } from "./LevelController.js";
 
 export class Entity {
 
     public construct: Construct;
     public level: Level;
+    public controller: LevelController;
     public pixiSprite: pixi.Sprite;
     public x: number;
     public y: number;
 
     constructor(public initData: InitAbstractObjectData) {
         this.level = initData.level;
+        this.controller = initData.controller;
         this.construct = initData.construct;
         this.x = initData.x;
         this.y = initData.y;
         this.pixiSprite = new pixi.Sprite();
 
         this.updateConstruct(this.construct);
-        this.level.container.addChild(this.pixiSprite);
+        this.controller.container.addChild(this.pixiSprite);
         this.level.entities.add(this);
         this.updateSpriteScreenPosition();
     }
@@ -39,6 +42,7 @@ export class Entity {
 
 export interface InitAbstractObjectData {
     level: Level;
+    controller: LevelController;
     construct: Construct;
     x: number;
     y: number;
