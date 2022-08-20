@@ -14,21 +14,28 @@ export const words = {
 	}),
 
     baba: new Word("baba", {
-		texture: texturePlaceholder,
+		texture: textures.words.baba,
 		behavior: {
             noun: {selector: (construct) => construct === constructs.baba}
 		}
 	}),
 
     is: new Word("is", {
-		texture: texturePlaceholder,
+		texture: textures.words.is,
 		behavior: {
             verb: true
 		}
 	}),
 
     you: new Word("you", {
-		texture: texturePlaceholder,
+		texture: textures.words.you,
+		behavior: {
+            tag: true
+		}
+	}),
+
+	stop: new Word("stop", {
+		texture: textures.words.stop,
 		behavior: {
             tag: true
 		}
@@ -84,7 +91,7 @@ export const words = {
 	}),
 
     wall: new Word("wall", {
-		texture: texturePlaceholder,
+		texture: textures.words.wall,
 		behavior: {
             noun: {selector: (construct) => construct === constructs.wall}
 		}

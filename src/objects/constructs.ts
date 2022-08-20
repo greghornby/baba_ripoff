@@ -7,7 +7,7 @@ const texturePlaceholder = textures.missing;
 export const constructs = {
 
     baba: new Construct({
-        texture: texturePlaceholder,
+        texture: textures.objects.baba,
         associatedWord: () => Word.findWordFromText("baba")
     }),
 

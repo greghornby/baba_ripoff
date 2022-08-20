@@ -89,10 +89,7 @@ export class Level {
         const view = app.pixiApp.view;
 
         this.container.pivot.set(this.pixelWidth/2, this.pixelHeight/2);
-        Object.assign<pixi.Container, Partial<pixi.Container>>(this.container, {
-            x: view.width / 2,
-            y: view.height / 2,
-        });
+        this.container.transform.position.set(view.width/2, view.height/2);
 
         const xMult = view.width / this.pixelWidth;
         const yMult = view.height / this.pixelHeight;
