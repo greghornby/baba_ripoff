@@ -1,15 +1,27 @@
-import { Level } from "./Level.js";
+import { Level, LevelCell, LevelGrid } from "./Level.js";
 import * as pixi from "pixi.js";
 import { Entity } from "./Entity.js";
 import { App } from "./App.js";
 import { AppEvents } from "./AppEvent.js";
+import { Construct } from "./Construct.js";
+import { Interaction } from "./Interaction.js";
+import { Facing } from "../types/Facing.js";
 
 export class LevelController {
+
+    public _started: boolean = false;
 
     public ticker: pixi.Ticker;
     public container: pixi.Container;
     public resizeListener: EventListener;
-    public grid: pixi.Graphics;
+    public gridGraphic: pixi.Graphics;
+
+    public entitySet: Set<Entity> = new Set();
+    public entityGrid: LevelGrid = [];
+
+    public interactions: Interaction[] = [];
+    public _waitingForInteraction: boolean = false;
+    public _interactionListener: (event: KeyboardEvent) => void;
 
     constructor(
         public level: Level
@@ -27,34 +39,26 @@ export class LevelController {
         //create new ticker
         this.ticker = new pixi.Ticker();
 
-        //create container and populate with sprites
+        //create container
         this.container = new pixi.Container();
         pixiApp.stage.addChild(this.container);
-        for (let y = 0; y < this.level.sprites.length; y++) {
-            const row = this.level.sprites[y];
-            for (let x = 0; x < row.length; x++) {
-                const construct = row[x];
-                if (construct) {
-                    const obj = new Entity({
-                        level: this.level,
-                        controller: this,
-                        construct: construct,
-                        x: x,
-                        y: y,
-                    });
-                }
-            }
-        }
+
+        //populate entities
+        this._resetEntitiesToInit();
 
         //setup grid graphics object
-        this.grid = new pixi.Graphics();
-        this.grid.zIndex = Infinity;
-        this.container.addChild(this.grid);
+        this.gridGraphic = new pixi.Graphics();
+        this.gridGraphic.zIndex = Infinity;
+        this.container.addChild(this.gridGraphic);
 
         //setup resize listener
         this.fitContainerToScreen();
         this.resizeListener = () => this.fitContainerToScreen();
         globalThis.addEventListener(AppEvents.resize, this.resizeListener);
+
+        //setup keyboard listener
+        this._interactionListener = (event: KeyboardEvent) => this.keyboardInteraction(event);
+        globalThis.addEventListener("keydown", this._interactionListener);
 
         //add the main `tick` function and start the ticker again
         this.ticker.add(() => this.tick());
@@ -65,6 +69,8 @@ export class LevelController {
     public exit(): void {
         globalThis.removeEventListener(AppEvents.resize, this.resizeListener);
     }
+
+    //#region GRAPHICAL
 
 
     private fitContainerToScreen(): void {
@@ -85,21 +91,151 @@ export class LevelController {
 
 
     private drawGrid() {
-        this.grid.clear();
-        this.grid.lineStyle(2, 0x999999, 0.8);
+        this.gridGraphic.clear();
+        this.gridGraphic.lineStyle(2, 0x999999, 0.8);
         for (let x = 0; x <= this.level.width; x++) {
-            this.grid.moveTo(x * this.level.TILE_SIZE, 0);
-            this.grid.lineTo(x * this.level.TILE_SIZE, this.level.pixelHeight);
+            this.gridGraphic.moveTo(x * this.level.TILE_SIZE, 0);
+            this.gridGraphic.lineTo(x * this.level.TILE_SIZE, this.level.pixelHeight);
         }
         for (let y = 0; y <= this.level.height; y++) {
-            this.grid.moveTo(0, y * this.level.TILE_SIZE);
-            this.grid.lineTo(this.level.pixelWidth, y * this.level.TILE_SIZE);
+            this.gridGraphic.moveTo(0, y * this.level.TILE_SIZE);
+            this.gridGraphic.lineTo(this.level.pixelWidth, y * this.level.TILE_SIZE);
         }
     }
 
 
+    //#endregion GRAPHICAL
+
+
+    //#region ENTITY
+
+
+    public _resetEntitiesToInit() {
+        this._removeAllEntities();
+
+        const initConstructGrid = this.level.initData.startingEntities();
+        for (let y = 0; y < initConstructGrid.length; y++) {
+            const row = initConstructGrid[y];
+            for (let x = 0; x < row.length; x++) {
+                const constructs = row[x];
+                for (const construct of constructs) {
+                    const obj = new Entity({
+                        level: this.level,
+                        controller: this,
+                        construct: construct,
+                        x: x,
+                        y: y,
+                    });
+                }
+            }
+        }
+    }
+
+
+    public _removeAllEntities() {
+        type RemoveOptions = Parameters<Entity["removeFromLevel"]>[0];
+        const removeOptions: RemoveOptions  = {noArrayMutations: true};
+        for (const entity of this.entitySet) {
+            entity.removeFromLevel(removeOptions);
+        }
+    }
+
+
+    public getEntitiesAtPosition(x: number, y: number): LevelCell {
+        return this.entityGrid[y]?.[x] ?? [];
+    }
+
+
+    public getAllConstructsInLevel(): Construct[] {
+        return [...new Set([...this.entitySet].map(e => e.construct))];
+    }
+
+
+    public getEntitiesOfConstruct(construct: Construct): Entity[] {
+        return [...this.entitySet].filter(e => e.construct === construct);
+    }
+
+
+    public getAllConstructsWithEntitiesInLevel(): {construct: Construct; entities: Entity[]}[] {
+        const map: Map<Construct, Entity[]> = new Map();
+        for (const entity of this.entitySet) {
+            let construct = entity.construct;
+            let entityArray = map.get(construct);
+            if (!entityArray) {
+                entityArray = [];
+                map.set(construct, entityArray);
+            }
+            entityArray.push(entity);
+        }
+        return [...map.entries()].map(entry => ({construct: entry[0], entities: entry[1]}));
+    }
+
+
+    //#endregion ENTITY
+
+
+    keyboardInteraction(event: KeyboardEvent) {
+
+        const key = event.key;
+        let interactionType: Interaction["interaction"] | undefined;
+
+        switch (key) {
+            case "w":
+            case "ArrowUp":
+                interactionType = {type: "move", direction: Facing.up};
+                break;
+            case "a":
+            case "ArrowLeft":
+                interactionType = {type: "move", direction: Facing.left};
+                break;
+            case "d":
+            case "ArrowRight":
+                interactionType = {type: "move", direction: Facing.right};
+                break;
+            case "s":
+            case "ArrowDown":
+                interactionType = {type: "move", direction: Facing.down};
+                break;
+            case " ":
+                interactionType = {type: "wait"};
+                break;
+        }
+
+        if (!interactionType) {
+            return;
+        }
+
+        event.preventDefault();
+        this.processInteraction({interaction: interactionType})
+    }
+
+
+    processInteraction(interaction: Interaction) {
+        if (!this._waitingForInteraction) {
+            return;
+        }
+        this._waitingForInteraction = false;
+        console.log("Processing interaction", JSON.stringify(interaction));
+        const type = interaction.interaction.type;
+        if (type === "move") {
+            const direction = interaction.interaction.direction;
+        } else if (type === "wait") {
+
+        }
+        setTimeout(() => {this._waitingForInteraction = true}, 1000);
+    }
+
+
+    start(): void {
+        this._waitingForInteraction = true;
+        this._started = true;
+    }
+
+
     tick(): void {
-        console.log("tick");
+        if (!this._started) {
+            this.start();
+        }
         this.drawGrid();
     }
 }

@@ -22,8 +22,17 @@ export class Entity {
 
         this.updateConstruct(this.construct);
         this.controller.container.addChild(this.pixiSprite);
-        this.level.entities.add(this);
+        this.controller.entitySet.add(this);
         this.updateSpriteScreenPosition();
+    }
+
+
+    removeFromLevel(options: {noArrayMutations: boolean}) {
+        this.controller.container.removeChild(this.pixiSprite);
+        if (!options.noArrayMutations) {
+            this.controller.entitySet.delete(this);
+            this.pixiSprite.destroy();
+        }
     }
 
 

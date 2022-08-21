@@ -7,7 +7,7 @@ import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
 export const level01 = () => new Level({
     width: 10,
     height: 10,
-    sprites: makeLevelGridFromString(`
+    startingEntities: makeLevelGridFromString(`
         __WwisW
         _WWWWWW
         _W_B

@@ -13,16 +13,12 @@ export class Level {
     public pixelWidth: number;
     public height: number;
     public pixelHeight: number;
-    public sprites: (Construct | null)[][];
-
-    public entities: Set<Entity> = new Set();
 
     constructor(public initData: InitLevelData) {
         this.width = initData.width;
         this.pixelWidth = this.width * this.TILE_SIZE;
         this.height = initData.height;
         this.pixelHeight = this.height * this.TILE_SIZE;
-        this.sprites = initData.sprites;
     }
 
 
@@ -36,35 +32,17 @@ export class Level {
     }
 
 
-    getAllConstructsInLevel(): Construct[] {
-        return [...new Set([...this.entities].map(e => e.construct))];
-    }
 
-
-    getEntitiesOfConstruct(construct: Construct): Entity[] {
-        return [...this.entities].filter(e => e.construct === construct);
-    }
-
-
-    getAllConstructsWithEntitiesInLevel(): {construct: Construct; entities: Entity[]}[] {
-        const map: Map<Construct, Entity[]> = new Map();
-        for (const entity of this.entities) {
-            let construct = entity.construct;
-            let entityArray = map.get(construct);
-            if (!entityArray) {
-                entityArray = [];
-                map.set(construct, entityArray);
-            }
-            entityArray.push(entity);
-        }
-        return [...map.entries()].map(entry => ({construct: entry[0], entities: entry[1]}));
-    }
 }
 
 
 export interface InitLevelData {
     width: number;
     height: number;
-    sprites: (Construct | null)[][];
+    startingEntities: () => LevelGrid;
     defaultRules?: Rule[];
 }
+
+export type LevelCell = Construct[];
+export type LevelRow = LevelCell[];
+export type LevelGrid = LevelRow[];
