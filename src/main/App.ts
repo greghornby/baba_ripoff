@@ -18,6 +18,12 @@ export class App {
             resizeTo: containerElement,
         });
 
+        this.pixiApp.view.classList.add("game");
+        this.pixiApp.view.tabIndex = 1;
+        const styleElement = document.createElement("style");
+        styleElement.innerHTML = `.game:focus {outline: none;}`;
+        document.head.appendChild(styleElement);
+
         this.resizeObserver = new ResizeObserver(
             () => globalThis.dispatchEvent(new Event(AppEvents.resize))
         );

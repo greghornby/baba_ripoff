@@ -176,6 +176,11 @@ export class LevelController {
 
     keyboardInteraction(event: KeyboardEvent) {
 
+        const app = App.get();
+        if (document.activeElement !== app.pixiApp.view) {
+            return;
+        }
+
         const key = event.key;
         let interactionType: Interaction["interaction"] | undefined;
 
