@@ -30,14 +30,17 @@ export class ActionProcessor {
         this._waitingForInteraction = false;
         console.log("Processing interaction", JSON.stringify(interaction));
 
-        const actions: Action[] = [];
-        this.stack.push(actions);
+        if (interaction.interaction.type === "undo") {
+            this.reverseActionsOnTopOfStack();
+        } else {
+            const actions: Action[] = [];
+            this.stack.push(actions);
 
-        const movementActions = this.processMovement(interaction);
-        console.log("Movement actions", movementActions);
-        actions.push(...movementActions);
-
-        this.playActionsOnTopOfStack();
+            const movementActions = this.processMovement(interaction);
+            console.log("Movement actions", movementActions);
+            actions.push(...movementActions);
+            this.playActionsOnTopOfStack();
+        }
 
         setTimeout(() => {this._waitingForInteraction = true}, 50);
     }
@@ -63,7 +66,21 @@ export class ActionProcessor {
 
 
     public reverseActionsOnTopOfStack() {
-        const actions = this.stack[this.stack.length - 1];
+        const actions = this.stack.pop() ?? [];
+
+        for (const action of actions) {
+            switch (action.data.type) {
+                case "movement":
+                    this.controller.moveEntitiesOfConstruct(
+                        action.data.construct,
+                        action.data.startDirection,
+                        action.data.endX,
+                        action.data.endY,
+                        action.data.startX,
+                        action.data.startY
+                    )
+            }
+        }
     }
 
 

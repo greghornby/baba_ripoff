@@ -282,6 +282,9 @@ export class LevelController {
             case " ":
                 interactionType = {type: "wait"};
                 break;
+            case "z":
+                interactionType = {type: "undo"};
+                break;
         }
 
         if (!interactionType) {
