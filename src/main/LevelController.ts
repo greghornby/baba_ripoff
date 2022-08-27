@@ -1,4 +1,4 @@
-import { Level, LevelCell, LevelGrid } from "./Level.js";
+import { Level, Cell, LevelGrid, LevelRow } from "./Level.js";
 import * as pixi from "pixi.js";
 import { Entity } from "./Entity.js";
 import { App } from "./App.js";
@@ -9,8 +9,11 @@ import { Facing } from "../types/Facing.js";
 import { Rule } from "./Rule.js";
 import { MapOfSets } from "../util/MapOfSets.js";
 import { Word } from "./Word.js";
+import { ActionProcessor } from "./ActionProcessor.js";
 
 export class LevelController {
+
+    public actionProcessor: ActionProcessor | undefined;
 
     public _started: boolean = false;
 
@@ -20,13 +23,13 @@ export class LevelController {
     public gridGraphic: pixi.Graphics;
 
     public entitySet: Set<Entity> = new Set();
-    public entityGrid: LevelGrid = [];
+    public entityGrid: LevelGrid<Entity> = [];
 
     public rules: Rule[] = [];
-    public entityTags: MapOfSets<Word, Entity> = new MapOfSets();
+    public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
+    public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
 
-    public interactions: Interaction[] = [];
-    public _waitingForInteraction: boolean = false;
+
     public _interactionListener: (event: KeyboardEvent) => void;
 
     constructor(
@@ -124,19 +127,30 @@ export class LevelController {
     public _resetEntitiesToInit(): void {
         this._removeAllEntities();
 
+        this.entityGrid = [];
+        for (let y = 0; y < this.level.height; y++) {
+            const row: LevelRow<Entity> = [];
+            this.entityGrid.push(row);
+            for (let x = 0; x < this.level.width; x++) {
+                const cell: Cell<Entity> = [];
+                row.push(cell);
+            }
+        }
+
         const initConstructGrid = this.level.initData.startingEntities();
         for (let y = 0; y < initConstructGrid.length; y++) {
             const row = initConstructGrid[y];
             for (let x = 0; x < row.length; x++) {
                 const constructs = row[x];
                 for (const construct of constructs) {
-                    const obj = new Entity({
+                    const entity = new Entity({
                         level: this.level,
                         controller: this,
                         construct: construct,
                         x: x,
                         y: y,
                     });
+                    this.entityGrid[y][x].push(entity);
                 }
             }
         }
@@ -152,7 +166,7 @@ export class LevelController {
     }
 
 
-    public getEntitiesAtPosition(x: number, y: number): LevelCell {
+    public getEntitiesAtPosition(x: number, y: number): Cell<Entity> {
         return this.entityGrid[y]?.[x] ?? [];
     }
 
@@ -185,24 +199,54 @@ export class LevelController {
     //#endregion ENTITY
 
 
+    public moveEntitiesOfConstruct(construct: Construct, facing: Facing, startX: number, startY: number, endX: number, endY: number) {
+        console.log("Moving entities of", construct.associatedWord()._string, "in direction", facing, "to", endX, endY);
+        const entitiesToMove = this.getEntitiesAtPosition(startX, startY)
+            .filter(entity => entity.construct === construct);
+
+        console.log("To move", entitiesToMove);
+
+        this.entityGrid[startY][startX] = this.entityGrid[startY][startX]
+            .filter(e => !entitiesToMove.includes(e));
+
+        this.entityGrid[endY][endX].push(...entitiesToMove);
+        for (const entity of entitiesToMove) {
+            entity.facing = facing;
+            entity.x = endX;
+            entity.y = endY;
+            entity.updateSpriteScreenPosition();
+        }
+    }
+
+
     public generateEntityTagsFromRules(): void {
-        this.entityTags.clear();
+        this.tagToEntities.clear();
+        this.entityToTags.clear();
         for (const {rule} of this.rules) {
             const complementWord = rule.complement.word;
             const complementIsTag = rule.complement.word.behavior.tag;
-            if (complementIsTag) {
-                const subjectWord = rule.subject.word;
-                const noun = subjectWord.behavior.noun!;
-                const selectedConstructs = this.getAllConstructsInLevel()
-                    .filter(construct => noun.selector(construct, this.level));
-                const entities: Entity[] = selectedConstructs.reduce(
-                    (entities, construct) => {
-                        entities.push(...this.getEntitiesOfConstruct(construct));
-                        return entities;
-                    },
-                    [] as Entity[]
-                );
-                this.entityTags.addToSet(complementWord, ...entities);
+
+            if (!complementIsTag) {
+                continue;
+            }
+
+            const subjectWord = rule.subject.word;
+            const noun = subjectWord.behavior.noun!;
+
+            const selectedConstructs = this.getAllConstructsInLevel()
+                .filter(construct => noun.selector(construct, this.level));
+
+            const entities: Entity[] = selectedConstructs.reduce(
+                (entities, construct) => {
+                    entities.push(...this.getEntitiesOfConstruct(construct));
+                    return entities;
+                },
+                [] as Entity[]
+            );
+
+            this.tagToEntities.addToSet(complementWord, ...entities);
+            for (const entity of entities) {
+                this.entityToTags.addToSet(entity, complementWord);
             }
         }
     }
@@ -245,28 +289,15 @@ export class LevelController {
         }
 
         event.preventDefault();
-        this.processInteraction({interaction: interactionType})
+        this.actionProcessor!.processInteraction({interaction: interactionType})
     }
 
 
-    public processInteraction(interaction: Interaction): void {
-        if (!this._waitingForInteraction) {
-            return;
-        }
-        this._waitingForInteraction = false;
-        console.log("Processing interaction", JSON.stringify(interaction));
-        const type = interaction.interaction.type;
-        if (type === "move") {
-            const direction = interaction.interaction.direction;
-        } else if (type === "wait") {
 
-        }
-        setTimeout(() => {this._waitingForInteraction = true}, 1000);
-    }
 
 
     start(): void {
-        this._waitingForInteraction = true;
+        this.actionProcessor = new ActionProcessor(this);
         this._started = true;
     }
 

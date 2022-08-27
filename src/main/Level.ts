@@ -36,10 +36,10 @@ export class Level {
 export interface InitLevelData {
     width: number;
     height: number;
-    startingEntities: () => LevelGrid;
+    startingEntities: () => LevelGrid<Construct>;
     defaultRules: Rule[];
 }
 
-export type LevelCell = Construct[];
-export type LevelRow = LevelCell[];
-export type LevelGrid = LevelRow[];
+export type Cell<T> = T[];
+export type LevelRow<T> = Cell<T>[];
+export type LevelGrid<T> = LevelRow<T>[];

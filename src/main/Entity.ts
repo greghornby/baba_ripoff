@@ -3,6 +3,7 @@ import * as pixi from "pixi.js";
 import { Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
 import { Word } from "./Word.js";
+import { Facing } from "../types/Facing.js";
 
 export class Entity {
 
@@ -13,6 +14,7 @@ export class Entity {
     public pixiSprite: pixi.Sprite;
     public x: number;
     public y: number;
+    public facing: Facing;
 
     constructor(public initData: InitAbstractObjectData) {
         const associatedWord = initData.construct.associatedWord()._string;
@@ -23,6 +25,8 @@ export class Entity {
         this.x = initData.x;
         this.y = initData.y;
         this.pixiSprite = new pixi.Sprite();
+
+        this.facing = Facing.down;
 
         this.updateConstruct(this.construct);
         this.controller.container.addChild(this.pixiSprite);
