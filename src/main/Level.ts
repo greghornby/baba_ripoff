@@ -30,9 +30,6 @@ export class Level {
     public exit() {
         this.controller?.exit();
     }
-
-
-
 }
 
 
@@ -40,7 +37,7 @@ export interface InitLevelData {
     width: number;
     height: number;
     startingEntities: () => LevelGrid;
-    defaultRules?: Rule[];
+    defaultRules: Rule[];
 }
 
 export type LevelCell = Construct[];

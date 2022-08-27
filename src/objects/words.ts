@@ -9,7 +9,11 @@ export const words = {
     text: new Word("text", {
 		texture: texturePlaceholder,
 		behavior: {
-            noun: {selector: (construct) => construct instanceof Word}
+            noun: {selector: (construct) => {
+					console.log("Checking", construct, "is word:", construct instanceof Word);
+					return construct instanceof Word
+				}
+			}
 		}
 	}),
 

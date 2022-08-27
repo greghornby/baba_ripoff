@@ -6,6 +6,9 @@ import { AppEvents } from "./AppEvent.js";
 import { Construct } from "./Construct.js";
 import { Interaction } from "./Interaction.js";
 import { Facing } from "../types/Facing.js";
+import { Rule } from "./Rule.js";
+import { MapOfSets } from "../util/MapOfSets.js";
+import { Word } from "./Word.js";
 
 export class LevelController {
 
@@ -19,6 +22,9 @@ export class LevelController {
     public entitySet: Set<Entity> = new Set();
     public entityGrid: LevelGrid = [];
 
+    public rules: Rule[] = [];
+    public entityTags: MapOfSets<Word, Entity> = new MapOfSets();
+
     public interactions: Interaction[] = [];
     public _waitingForInteraction: boolean = false;
     public _interactionListener: (event: KeyboardEvent) => void;
@@ -26,6 +32,8 @@ export class LevelController {
     constructor(
         public level: Level
     ) {
+
+        (globalThis as any)["controller"] = this;
 
         const app = App.get();
         const pixiApp = app.pixiApp;
@@ -46,14 +54,17 @@ export class LevelController {
         //populate entities
         this._resetEntitiesToInit();
 
+        this.rules = [...this.level.initData.defaultRules];
+        this.generateEntityTagsFromRules();
+
         //setup grid graphics object
         this.gridGraphic = new pixi.Graphics();
         this.gridGraphic.zIndex = Infinity;
         this.container.addChild(this.gridGraphic);
 
         //setup resize listener
-        this.fitContainerToScreen();
-        this.resizeListener = () => this.fitContainerToScreen();
+        this._fitContainerToScreen();
+        this.resizeListener = () => this._fitContainerToScreen();
         globalThis.addEventListener(AppEvents.resize, this.resizeListener);
 
         //setup keyboard listener
@@ -73,7 +84,7 @@ export class LevelController {
     //#region GRAPHICAL
 
 
-    private fitContainerToScreen(): void {
+    public _fitContainerToScreen(): void {
         const app = App.get();
         const view = app.pixiApp.view;
         const level = this.level;
@@ -90,7 +101,7 @@ export class LevelController {
     }
 
 
-    private drawGrid() {
+    public _drawGrid(): void {
         this.gridGraphic.clear();
         this.gridGraphic.lineStyle(2, 0x999999, 0.8);
         for (let x = 0; x <= this.level.width; x++) {
@@ -110,7 +121,7 @@ export class LevelController {
     //#region ENTITY
 
 
-    public _resetEntitiesToInit() {
+    public _resetEntitiesToInit(): void {
         this._removeAllEntities();
 
         const initConstructGrid = this.level.initData.startingEntities();
@@ -132,7 +143,7 @@ export class LevelController {
     }
 
 
-    public _removeAllEntities() {
+    public _removeAllEntities(): void {
         type RemoveOptions = Parameters<Entity["removeFromLevel"]>[0];
         const removeOptions: RemoveOptions  = {noArrayMutations: true};
         for (const entity of this.entitySet) {
@@ -174,7 +185,30 @@ export class LevelController {
     //#endregion ENTITY
 
 
-    keyboardInteraction(event: KeyboardEvent) {
+    public generateEntityTagsFromRules(): void {
+        this.entityTags.clear();
+        for (const {rule} of this.rules) {
+            const complementWord = rule.complement.word;
+            const complementIsTag = rule.complement.word.behavior.tag;
+            if (complementIsTag) {
+                const subjectWord = rule.subject.word;
+                const noun = subjectWord.behavior.noun!;
+                const selectedConstructs = this.getAllConstructsInLevel()
+                    .filter(construct => noun.selector(construct, this.level));
+                const entities: Entity[] = selectedConstructs.reduce(
+                    (entities, construct) => {
+                        entities.push(...this.getEntitiesOfConstruct(construct));
+                        return entities;
+                    },
+                    [] as Entity[]
+                );
+                this.entityTags.addToSet(complementWord, ...entities);
+            }
+        }
+    }
+
+
+    public keyboardInteraction(event: KeyboardEvent): void {
 
         const app = App.get();
         if (document.activeElement !== app.pixiApp.view) {
@@ -215,7 +249,7 @@ export class LevelController {
     }
 
 
-    processInteraction(interaction: Interaction) {
+    public processInteraction(interaction: Interaction): void {
         if (!this._waitingForInteraction) {
             return;
         }
@@ -241,6 +275,6 @@ export class LevelController {
         if (!this._started) {
             this.start();
         }
-        this.drawGrid();
+        this._drawGrid();
     }
 }

@@ -2,9 +2,11 @@ import { Construct } from "./Construct.js";
 import * as pixi from "pixi.js";
 import { Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
+import { Word } from "./Word.js";
 
 export class Entity {
 
+    public name: string;
     public construct: Construct;
     public level: Level;
     public controller: LevelController;
@@ -13,6 +15,8 @@ export class Entity {
     public y: number;
 
     constructor(public initData: InitAbstractObjectData) {
+        const associatedWord = initData.construct.associatedWord()._string;
+        this.name = initData.construct instanceof Word ? `text:${associatedWord}` : associatedWord;
         this.level = initData.level;
         this.controller = initData.controller;
         this.construct = initData.construct;

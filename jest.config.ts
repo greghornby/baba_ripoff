@@ -4,7 +4,7 @@ export default {
     extensionsToTreatAsEsm: [".ts"],
     globals: {
         "ts-jest": {
-            tsconfig: "<rootDir>/tsconfig.json",
+            tsconfig: "<rootDir>/tests/tsconfig.json",
             useESM: true,
         }
     },
