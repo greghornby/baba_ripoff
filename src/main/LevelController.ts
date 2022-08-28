@@ -10,6 +10,7 @@ import { Rule } from "./Rule.js";
 import { MapOfSets } from "../util/MapOfSets.js";
 import { Word } from "./Word.js";
 import { ActionProcessor } from "./ActionProcessor.js";
+import { EntityAnimation } from "./EntityAnimation.js";
 
 export class LevelController {
 
@@ -29,8 +30,10 @@ export class LevelController {
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
 
-
+    public currentInteraction: Interaction | undefined;
     public _interactionListener: (event: KeyboardEvent) => void;
+
+    public animations: Set<EntityAnimation> = new Set();
 
     constructor(
         public level: Level
@@ -105,6 +108,7 @@ export class LevelController {
 
 
     public _drawGrid(): void {
+        this.gridGraphic.zIndex = -Infinity;
         this.gridGraphic.clear();
         this.gridGraphic.lineStyle(2, 0x999999, 0.8);
         for (let x = 0; x <= this.level.width; x++) {
@@ -200,11 +204,8 @@ export class LevelController {
 
 
     public moveEntitiesOfConstruct(construct: Construct, facing: Facing, startX: number, startY: number, endX: number, endY: number) {
-        console.log("Moving entities of", construct.associatedWord()._string, "in direction", facing, "to", endX, endY);
         const entitiesToMove = this.getEntitiesAtPosition(startX, startY)
             .filter(entity => entity.construct === construct);
-
-        console.log("To move", entitiesToMove);
 
         this.entityGrid[startY][startX] = this.entityGrid[startY][startX]
             .filter(e => !entitiesToMove.includes(e));
@@ -214,7 +215,9 @@ export class LevelController {
             entity.facing = facing;
             entity.x = endX;
             entity.y = endY;
-            entity.updateSpriteScreenPosition();
+            const animation = new EntityAnimation(entity);
+            animation.addMotionSlide({startX, startY, endX, endY, frames: 5});
+            this.animations.add(animation);
         }
     }
 
@@ -292,7 +295,17 @@ export class LevelController {
         }
 
         event.preventDefault();
-        this.actionProcessor!.processInteraction({interaction: interactionType})
+        this.currentInteraction = {interaction: interactionType};
+    }
+
+
+    public renderNextAnimationFrame(animation: EntityAnimation): void {
+        const entity = animation.entity;
+        const frame = animation.getNextFrame();
+        if (!frame) {
+            return;
+        }
+        entity.updateSpriteScreenPosition(frame.x, frame.y);
     }
 
 
@@ -310,5 +323,28 @@ export class LevelController {
             this.start();
         }
         this._drawGrid();
+
+        const isAnimating = this.animations.size > 0;
+
+        const finishedAnimations: EntityAnimation[] = [];
+        for (const animation of this.animations) {
+            this.renderNextAnimationFrame(animation);
+            if (animation.ended) {
+                finishedAnimations.push(animation);
+            }
+        }
+        for (const animation of finishedAnimations) {
+            this.animations.delete(animation);
+        }
+
+        if (isAnimating) {
+            return;
+        }
+
+        if (this.currentInteraction) {
+            const interaction = this.currentInteraction;
+            this.currentInteraction = undefined;
+            this.actionProcessor!.processInteraction(interaction);
+        }
     }
 }

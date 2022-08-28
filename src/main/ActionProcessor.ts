@@ -59,7 +59,7 @@ export class ActionProcessor {
                         action.data.startY,
                         action.data.endX,
                         action.data.endY
-                    )
+                    );
             }
         }
     }

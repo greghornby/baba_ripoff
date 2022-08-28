@@ -50,10 +50,12 @@ export class Entity {
     }
 
 
-    public updateSpriteScreenPosition() {
-        console.log(`Drawing ${this.construct.constructor.name} at ${this.x} ${this.y}`);
-        this.pixiSprite.transform.position.x = this.x * this.level.TILE_SIZE;
-        this.pixiSprite.transform.position.y = this.y * this.level.TILE_SIZE;
+    public updateSpriteScreenPosition(): void;
+    public updateSpriteScreenPosition(x: number, y: number): void;
+    public updateSpriteScreenPosition(_x?: number, _y?: number) {
+        const [x, y] = [_x ?? this.x, _y ?? this.y];
+        this.pixiSprite.transform.position.x = x * this.level.TILE_SIZE;
+        this.pixiSprite.transform.position.y = y * this.level.TILE_SIZE;
     }
 }
 

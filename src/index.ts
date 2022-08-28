@@ -10,6 +10,7 @@ function initGame() {
     const app = new App(document.body);
     (globalThis as any).app = app;
     document.body.appendChild(app.pixiApp.view);
+    app.pixiApp.view.focus();
     const level = level01();
     level.load();
 }

@@ -10,7 +10,6 @@ export const words = {
 		texture: texturePlaceholder,
 		behavior: {
             noun: {selector: (construct) => {
-					console.log("Checking", construct, "is word:", construct instanceof Word);
 					return construct instanceof Word
 				}
 			}

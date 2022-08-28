@@ -33,10 +33,6 @@ test("getPaths", () => {
         ["1", "a", "1", "a", "b", "1"],
     ];
 
-    const allPaths = getPaths(tree2);
-
-    console.log("Paths", allPaths);
-
     expect(getPaths(tree1)).toEqual(expected1);
     expect(getPaths(tree2)).toEqual(expected2);
 
