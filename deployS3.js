@@ -1,8 +1,7 @@
 import dotenv from "dotenv";
-if (process.env["ENV"] === "local") {
-    console.log("Loading .env.s3");
-    dotenv.config({path: ".env.s3"});
-}
+console.log("Loading .env.s3 if exists");
+dotenv.config({path: ".env.s3"});
+
 import aws from "aws-sdk";
 import fs from "fs";
 
