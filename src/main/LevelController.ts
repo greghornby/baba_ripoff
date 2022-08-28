@@ -11,6 +11,9 @@ import { MapOfSets } from "../util/MapOfSets.js";
 import { Word } from "./Word.js";
 import { ActionProcessor } from "./ActionProcessor.js";
 import { EntityAnimation } from "./EntityAnimation.js";
+import { Sentence } from "./Sentence.js";
+import { getPaths } from "../util/getPaths.js";
+import { words } from "../objects/words.js";
 
 export class LevelController {
 
@@ -26,6 +29,7 @@ export class LevelController {
     public entitySet: Set<Entity> = new Set();
     public entityGrid: LevelGrid<Entity> = [];
 
+    public sentences: Sentence[] = [];
     public rules: Rule[] = [];
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
@@ -34,6 +38,11 @@ export class LevelController {
     public _interactionListener: (event: KeyboardEvent) => void;
 
     public entitiesToAnimate: Set<Entity> = new Set();
+
+    public tickFlags: {
+        rebuildSentences?: boolean;
+        _debugAlertedYouAreDead?: boolean;
+    } = {};
 
     constructor(
         public level: Level
@@ -78,6 +87,11 @@ export class LevelController {
         globalThis.addEventListener("keydown", this._interactionListener);
 
         //add the main `tick` function and start the ticker again
+        type TickFlags = typeof this.tickFlags;
+        Object.assign<TickFlags, TickFlags>(this.tickFlags, {
+            rebuildSentences: true,
+            _debugAlertedYouAreDead: false
+        });
         this.ticker.add(() => this.tick());
         this.ticker.start();
     }
@@ -217,6 +231,74 @@ export class LevelController {
             entity.y = endY;
             entity.animation().addMotionSlide({startX, startY, endX, endY, frames: 5});
         }
+
+        if (construct instanceof Word) {
+            console.log("Text moved");
+            this.tickFlags.rebuildSentences = true;
+        }
+    }
+
+
+    public rebuildSentences(): void {
+        const directions = ["horizontal", "vertical"] as const;
+        type SentenceDirection = typeof directions[number];
+        const cellsChecked = new Map<string, Record<SentenceDirection, boolean>>();
+
+        const sentences: Sentence[] = [];
+
+        for (let y = 0; y < this.entityGrid.length; y++) {
+            const row = this.entityGrid[y];
+            for (let x = 0; x < row.length; x++) {
+                const cellHasWords = row[x].filter(e => e.construct instanceof Word).length > 0;
+                if (!cellHasWords) {
+                    continue;
+                }
+                for (const direction of directions) {
+                    let cells: Entity[][] = [];
+                    const failSafeIterations = 1e3;
+                    let alreadyChecked = false;
+                    for (let i = 0; i < failSafeIterations; i++) {
+                        const nextX = x + (direction === "vertical" ? 0 : i);
+                        const nextY = y + (direction === "horizontal" ? 0 : i);
+                        const cell: Cell<Entity> | undefined = this.entityGrid[nextY]?.[nextX];
+                        if (!cell) {
+                            break;
+                        }
+                        const cellName = `${nextX}:${nextY}`;
+                        let cellCheck = cellsChecked.get(cellName);
+                        if (!cellCheck) {
+                            cellCheck = {horizontal: false, vertical: false};
+                            cellsChecked.set(cellName, cellCheck);
+                        }
+                        if (cellCheck[direction]) {
+                            alreadyChecked = true;
+                            break;
+                        }
+                        cellCheck[direction] = true;
+                        const words = cell.filter(e => e.construct instanceof Word);
+                        if (words.length === 0) {
+                            break;
+                        }
+                        cells.push(words);
+                    }
+
+                    if (alreadyChecked) {
+                        continue;
+                    }
+
+                    const arrayOfSentences = getPaths(cells);
+                    for (const words of arrayOfSentences) {
+                        const sentence = new Sentence(words.map(word => word.construct as Word));
+                        if (sentence.isPotentiallyASentence()) {
+                            sentences.push(sentence);
+                        }
+                    }
+                }
+            }
+        }
+
+        this.sentences = sentences;
+        console.log("SENTENCES", this.sentences);
     }
 
 
@@ -315,6 +397,30 @@ export class LevelController {
         }
         if (isAnimating) {
             return;
+        }
+
+        const flags = this.tickFlags;
+
+        if (flags.rebuildSentences) {
+            this.rebuildSentences();
+            this.rules = [...this.level.initData.defaultRules];
+            for (const sentence of this.sentences) {
+                const sentenceRules = sentence.getRules();
+                this.rules.push(...sentenceRules);
+            }
+            this.generateEntityTagsFromRules();
+            flags.rebuildSentences = false;
+        }
+
+        //check YOU
+        const youEntities = this.tagToEntities.get(words.you);
+        if (!youEntities || youEntities.size === 0) {
+            if (!flags._debugAlertedYouAreDead) {
+                alert("YOU DO NOT EXIST!");
+                flags._debugAlertedYouAreDead = true;
+            }
+        } else {
+            flags._debugAlertedYouAreDead = false;
         }
 
         if (this.currentInteraction) {

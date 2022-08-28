@@ -70,7 +70,14 @@ export class Sentence {
 
     constructor(public words: Word[]) {}
 
+    isPotentiallyASentence(): boolean {
+        return this.words.length >= 3;
+    }
+
     getRules(): Rule[] {
+        if (!this.isPotentiallyASentence) {
+            return [];
+        }
         const rules: Rule[] = [];
 
         let wordsRemaining = [...this.words];

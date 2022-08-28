@@ -26,16 +26,16 @@ export const level01 = () => new Level({
         s: words.stop
     }),
     defaultRules: [
-        new Rule({
-            subject: Rule.word(words.baba),
-            verb: words.is,
-            complement: Rule.word(words.you),
-        }),
-        new Rule({
-            subject: Rule.word(words.wall),
-            verb: words.is,
-            complement:Rule.word(words.stop),
-        }),
+        // new Rule({
+        //     subject: Rule.word(words.baba),
+        //     verb: words.is,
+        //     complement: Rule.word(words.you),
+        // }),
+        // new Rule({
+        //     subject: Rule.word(words.wall),
+        //     verb: words.is,
+        //     complement:Rule.word(words.stop),
+        // }),
         new Rule({
             subject: Rule.word(words.text),
             verb: words.is,
