@@ -26,7 +26,8 @@ async function main() {
         await s3.putObject({
             Bucket: BUCKET,
             Key: key,
-            Body: fs.readFileSync(file)
+            Body: fs.readFileSync(file),
+            ContentType: "text/html"
         }).promise();
     }
 
