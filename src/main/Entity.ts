@@ -4,6 +4,7 @@ import { Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
 import { Word } from "./Word.js";
 import { Facing } from "../types/Facing.js";
+import { EntityAnimation } from "./EntityAnimation.js";
 
 export class Entity {
 
@@ -15,6 +16,8 @@ export class Entity {
     public x: number;
     public y: number;
     public facing: Facing;
+
+    public _animation: EntityAnimation | undefined;
 
     constructor(public initData: InitAbstractObjectData) {
         const associatedWord = initData.construct.associatedWord()._string;
@@ -35,7 +38,7 @@ export class Entity {
     }
 
 
-    removeFromLevel(options: {noArrayMutations: boolean}) {
+    public removeFromLevel(options: {noArrayMutations: boolean}) {
         this.controller.container.removeChild(this.pixiSprite);
         if (!options.noArrayMutations) {
             this.controller.entitySet.delete(this);
@@ -44,9 +47,34 @@ export class Entity {
     }
 
 
-    updateConstruct(construct: Construct) {
+    public updateConstruct(construct: Construct) {
         this.construct = construct;
         this.pixiSprite.texture = construct.texture;
+    }
+
+
+    public animation(): EntityAnimation {
+        const animation = this._animation ?? new EntityAnimation(this);
+        this._animation = animation;
+        this.controller.entitiesToAnimate.add(this);
+        return this._animation;
+    }
+
+
+    public renderNextAnimationFrame(): void {
+
+        if (!this._animation) {
+            return;
+        }
+
+        const frame = this._animation.getNextFrame();
+        if (this._animation.ended || !frame) {
+            this._animation = undefined;
+            this.controller.entitiesToAnimate.delete(this);
+            return;
+        }
+
+        this.updateSpriteScreenPosition(frame.x, frame.y);
     }
 
 

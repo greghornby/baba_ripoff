@@ -33,7 +33,7 @@ export class LevelController {
     public currentInteraction: Interaction | undefined;
     public _interactionListener: (event: KeyboardEvent) => void;
 
-    public animations: Set<EntityAnimation> = new Set();
+    public entitiesToAnimate: Set<Entity> = new Set();
 
     constructor(
         public level: Level
@@ -215,9 +215,7 @@ export class LevelController {
             entity.facing = facing;
             entity.x = endX;
             entity.y = endY;
-            const animation = new EntityAnimation(entity);
-            animation.addMotionSlide({startX, startY, endX, endY, frames: 5});
-            this.animations.add(animation);
+            entity.animation().addMotionSlide({startX, startY, endX, endY, frames: 5});
         }
     }
 
@@ -299,19 +297,6 @@ export class LevelController {
     }
 
 
-    public renderNextAnimationFrame(animation: EntityAnimation): void {
-        const entity = animation.entity;
-        const frame = animation.getNextFrame();
-        if (!frame) {
-            return;
-        }
-        entity.updateSpriteScreenPosition(frame.x, frame.y);
-    }
-
-
-
-
-
     start(): void {
         this.actionProcessor = new ActionProcessor(this);
         this._started = true;
@@ -324,19 +309,10 @@ export class LevelController {
         }
         this._drawGrid();
 
-        const isAnimating = this.animations.size > 0;
-
-        const finishedAnimations: EntityAnimation[] = [];
-        for (const animation of this.animations) {
-            this.renderNextAnimationFrame(animation);
-            if (animation.ended) {
-                finishedAnimations.push(animation);
-            }
+        const isAnimating = this.entitiesToAnimate.size > 0;
+        for (const entity of this.entitiesToAnimate) {
+            entity.renderNextAnimationFrame();
         }
-        for (const animation of finishedAnimations) {
-            this.animations.delete(animation);
-        }
-
         if (isAnimating) {
             return;
         }
