@@ -8,12 +8,14 @@ export const constructs = {
 
     baba: new Construct({
         texture: textures.objects.baba,
-        associatedWord: () => Word.findWordFromText("baba")
+        associatedWord: () => Word.findWordFromText("baba"),
+        zIndex: 1e6
     }),
 
     wall: new Construct({
         texture: textures.objects.wall,
-        associatedWord: () => Word.findWordFromText("wall")
+        associatedWord: () => Word.findWordFromText("wall"),
+        zIndex: 1e7
     }),
 
     leaf: new Construct({

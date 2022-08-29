@@ -8,6 +8,7 @@ import { EntityAnimation } from "./EntityAnimation.js";
 
 export class Entity {
 
+    public id: number;
     public name: string;
     public construct: Construct;
     public level: Level;
@@ -31,6 +32,8 @@ export class Entity {
 
         this.facing = Facing.down;
 
+        this.id = this.controller.entityCount++;
+
         this.updateConstruct(this.construct);
         this.controller.container.addChild(this.pixiSprite);
         this.controller.entitySet.add(this);
@@ -50,6 +53,7 @@ export class Entity {
     public updateConstruct(construct: Construct) {
         this.construct = construct;
         this.pixiSprite.texture = construct.texture;
+        this.pixiSprite.zIndex = construct.zIndex;
     }
 
 

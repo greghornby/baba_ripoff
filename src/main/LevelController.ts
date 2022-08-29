@@ -79,7 +79,7 @@ export class LevelController {
 
         //setup grid graphics object
         this.gridGraphic = new pixi.Graphics();
-        this.gridGraphic.zIndex = Infinity;
+        this.gridGraphic.zIndex = Number.MIN_SAFE_INTEGER;
         this.container.addChild(this.gridGraphic);
 
         //setup resize listener
@@ -142,7 +142,6 @@ export class LevelController {
 
 
     public _drawGrid(): void {
-        this.gridGraphic.zIndex = -Infinity;
         this.gridGraphic.clear();
         this.gridGraphic.lineStyle(2, 0x999999, 0.8);
         for (let x = 0; x <= this.level.width; x++) {
@@ -240,28 +239,6 @@ export class LevelController {
 
 
     //#endregion ENTITY
-
-
-    public moveEntitiesOfConstruct(construct: Construct, facing: Facing, startX: number, startY: number, endX: number, endY: number) {
-        const entitiesToMove = this.getEntitiesAtPosition(startX, startY)
-            .filter(entity => entity.construct === construct);
-
-        this.entityGrid[startY][startX] = this.entityGrid[startY][startX]
-            .filter(e => !entitiesToMove.includes(e));
-
-        this.entityGrid[endY][endX].push(...entitiesToMove);
-        for (const entity of entitiesToMove) {
-            entity.facing = facing;
-            entity.x = endX;
-            entity.y = endY;
-            entity.animation().addMotionSlide({startX, startY, endX, endY, frames: 5});
-        }
-
-        if (construct instanceof Word) {
-            console.log("Text moved");
-            this.tickFlags.rebuildSentences = true;
-        }
-    }
 
 
     public moveEntity(entity: Entity, facing: Facing, startX: number, startY: number, endX: number, endY: number): void {
@@ -491,7 +468,6 @@ export class LevelController {
             }
         } else {
             flags._debugAlertedYouAreDead = false;
-            [...youEntities].forEach(e => e.pixiSprite.zIndex = Infinity);
         }
 
         if (this.currentInteraction) {

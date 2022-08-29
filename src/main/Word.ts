@@ -21,7 +21,8 @@ export class Word extends Construct {
     ) {
         super({
             ...data,
-            associatedWord: () => this
+            associatedWord: () => this,
+            zIndex: 1e7
         });
         this._string = this._string.toLowerCase();
         this.behavior = data.behavior;

@@ -95,7 +95,7 @@ export class ActionProcessor {
                     const {entity, ...rest} = action.data;
                     obj = {
                         ...rest,
-                        entity: entity.name
+                        entityId: entity.id
                     };
                 break;
                 default:
