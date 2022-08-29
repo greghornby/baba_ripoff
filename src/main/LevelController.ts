@@ -245,7 +245,7 @@ export class LevelController {
             .filter(e => e !== entity);
         this.entityGrid[endY][endX].push(entity);
 
-        entity.facing = facing;
+        entity.setFacing(facing);
         entity.x = endX;
         entity.y = endY;
         entity.animation().addMotionSlide({startX, startY, endX, endY, frames: 5});

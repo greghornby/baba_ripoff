@@ -182,7 +182,6 @@ export class ActionProcessor {
                     startDirection: entity.facing,
                     endDirection: direction,
                     entity: entity,
-                    entityId: entity.id,
                     startX: startX,
                     startY: startY,
                     endX: nextX,

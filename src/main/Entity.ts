@@ -5,6 +5,7 @@ import { LevelController } from "./LevelController.js";
 import { Word } from "./Word.js";
 import { Facing } from "../types/Facing.js";
 import { EntityAnimation } from "./EntityAnimation.js";
+import { debugFlags } from "../debug/debugFlags.js";
 
 export class Entity {
 
@@ -20,6 +21,8 @@ export class Entity {
 
     public _animation: EntityAnimation | undefined;
 
+    public _facingGraphic: pixi.Graphics;
+
     constructor(public initData: InitAbstractObjectData) {
         const associatedWord = initData.construct.associatedWord()._string;
         this.name = initData.construct instanceof Word ? `text:${associatedWord}` : associatedWord;
@@ -29,8 +32,11 @@ export class Entity {
         this.x = initData.x;
         this.y = initData.y;
         this.pixiSprite = new pixi.Sprite();
+        this._facingGraphic = new pixi.Graphics();
+        this.pixiSprite.addChild(this._facingGraphic);
 
         this.facing = Facing.down;
+        this.setFacing(this.facing);
 
         this.id = this.controller.entityCount++;
 
@@ -54,6 +60,40 @@ export class Entity {
         this.construct = construct;
         this.pixiSprite.texture = construct.texture;
         this.pixiSprite.zIndex = construct.zIndex;
+    }
+
+
+    public setFacing(facing: Facing) {
+        this.facing = facing;
+        this._facingGraphic.clear();
+        if (!debugFlags.drawFacingArrows) {
+            return;
+        }
+        this._facingGraphic.lineStyle(2, 0xff0000, 1.0);
+        const half = this.level.TILE_SIZE/2;
+        const quarter = this.level.TILE_SIZE/4;
+        const points = {
+            up: [half, half - quarter] as [number, number],
+            down: [half, half + quarter] as [number, number],
+            left: [half - quarter, half] as [number, number],
+            right: [half + quarter, half] as [number, number],
+        };
+
+        let toDraw: [number, number][];
+        switch (facing) {
+            case Facing.right: toDraw = [points.up, points.right, points.down]; break;
+            case Facing.left: toDraw = [points.up, points.left, points.down]; break;
+            case Facing.down: toDraw = [points.left, points.down, points.right]; break;
+            case Facing.up: toDraw = [points.left, points.up, points.right]; break;
+        }
+
+        for (const [index, point] of toDraw.entries()) {
+            if (index === 0) {
+                this._facingGraphic.moveTo(...point);
+            } else {
+                this._facingGraphic.lineTo(...point);
+            }
+        }
     }
 
 

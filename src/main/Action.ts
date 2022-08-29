@@ -13,14 +13,14 @@ export class Action {
 
 
     public calculateHash(): string {
-        return objectHash(this._getNonCircularDataToHash());
+        return `type:${this.data.type}:hash:` + objectHash(this._getNonCircularDataToHash());
     }
 
 
     public _getNonCircularDataToHash(): Record<string, string | number> {
         if (this.data.type === "movement") {
-            const {entity, ...obj} = this.data;
-            return {...obj};
+            const {startX, startY, endX, endY} = this.data;
+            return {startX, startY, endX, endY};
         } else {
             return {};
         }
@@ -42,6 +42,7 @@ export class Action {
     toJSON(): Record<string, string | number> {
         return {
             ...this._getNonCircularDataToHash(),
+            hash: this.hash,
             debug: this.debug
         };
     }
@@ -50,7 +51,6 @@ export class Action {
 export interface MovementAction {
     type: "movement";
     entity: Entity;
-    entityId: number;
     startDirection: Facing;
     endDirection: Facing;
     startX: number;
