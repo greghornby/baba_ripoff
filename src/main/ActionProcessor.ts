@@ -1,3 +1,4 @@
+import { debugPrint } from "../debug/debugPrint.js";
 import { words } from "../objects/words.js";
 import { Facing } from "../types/Facing.js";
 import { Action } from "./Action.js";
@@ -5,7 +6,6 @@ import { Entity } from "./Entity.js";
 import { Interaction, InteractionMove } from "./Interaction.js";
 import { Cell, Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
-import objectHash from "object-hash";
 
 export class ActionProcessor {
 
@@ -29,17 +29,24 @@ export class ActionProcessor {
         }
         this.interactions.push(interaction);
         this._waitingForInteraction = false;
-        console.log("Processing interaction", JSON.stringify(interaction));
+        debugPrint.interactions(JSON.stringify(interaction));
 
         if (interaction.interaction.type === "undo") {
             this.reverseActionsOnTopOfStack();
         } else {
             const actions: Action[] = [];
+            const actionsHashSet = new Set<string>();
+            const addAction = (action: Action) => {
+                if (!actionsHashSet.has(action.hash)) {
+                    actions.push(action);
+                    actionsHashSet.add(action.hash);
+                }
+            }
             this.stack.push(actions);
 
             const movementActions = this.processMovement(interaction);
-            console.log("Movement actions", movementActions);
-            actions.push(...movementActions);
+            movementActions.forEach(action => addAction(action));
+            debugPrint.actions(JSON.stringify(actions, null, 2));
             this.playActionsOnTopOfStack();
         }
 
@@ -85,31 +92,6 @@ export class ActionProcessor {
     }
 
 
-    public dedupeActions(actions: Action[]) {
-        const hashes = new Set<string>();
-        const dedupedActions: Action[] = [];
-        for (const action of actions) {
-            let obj: Record<string, string | number>;
-            switch (action.data.type) {
-                case "movement":
-                    const {entity, ...rest} = action.data;
-                    obj = {
-                        ...rest,
-                        entityId: entity.id
-                    };
-                break;
-                default:
-                    obj = {};
-            }
-            const hash = objectHash(obj);
-            if (!hashes.has(hash)) {
-                dedupedActions.push(action);
-            }
-        }
-        return dedupedActions;
-    }
-
-
     public processMovement(interaction: Interaction): Action[] {
 
         const movementActions: Action[] = [];
@@ -125,7 +107,7 @@ export class ActionProcessor {
             }
         }
 
-        return this.dedupeActions(movementActions);
+        return movementActions;
     }
 
 
@@ -200,6 +182,7 @@ export class ActionProcessor {
                     startDirection: entity.facing,
                     endDirection: direction,
                     entity: entity,
+                    entityId: entity.id,
                     startX: startX,
                     startY: startY,
                     endX: nextX,

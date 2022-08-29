@@ -10,10 +10,10 @@ import { Rule } from "./Rule.js";
 import { MapOfSets } from "../util/MapOfSets.js";
 import { Word } from "./Word.js";
 import { ActionProcessor } from "./ActionProcessor.js";
-import { EntityAnimation } from "./EntityAnimation.js";
 import { Sentence } from "./Sentence.js";
 import { getPaths } from "../util/getPaths.js";
 import { words } from "../objects/words.js";
+import { debugPrint } from "../debug/debugPrint.js";
 
 export class LevelController {
 
@@ -90,7 +90,6 @@ export class LevelController {
         //setup keyboard listener
         this._keyboardListener = (event: KeyboardEvent) => this.keyboardInteraction(event);
         this._touchStartListener = (event: TouchEvent) => {
-            console.log("Touch");
             for (let i = 0; i < event.changedTouches.length; i++) {
                 this.touches.push(event.changedTouches[i]);
             }
@@ -252,7 +251,6 @@ export class LevelController {
         entity.animation().addMotionSlide({startX, startY, endX, endY, frames: 5});
 
         if (entity.construct instanceof Word) {
-            console.log("Text moved");
             this.tickFlags.rebuildSentences = true;
         }
     }
@@ -317,7 +315,7 @@ export class LevelController {
         }
 
         this.sentences = sentences;
-        console.log("SENTENCES", this.sentences);
+        debugPrint.sentences(this.sentences);
     }
 
 

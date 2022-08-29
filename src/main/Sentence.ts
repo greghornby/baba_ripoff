@@ -356,6 +356,9 @@ export class Sentence {
 
     parseVerbFragment(words: Word[]): IFragmentOutput<IRule["verb"]> {
         const word = words[0];
+        if (!word) {
+            return false;
+        }
         const fragment: Word[] = [];
         if (word.behavior.verb) {
             fragment.push(word);
