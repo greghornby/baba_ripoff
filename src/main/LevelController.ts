@@ -35,7 +35,10 @@ export class LevelController {
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
 
     public currentInteraction: Interaction | undefined;
-    public _interactionListener: (event: KeyboardEvent) => void;
+    public _keyboardListener: (event: KeyboardEvent) => void;
+    public _touchStartListener: (event: TouchEvent) => void;
+    public _touchStopListener: (event: TouchEvent) => void;
+    public touches: Touch[] = [];
 
     public entitiesToAnimate: Set<Entity> = new Set();
 
@@ -83,8 +86,22 @@ export class LevelController {
         globalThis.addEventListener(AppEvents.resize, this.resizeListener);
 
         //setup keyboard listener
-        this._interactionListener = (event: KeyboardEvent) => this.keyboardInteraction(event);
-        globalThis.addEventListener("keydown", this._interactionListener);
+        this._keyboardListener = (event: KeyboardEvent) => this.keyboardInteraction(event);
+        this._touchStartListener = (event: TouchEvent) => {
+            console.log("Touch");
+            for (let i = 0; i < event.changedTouches.length; i++) {
+                this.touches.push(event.changedTouches[i]);
+            }
+        }
+        this._touchStopListener = (event: TouchEvent) => {
+            this.touchInteraction(event);
+            for (let i = 0; i < event.changedTouches.length; i++) {
+                const currentTouch = event.changedTouches[i];
+                this.touches = this.touches.filter(t => t.identifier !== currentTouch.identifier);
+            }
+        };
+        globalThis.addEventListener("touchstart", this._touchStartListener);
+        globalThis.addEventListener("touchend", this._touchStopListener);
 
         //add the main `tick` function and start the ticker again
         type TickFlags = typeof this.tickFlags;
@@ -394,6 +411,34 @@ export class LevelController {
 
         if (!interactionType) {
             return;
+        }
+
+        event.preventDefault();
+        this.currentInteraction = {interaction: interactionType};
+    }
+
+
+    public touchInteraction(event: TouchEvent) {
+
+        let interactionType: Interaction["interaction"];
+
+        const endTouch = event.changedTouches[0];
+        const startTouch = this.touches.find(t => t.identifier === endTouch.identifier)!;
+
+        const diffX = endTouch.pageX - startTouch.pageX;
+        const diffY = endTouch.pageY - startTouch.pageY;
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            if (diffX > 0) {
+                interactionType = {type: "move", direction: Facing.right};
+            } else {
+                interactionType = {type: "move", direction: Facing.left};
+            }
+        } else {
+            if (diffY > 0) {
+                interactionType = {type: "move", direction: Facing.down};
+            } else {
+                interactionType = {type: "move", direction: Facing.up};
+            }
         }
 
         event.preventDefault();
