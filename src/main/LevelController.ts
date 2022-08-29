@@ -26,6 +26,7 @@ export class LevelController {
     public resizeListener: EventListener;
     public gridGraphic: pixi.Graphics;
 
+    public entityCount: number = 0;
     public entitySet: Set<Entity> = new Set();
     public entityGrid: LevelGrid<Entity> = [];
 
@@ -67,6 +68,7 @@ export class LevelController {
 
         //create container
         this.container = new pixi.Container();
+        this.container.sortableChildren = true;
         pixiApp.stage.addChild(this.container);
 
         //populate entities
@@ -100,6 +102,7 @@ export class LevelController {
                 this.touches = this.touches.filter(t => t.identifier !== currentTouch.identifier);
             }
         };
+        globalThis.addEventListener("keydown", this._keyboardListener);
         globalThis.addEventListener("touchstart", this._touchStartListener);
         globalThis.addEventListener("touchend", this._touchStopListener);
 
@@ -488,6 +491,7 @@ export class LevelController {
             }
         } else {
             flags._debugAlertedYouAreDead = false;
+            [...youEntities].forEach(e => e.pixiSprite.zIndex = Infinity);
         }
 
         if (this.currentInteraction) {
