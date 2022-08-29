@@ -4,18 +4,30 @@ import { constructs } from "../objects/constructs.js";
 import { words } from "../objects/words.js";
 import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
 
-export const level01 = () => new Level({
-    width: 10,
-    height: 10,
-    startingEntities: makeLevelGridFromString(`
-        __WwisW
+// const levelText = `
+//         __WwisW
+//         _WWWWWW
+//         _W_B
+//         _WWWWWW
+//         _
+//         _
+//         ___biy
+// `;
+const levelText = `
+        __
         _WWWWWW
         _W_B
         _WWWWWW
         _
-        _
+        ____w
         ___biy
-    `, {
+        ____s
+`;
+
+export const level01 = () => new Level({
+    width: 10,
+    height: 10,
+    startingEntities: makeLevelGridFromString(levelText, {
         _: null,
         W: constructs.wall,
         B: constructs.baba,

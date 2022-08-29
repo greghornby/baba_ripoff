@@ -5,6 +5,7 @@ import { Entity } from "./Entity.js";
 import { Interaction, InteractionMove } from "./Interaction.js";
 import { Cell, Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
+import objectHash from "object-hash";
 
 export class ActionProcessor {
 
@@ -52,8 +53,8 @@ export class ActionProcessor {
         for (const action of actions) {
             switch (action.data.type) {
                 case "movement":
-                    this.controller.moveEntitiesOfConstruct(
-                        action.data.construct,
+                    this.controller.moveEntity(
+                        action.data.entity,
                         action.data.endDirection,
                         action.data.startX,
                         action.data.startY,
@@ -71,8 +72,8 @@ export class ActionProcessor {
         for (const action of actions) {
             switch (action.data.type) {
                 case "movement":
-                    this.controller.moveEntitiesOfConstruct(
-                        action.data.construct,
+                    this.controller.moveEntity(
+                        action.data.entity,
                         action.data.startDirection,
                         action.data.endX,
                         action.data.endY,
@@ -84,7 +85,32 @@ export class ActionProcessor {
     }
 
 
-    public processMovement(interaction: Interaction) {
+    public dedupeActions(actions: Action[]) {
+        const hashes = new Set<string>();
+        const dedupedActions: Action[] = [];
+        for (const action of actions) {
+            let obj: Record<string, string | number>;
+            switch (action.data.type) {
+                case "movement":
+                    const {entity, ...rest} = action.data;
+                    obj = {
+                        ...rest,
+                        entity: entity.name
+                    };
+                break;
+                default:
+                    obj = {};
+            }
+            const hash = objectHash(obj);
+            if (!hashes.has(hash)) {
+                dedupedActions.push(action);
+            }
+        }
+        return dedupedActions;
+    }
+
+
+    public processMovement(interaction: Interaction): Action[] {
 
         const movementActions: Action[] = [];
 
@@ -99,7 +125,7 @@ export class ActionProcessor {
             }
         }
 
-        return movementActions;
+        return this.dedupeActions(movementActions);
     }
 
 
@@ -173,7 +199,7 @@ export class ActionProcessor {
                     type: "movement",
                     startDirection: entity.facing,
                     endDirection: direction,
-                    construct: entity.construct,
+                    entity: entity,
                     startX: startX,
                     startY: startY,
                     endX: nextX,
@@ -181,8 +207,12 @@ export class ActionProcessor {
                 }));
             }
 
-
-            nextEntities = this.controller.getEntitiesAtPosition(nextX, nextY);
+            const nextCell = this.controller.getGridCell(nextX, nextY);
+            if (!nextCell) {
+                pathBlocked = true;
+                break;
+            }
+            nextEntities = nextCell;
         }
 
         if (pathBlocked) {

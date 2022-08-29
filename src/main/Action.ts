@@ -1,5 +1,6 @@
 import { Facing } from "../types/Facing.js";
 import { Construct } from "./Construct.js";
+import { Entity } from "./Entity.js";
 
 export class Action {
     constructor(public data: MovementAction | DestroyEntityAction | CreateEntityAction) {}
@@ -7,7 +8,7 @@ export class Action {
 
 export interface MovementAction {
     type: "movement";
-    construct: Construct;
+    entity: Entity;
     startDirection: Facing;
     endDirection: Facing;
     startX: number;

@@ -184,8 +184,13 @@ export class LevelController {
     }
 
 
+    public getGridCell(x: number, y: number): Cell<Entity> | undefined {
+        return this.entityGrid[y]?.[x];
+    }
+
+
     public getEntitiesAtPosition(x: number, y: number): Cell<Entity> {
-        return this.entityGrid[y]?.[x] ?? [];
+        return this.getGridCell(x, y) ?? [];
     }
 
 
@@ -233,6 +238,23 @@ export class LevelController {
         }
 
         if (construct instanceof Word) {
+            console.log("Text moved");
+            this.tickFlags.rebuildSentences = true;
+        }
+    }
+
+
+    public moveEntity(entity: Entity, facing: Facing, startX: number, startY: number, endX: number, endY: number): void {
+        this.entityGrid[startY][startX] = this.entityGrid[startY][startX]
+            .filter(e => e !== entity);
+        this.entityGrid[endY][endX].push(entity);
+
+        entity.facing = facing;
+        entity.x = endX;
+        entity.y = endY;
+        entity.animation().addMotionSlide({startX, startY, endX, endY, frames: 5});
+
+        if (entity.construct instanceof Word) {
             console.log("Text moved");
             this.tickFlags.rebuildSentences = true;
         }
