@@ -1,8 +1,12 @@
 import path from "path";
 import ResolveTypeScriptPlugin from "resolve-typescript-plugin";
+import * as fs from "fs";
 
 export default {
-    entry: './src/index.ts',
+    entry: {
+        index: "./src/index.ts",
+        // vendors: Object.keys(JSON.parse(fs.readFileSync("./package.json", "utf8")).dependencies)
+    },
     devtool: "eval-cheap-source-map",
     experiments: {
         topLevelAwait: true,
@@ -21,10 +25,33 @@ export default {
         ],
     },
     resolve: {
-        plugins: [new ResolveTypeScriptPlugin()]
+        plugins: [
+            new ResolveTypeScriptPlugin(),
+        ]
+    },
+    optimization: {
+        splitChunks: {
+            chunks: "all",
+            cacheGroups: {
+                default: false,
+                vendors: false,
+
+                index: {
+                    name: "index"
+                },
+
+                vendor: {
+                    name: "vendor",
+                    // sync + async chunks
+                    chunks: "all",
+                    // import file path containing node_modules
+                    test: /node_modules/
+                }
+            }
+        }
     },
     output: {
-        filename: 'index.js',
+        filename: "[name].js",
         path: fromRoot("build"),
     },
 }

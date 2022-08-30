@@ -1,4 +1,5 @@
 import { Word } from "../main/Word.js";
+import { colors } from "./colors.js";
 import { constructs } from "./constructs.js";
 import { textures } from "./textures.js";
 
@@ -21,6 +22,7 @@ export const words = {
 
     baba: new Word("baba", {
 		texture: textures.words.baba,
+		color: colors.pink,
 		behavior: {
             noun: {type: "single", selector: constructs.baba}
 		}
@@ -105,6 +107,7 @@ export const words = {
 
     wall: new Word("wall", {
 		texture: textures.words.wall,
+		color: colors.brightBlue,
 		behavior: {
             noun: {type: "single", selector: constructs.wall}
 		}
@@ -112,6 +115,7 @@ export const words = {
 
 	rock: new Word("rock", {
 		texture: textures.words.rock,
+		color: colors.brightBrown,
 		behavior: {
             noun: {type: "single", selector: constructs.rock}
 		}
@@ -119,6 +123,7 @@ export const words = {
 
     leaf: new Word("leaf", {
 		texture: texturePlaceholder,
+		color: colors.darkGreen,
 		behavior: {
             noun: {type: "single", selector: constructs.leaf}
 		}

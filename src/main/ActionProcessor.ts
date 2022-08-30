@@ -1,11 +1,11 @@
 import { debugPrint } from "../debug/debugPrint.js";
-import { words } from "../objects/words.js";
 import { Facing } from "../types/Facing.js";
 import { Action } from "./Action.js";
 import { Entity } from "./Entity.js";
 import { Interaction, InteractionMove } from "./Interaction.js";
 import { Cell, Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
+import { Word } from "./Word.js";
 
 export class ActionProcessor {
 
@@ -118,7 +118,6 @@ export class ActionProcessor {
         const movementActions: Action[] = [];
 
         if (interaction.interaction.type === "move") {
-            const wordYou = words.you;
             const youEntities = this.controller.tagToEntities.getSet(wordYou);
 
             // set all you Entities to the facing position
@@ -227,8 +226,6 @@ export class ActionProcessor {
 
 
     public _entityIsSolid(entity: Entity): boolean {
-        const wordStop = words.stop;
-        const wordPush = words.push;
         /** @todo add pull */
         const entityTags = this.controller.entityToTags.getSet(entity);
         return entityTags.has(wordStop) || entityTags.has(wordPush);
@@ -236,7 +233,6 @@ export class ActionProcessor {
 
 
     public _entityIsPushable(entity: Entity): boolean {
-        const wordPush = words.push;
         const entityTags = this.controller.entityToTags.getSet(entity);
         return entityTags.has(wordPush);
     }
@@ -249,3 +245,7 @@ export class ActionProcessor {
         }
     }
 }
+
+const wordYou = Word.findWordFromText("you");
+const wordStop = Word.findWordFromText("stop");
+const wordPush = Word.findWordFromText("push");

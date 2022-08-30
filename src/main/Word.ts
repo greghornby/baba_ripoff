@@ -19,13 +19,16 @@ export class Word extends Construct {
 
     constructor(
         public readonly _string: string,
-        data: Omit<ConstructData, "associatedWord" | "category" | "color"> & {behavior: WordBehavior},
+        data:
+            & Omit<ConstructData, "associatedWord" | "category" | "color">
+            & Partial<Pick<ConstructData, "color">>
+            & {behavior: WordBehavior},
     ) {
         super({
-            ...data,
             associatedWord: () => this,
             category: categories.text,
-            color: colors.textActive
+            color: colors.textActive,
+            ...data,
         });
         this._string = this._string.toLowerCase();
         this.behavior = data.behavior;

@@ -589,7 +589,7 @@ export class LevelController {
             this.actionProcessor!.doMutations();
 
             //check YOU
-            const youEntities = this.tagToEntities.get(words.you);
+            const youEntities = this.tagToEntities.get(wordYou);
             if (!youEntities || youEntities.size === 0) {
                 if (!flags._debugAlertedYouAreDead) {
                     console.log("YOU ARE DEAD");
@@ -608,3 +608,5 @@ export class LevelController {
         this.turnNumber++;
     }
 }
+
+const wordYou = Word.findWordFromText("you");
