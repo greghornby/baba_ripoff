@@ -1,3 +1,4 @@
+import { Entity } from "./Entity.js";
 import { IRule, NegatableWord, Rule } from "./Rule.js";
 import { Word, WordBehavior } from "./Word.js";
 
@@ -70,7 +71,10 @@ export class Sentence {
         return sentence.filter(e => e) as string[];
     }
 
-    constructor(public words: Word[]) {}
+
+    public activeTextEntities: Set<Entity> = new Set();
+
+    constructor(public words: Word[], public entities?: Entity[]) {}
 
     isPotentiallyASentence(): boolean {
         return this.words.length >= 3;
@@ -82,8 +86,20 @@ export class Sentence {
         }
         const rules: Rule[] = [];
 
-        let wordsRemaining = [...this.words];
+        const wordsWithEntity: WordAndEntity[] = this.words.map((word, index) => ({word: word, entity: this.entities?.[index]}));
+
+        let wordsRemaining: WordAndEntity[] = [...wordsWithEntity];
         while (wordsRemaining.length) {
+
+            const activeEntities: Set<Entity> = new Set();
+            const addActiveEntitiesFromFragment = (fragment: WordAndEntity[]) => {
+                for (const item of fragment) {
+                    if (item.entity) {
+                        activeEntities.add(item.entity);
+                    }
+                }
+            }
+
             let preCondition: IRule["preCondition"];
             let subjects: IRule["subject"][];
             let postCondition: IRule["postCondition"];
@@ -98,6 +114,7 @@ export class Sentence {
             if (preConResult) {
                 preCondition = preConResult.data;
                 wordsRemaining = preConResult.wordsRemaining;
+                addActiveEntitiesFromFragment(preConResult.fragment);
             }
             let nounsResult = this.parseSimpleConjuctionWords(wordsRemaining, ["noun"]);
             if (!nounsResult) {
@@ -105,10 +122,12 @@ export class Sentence {
             }
             subjects = nounsResult.data;
             wordsRemaining = nounsResult.wordsRemaining;
+            addActiveEntitiesFromFragment(nounsResult.fragment);
             let postConResult = this.parsePostConditionFragment(wordsRemaining);
             if (postConResult) {
                 postCondition = postConResult.data;
                 wordsRemaining = postConResult.wordsRemaining;
+                addActiveEntitiesFromFragment(postConResult.fragment);
             }
             let verbResult = this.parseVerbFragment(wordsRemaining);
             if (!verbResult) {
@@ -116,18 +135,23 @@ export class Sentence {
             }
             verb = verbResult.data;
             wordsRemaining = verbResult.wordsRemaining;
+            addActiveEntitiesFromFragment(verbResult.fragment);
             let complementsResult = this.parseSimpleConjuctionWords(wordsRemaining, ["noun", "tag"]);
             if (!complementsResult) {
                 continue;
             }
             complements = complementsResult.data;
             wordsRemaining = complementsResult.wordsRemaining;
+            addActiveEntitiesFromFragment(complementsResult.fragment);
 
+            /**
+             * If the sentence ended with a noun, add that word back to the pool (and the corresponding not if it exists)
+             */
             if (wordsRemaining) {
                 const complementFragment = complementsResult.fragment;
                 const lastComplementWord = complementFragment[complementFragment.length-1];
-                if (lastComplementWord.behavior.noun) {
-                    const maybeNotWord = complementFragment[complementFragment.length-2]?.behavior.not ? complementFragment[complementFragment.length-2] : undefined;
+                if (lastComplementWord.word.behavior.noun) {
+                    const maybeNotWord = complementFragment[complementFragment.length-2]?.word.behavior.not ? complementFragment[complementFragment.length-2] : undefined;
                     if (maybeNotWord) {
                         wordsRemaining.unshift(maybeNotWord, lastComplementWord);
                     } else {
@@ -149,17 +173,22 @@ export class Sentence {
                     rules.push(rule);
                 }
             }
+
+            for (const entity of activeEntities) {
+                this.activeTextEntities.add(entity);
+            }
         }
 
         return rules;
     }
 
 
-    findRuleStart(words: Word[]): IFragmentOutput<undefined> {
-        const discardedFragment: Word[] = [];
+    findRuleStart(words: WordAndEntity[]): IFragmentOutput<undefined> {
+        const discardedFragment: WordAndEntity[] = [];
         let i: number;
         for (i = 0; i < words.length; i++) {
-            const word = words[i];
+            const _word = words[i];
+            const word = _word.word;
             const behavior = word.behavior;
             let allowed = false;
             for (const allowedWord of Sentence.startingWordTypes) {
@@ -169,7 +198,7 @@ export class Sentence {
                 }
             }
             if (!allowed) {
-                discardedFragment.push(word);
+                discardedFragment.push(_word);
             } else {
                 break;
             }
@@ -182,19 +211,20 @@ export class Sentence {
     }
 
 
-    parsePreConditionFragment(words: Word[]): IFragmentOutput<IRule["preCondition"]> {
+    parsePreConditionFragment(words: WordAndEntity[]): IFragmentOutput<IRule["preCondition"]> {
         let valid = false;
         let not = false;
         let checkForAnd = false;
         let conditions: NegatableWord[] = [];
-        const fragment: Word[] = [];
+        const fragment: WordAndEntity[] = [];
         let i: number;
         for (i = 0; i < words.length; i++) {
-            const word = words[i];
+            const _word = words[i];
+            const word = _word.word;
             const behavior = word.behavior;
             if (checkForAnd) {
                 if (behavior.and) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     checkForAnd = false;
                     valid = false;
                     continue;
@@ -203,10 +233,10 @@ export class Sentence {
                 }
             } else {
                 if (behavior.not) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     not = !not;
                 } else if (behavior.prefixCondition) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     conditions.push({word: word, not: not});
                     not = false;
                     valid = true;
@@ -228,19 +258,20 @@ export class Sentence {
     }
 
 
-    parseSimpleConjuctionWords(words: Word[], allowedTypes: WordType[]): IFragmentOutput<NegatableWord[]> {
+    parseSimpleConjuctionWords(words: WordAndEntity[], allowedTypes: WordType[]): IFragmentOutput<NegatableWord[]> {
         let valid = false;
         let checkForAnd = false;
         let not = false;
-        const fragment: Word[] = [];
+        const fragment: WordAndEntity[] = [];
         const listWords: NegatableWord[] = [];
         let i: number;
         for (i = 0; i < words.length; i++) {
-            const word = words[i];
+            const _word = words[i];
+            const word = _word.word;
             const behavior = word.behavior;
             if (checkForAnd) {
                 if (behavior.and) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     checkForAnd = false;
                     valid = false;
                     continue;
@@ -250,7 +281,7 @@ export class Sentence {
             } else {
                 if (behavior.not) {
                     not = !not;
-                    fragment.push(word);
+                    fragment.push(_word);
                     continue;
                 }
                 let currentWordIsAllowed = false;
@@ -261,7 +292,7 @@ export class Sentence {
                     }
                 }
                 if (currentWordIsAllowed) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     listWords.push({word, not});
                     checkForAnd = true;
                     not = false;
@@ -283,7 +314,7 @@ export class Sentence {
     }
 
 
-    parsePostConditionFragment(words: Word[]): IFragmentOutput<IRule["postCondition"]> {
+    parsePostConditionFragment(words: WordAndEntity[]): IFragmentOutput<IRule["postCondition"]> {
         let valid = false;
         let not = false;
         let checkForAnd = false;
@@ -304,13 +335,14 @@ export class Sentence {
             return false;
         };
 
-        const fragment: Word[] = [];
+        const fragment: WordAndEntity[] = [];
         for (let i = 0; i < words.length; i++) {
-            const word = words[i];
+            const _word = words[i];
+            const word = _word.word;
             const behavior = word.behavior;
             if (checkForAnd) {
                 if (behavior.and) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     checkForAnd = false;
                     valid = false;
                     continue;
@@ -320,7 +352,7 @@ export class Sentence {
                 }
             } else if (checkForSelector) {
                 if (conditionAllowsWord(currentCondition!.word, word)) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     currentSelectors.push({word: word, not: not});
                     not = false;
                     checkForSelector = false;
@@ -329,7 +361,7 @@ export class Sentence {
                 }
             } else {
                 if (behavior.not) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     not = !not;
                 } else if (behavior.postCondition) {
                     if (currentCondition) {
@@ -340,10 +372,10 @@ export class Sentence {
                     valid = false;
                     not = false;
                     checkForSelector = true;
-                    fragment.push(word);
+                    fragment.push(_word);
                     continue;
                 } else if (currentCondition && conditionAllowsWord(currentCondition.word, word)) {
-                    fragment.push(word);
+                    fragment.push(_word);
                     currentSelectors.push({word: word, not: not});
                     not = false;
                     checkForAnd = true;
@@ -368,17 +400,18 @@ export class Sentence {
     }
 
 
-    parseVerbFragment(words: Word[]): IFragmentOutput<IRule["verb"]> {
-        const word = words[0];
-        if (!word) {
+    parseVerbFragment(words: WordAndEntity[]): IFragmentOutput<IRule["verb"]> {
+        const _word = words[0];
+        if (!_word) {
             return false;
         }
-        const fragment: Word[] = [];
+        const word = _word.word;
+        const fragment: WordAndEntity[] = [];
         if (word.behavior.verb) {
-            fragment.push(word);
+            fragment.push(_word);
             return {
                 data: word,
-                fragment: [word],
+                fragment: [_word],
                 wordsRemaining: words.slice(fragment.length)
             };
         } else {
@@ -387,5 +420,10 @@ export class Sentence {
     }
 }
 
+type WordAndEntity = {
+    word: Word;
+    entity?: Entity;
+}
+
 type WordType = keyof WordBehavior;
-type IFragmentOutput<T> = {data: T; fragment: Word[]; wordsRemaining: Word[]} | false;
+type IFragmentOutput<T> = {data: T; fragment: WordAndEntity[]; wordsRemaining: WordAndEntity[]} | false;

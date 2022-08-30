@@ -15,9 +15,12 @@ export class Entity {
     public controller: LevelController;
     public pixiSprite: pixi.Sprite;
     public color: number | undefined;
+    public colorPixiFilter: ColorMatrixFilter;
+    public activeTextPixiFilter: ColorMatrixFilter;
     public x: number;
     public y: number;
     public facing: Facing;
+    public isActiveText: boolean;
 
     public _animation: EntityAnimation | undefined;
 
@@ -31,12 +34,21 @@ export class Entity {
         this.construct = initData.construct;
         this.x = initData.x;
         this.y = initData.y;
+        this.isActiveText = false;
 
         this.pixiSprite = new pixi.Sprite();
+        this.colorPixiFilter = new pixi.filters.ColorMatrixFilter();
+        this.activeTextPixiFilter = new pixi.filters.ColorMatrixFilter();
+        this.pixiSprite.filters = [
+            this.colorPixiFilter,
+            this.activeTextPixiFilter
+        ];
+        this.colorPixiFilter.tint
         this._facingGraphic = new pixi.Graphics();
         this.pixiSprite.addChild(this._facingGraphic);
         this.setSpriteInfo();
         this.setColor(undefined);
+        this.setActiveTextSprite(this.isActiveText);
         this.setFacing(this.facing = Facing.down);
         this.setSpritePosition();
     }
@@ -50,13 +62,12 @@ export class Entity {
 
     public setColor(color: number | undefined) {
         this.color = color;
-        const filter = new pixi.filters.ColorMatrixFilter();
+        this.colorPixiFilter.reset();
         if (color) {
-            filter.tint(color);
+            this.colorPixiFilter.tint(color);
         } else {
-            filter.tint(this.construct.defaultColor);
+            this.colorPixiFilter.tint(this.construct.defaultColor);
         }
-        this.pixiSprite.filters = [filter];
     }
 
 
@@ -126,6 +137,18 @@ export class Entity {
         this.pixiSprite.transform.position.x = x * this.level.TILE_SIZE;
         this.pixiSprite.transform.position.y = y * this.level.TILE_SIZE;
     }
+
+
+    public setActiveTextSprite(active: boolean): void {
+        this.isActiveText = active;
+        if (!(this.construct instanceof Word)) {
+            return;
+        }
+        this.activeTextPixiFilter.reset();
+        if (!active) {
+            this.activeTextPixiFilter.brightness(0.5, false);
+        }
+    }
 }
 
 export interface EntityInitData {
@@ -135,3 +158,5 @@ export interface EntityInitData {
     x: number;
     y: number;
 }
+
+type ColorMatrixFilter = InstanceType<typeof pixi.filters["ColorMatrixFilter"]>;

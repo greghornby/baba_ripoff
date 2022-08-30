@@ -37,6 +37,7 @@ export class LevelController {
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
     public entityMutations: Map<Entity, Construct[]> = new Map();
+    public activeTextEntities: Set<Entity> = new Set();
 
     public currentInteraction: Interaction | undefined;
     public _keyboardListener: (event: KeyboardEvent) => void;
@@ -338,7 +339,7 @@ export class LevelController {
 
                     const arrayOfSentences = getPaths(cells);
                     for (const words of arrayOfSentences) {
-                        const sentence = new Sentence(words.map(word => word.construct as Word));
+                        const sentence = new Sentence(words.map(word => word.construct as Word), words);
                         if (sentence.isPotentiallyASentence()) {
                             sentences.push(sentence);
                         }
@@ -357,6 +358,20 @@ export class LevelController {
         for (const sentence of this.sentences) {
             const sentenceRules = sentence.getRules();
             this.rules.push(...sentenceRules);
+        }
+    }
+
+
+    public updateActiveTextEntities(): void {
+        for (const entity of this.activeTextEntities) {
+            entity.setActiveTextSprite(false);
+        }
+        this.activeTextEntities.clear();
+        for (const sentence of this.sentences) {
+            for (const entity of sentence.activeTextEntities) {
+                this.activeTextEntities.add(entity);
+                entity.setActiveTextSprite(true);
+            }
         }
     }
 
@@ -550,6 +565,7 @@ export class LevelController {
             this.tickFlags.rebuildSentences = false;
             this.findSentences();
             this.updateLevelRules();
+            this.updateActiveTextEntities();
             this.generateEntityTagsAndMutationsFromRules();
             return true;
         };
