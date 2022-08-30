@@ -13,8 +13,8 @@
     "deploy:s3": "node ./deployS3.js"
   },
   "dependencies": {
-    "object-hash": "^3.0.0",
-    "pixi.js": "^6.5.1"
+    "object-hash": "3.0.0",
+    "pixi.js": "6.5.1"
   },
   "devDependencies": {
     "@types/jest": "^28.1.6",
