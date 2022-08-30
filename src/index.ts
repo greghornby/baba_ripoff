@@ -6,7 +6,6 @@ import { level01 } from "./levels/level01.js";
 import { App } from "./main/App.js";
 
 function initGame() {
-    console.log("Hello");
     initDebug();
     exposeGlobals();
     console.log("Adding app to global");

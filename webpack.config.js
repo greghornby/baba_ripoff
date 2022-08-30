@@ -5,7 +5,7 @@ import * as fs from "fs";
 export default {
     entry: {
         index: "./src/index.ts",
-        // vendors: Object.keys(JSON.parse(fs.readFileSync("./package.json", "utf8")).dependencies)
+        textures: "./src/objects/textures.ts"
     },
     devtool: "eval-cheap-source-map",
     experiments: {
@@ -36,17 +36,13 @@ export default {
                 default: false,
                 vendors: false,
 
-                index: {
-                    name: "index"
-                },
-
                 vendor: {
                     name: "vendor",
                     // sync + async chunks
                     chunks: "all",
                     // import file path containing node_modules
                     test: /node_modules/
-                }
+                },
             }
         }
     },
