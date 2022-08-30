@@ -483,21 +483,31 @@ export class LevelController {
             return;
         }
 
+        const regenRules = () => {
+            if (!this.tickFlags.rebuildSentences) {
+                return false;
+            }
+            this.tickFlags.rebuildSentences = false;
+            this.findSentences();
+            this.updateLevelRules();
+            this.generateEntityTagsAndMutationsFromRules();
+            return true;
+        };
+
         // Process the interaction and unset it
         const interaction = this.currentInteraction;
         this.currentInteraction = undefined;
         this.actionProcessor!.doInteraction(interaction);
+        if (interaction.interaction.type === "undo") {
+            regenRules();
+            return;
+        }
 
         const flags = this.tickFlags;
 
         let iterations: number = 0;
         let tagsAndMutationsAlreadyGenerated: boolean = false;
-        while (flags.rebuildSentences) {
-            flags.rebuildSentences = false;
-            this.findSentences();
-            this.updateLevelRules();
-
-            this.generateEntityTagsAndMutationsFromRules();
+        while (regenRules()) {
             tagsAndMutationsAlreadyGenerated = true;
 
             this.actionProcessor!.doMutations();

@@ -39,7 +39,6 @@ export class ActionProcessor {
 
         for (let index = this.actionIndex; index < actions.length; index++) {
             const action = actions[index];
-            console.log("PLAYING ACTION", JSON.stringify(action, null, 2));
             switch (action.data.type) {
                 case "movement":
                     this.controller.moveEntity(
@@ -59,7 +58,7 @@ export class ActionProcessor {
     public reverseActionsOnTopOfStack() {
         const actions = this.getTopOfStack();
 
-        for (let index = this.actionIndex -1; index >= 0; index++) {
+        for (let index = this.actionIndex - 1; index >= 0; index--) {
             const action = actions[index];
             switch (action.data.type) {
                 case "movement":
@@ -70,7 +69,7 @@ export class ActionProcessor {
                         action.data.endY,
                         action.data.startX,
                         action.data.startY
-                    )
+                    );
             }
             this.actionIndex = index;
         }
@@ -86,7 +85,12 @@ export class ActionProcessor {
         debugPrint.interactions(JSON.stringify(interaction));
 
         if (interaction.interaction.type === "undo") {
-            this.reverseActionsOnTopOfStack();
+            if (this.controller.turnNumber > 0) {
+                this.controller.turnNumber--;
+                this.actionIndex = this.getTopOfStack().length;
+                this.reverseActionsOnTopOfStack();
+                this.stack.length--;
+            }
         } else {
             const topOfStack = this.getTopOfStack();
             const debugActions: Action[] = [];
