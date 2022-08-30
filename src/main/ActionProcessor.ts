@@ -16,6 +16,7 @@ export class ActionProcessor {
     public interactions: Interaction[] = [];
 
     public stack: Action[][] = [];
+    public actionIndex: number = 0;
 
     constructor (controller: LevelController) {
         this.controller = controller;
@@ -23,41 +24,22 @@ export class ActionProcessor {
     }
 
 
-    public processInteraction(interaction: Interaction): void {
-        if (!this._waitingForInteraction) {
-            return;
+    public getTopOfStack(): Action[] {
+        const length = this.controller.turnNumber+1;
+        if (this.stack.length !== length) {
+            this.stack.length = length;
+            this.actionIndex = 0;
         }
-        this.interactions.push(interaction);
-        this._waitingForInteraction = false;
-        debugPrint.interactions(JSON.stringify(interaction));
-
-        if (interaction.interaction.type === "undo") {
-            this.reverseActionsOnTopOfStack();
-        } else {
-            const actions: Action[] = [];
-            const actionsHashSet = new Set<string>();
-            const addAction = (action: Action) => {
-                if (!actionsHashSet.has(action.hash)) {
-                    actions.push(action);
-                    actionsHashSet.add(action.hash);
-                }
-            }
-            this.stack.push(actions);
-
-            const movementActions = this.processMovement(interaction);
-            movementActions.forEach(action => addAction(action));
-            debugPrint.actions(JSON.stringify(actions, null, 2));
-            this.playActionsOnTopOfStack();
-        }
-
-        setTimeout(() => {this._waitingForInteraction = true}, 50);
+        return (this.stack[this.controller.turnNumber] = this.stack[this.controller.turnNumber] ?? []);
     }
 
 
     public playActionsOnTopOfStack() {
-        const actions = this.stack[this.stack.length - 1];
+        const actions = this.getTopOfStack();
 
-        for (const action of actions) {
+        for (let index = this.actionIndex; index < actions.length; index++) {
+            const action = actions[index];
+            console.log("PLAYING ACTION", JSON.stringify(action, null, 2));
             switch (action.data.type) {
                 case "movement":
                     this.controller.moveEntity(
@@ -69,14 +51,16 @@ export class ActionProcessor {
                         action.data.endY
                     );
             }
+            this.actionIndex = index;
         }
     }
 
 
     public reverseActionsOnTopOfStack() {
-        const actions = this.stack.pop() ?? [];
+        const actions = this.getTopOfStack();
 
-        for (const action of actions) {
+        for (let index = this.actionIndex -1; index >= 0; index++) {
+            const action = actions[index];
             switch (action.data.type) {
                 case "movement":
                     this.controller.moveEntity(
@@ -88,11 +72,44 @@ export class ActionProcessor {
                         action.data.startY
                     )
             }
+            this.actionIndex = index;
         }
     }
 
 
-    public processMovement(interaction: Interaction): Action[] {
+    public doInteraction(interaction: Interaction): void {
+        if (!this._waitingForInteraction) {
+            return;
+        }
+        this.interactions.push(interaction);
+        this._waitingForInteraction = false;
+        debugPrint.interactions(JSON.stringify(interaction));
+
+        if (interaction.interaction.type === "undo") {
+            this.reverseActionsOnTopOfStack();
+        } else {
+            const topOfStack = this.getTopOfStack();
+            const debugActions: Action[] = [];
+            const actionsHashSet = new Set<string>();
+            const addAction = (action: Action) => {
+                if (!actionsHashSet.has(action.hash)) {
+                    topOfStack.push(action);
+                    debugActions.push(action);
+                    actionsHashSet.add(action.hash);
+                }
+            }
+
+            const movementActions = this._processMovement(interaction);
+            movementActions.forEach(action => addAction(action));
+            debugPrint.actions(JSON.stringify(debugActions, null, 2));
+            this.playActionsOnTopOfStack();
+        }
+
+        setTimeout(() => {this._waitingForInteraction = true}, 50);
+    }
+
+
+    public _processMovement(interaction: Interaction): Action[] {
 
         const movementActions: Action[] = [];
 
@@ -102,7 +119,7 @@ export class ActionProcessor {
 
             // set all you Entities to the facing position
             for (const entity of youEntities) {
-                const actions = this.attemptToCreateEntityMovementAction(entity, interaction.interaction.direction);
+                const actions = this._attemptToCreateEntityMovementAction(entity, interaction.interaction.direction);
                 movementActions.push(...actions);
             }
         }
@@ -111,7 +128,7 @@ export class ActionProcessor {
     }
 
 
-    public attemptToCreateEntityMovementAction(
+    public _attemptToCreateEntityMovementAction(
         startEntity: Entity,
         direction: Facing
     ): Action[] {
@@ -218,5 +235,12 @@ export class ActionProcessor {
         const wordPush = words.push;
         const entityTags = this.controller.entityToTags.getSet(entity);
         return entityTags.has(wordPush);
+    }
+
+
+    public doMutations() {
+        for (const mutation of this.controller.entityMutations) {
+
+        }
     }
 }

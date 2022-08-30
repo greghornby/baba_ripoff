@@ -41,6 +41,7 @@ export class Action {
 
     toJSON(): Record<string, string | number> {
         return {
+            type: this.data.type,
             ...this._getNonCircularDataToHash(),
             hash: this.hash,
             debug: this.debug

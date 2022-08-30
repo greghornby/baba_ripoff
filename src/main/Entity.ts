@@ -33,23 +33,24 @@ export class Entity {
         this.x = initData.x;
         this.y = initData.y;
         this.pixiSprite = new pixi.Sprite();
-        this.updateColor(undefined);
         this._facingGraphic = new pixi.Graphics();
-        this.pixiSprite.addChild(this._facingGraphic);
 
-        this.facing = Facing.down;
-        this.setFacing(this.facing);
 
         this.id = this.controller.entityCount++;
 
-        this.updateConstruct(this.construct);
+        this.setSpriteInfo();
+        this.setSpriteColor(undefined);
+        this.facing = Facing.down;
+        this.setFacing(this.facing);
+
+        this.pixiSprite.addChild(this._facingGraphic);
         this.controller.container.addChild(this.pixiSprite);
         this.controller.entitySet.add(this);
         this.updateSpriteScreenPosition();
     }
 
 
-    public removeFromLevel(options: {noArrayMutations: boolean}) {
+    public removeFromLevel(options: {noArrayMutations?: boolean} = {}) {
         this.controller.container.removeChild(this.pixiSprite);
         if (!options.noArrayMutations) {
             this.controller.entitySet.delete(this);
@@ -58,14 +59,29 @@ export class Entity {
     }
 
 
-    public updateConstruct(construct: Construct) {
-        this.construct = construct;
-        this.pixiSprite.texture = construct.texture;
-        this.pixiSprite.zIndex = construct.category.zIndex;
+    public setSpriteInfo() {
+        this.pixiSprite.texture = this.construct.texture;
+        this.pixiSprite.zIndex = this.construct.category.zIndex;
     }
 
 
-    public updateColor(color: number | undefined) {
+    public swapWithConstructs(constructs: Construct[]): Entity[] {
+        const entities: Entity[] = [];
+        for (const construct of constructs) {
+            const entity = new Entity({
+                ...this.initData,
+                construct: construct,
+                x: this.x,
+                y: this.y
+            });
+            entities.push(entity);
+        }
+        this.removeFromLevel();
+        return entities;
+    }
+
+
+    public setSpriteColor(color: number | undefined) {
         this.color = color;
         const filter = new pixi.filters.ColorMatrixFilter();
         if (color) {

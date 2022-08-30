@@ -6,7 +6,7 @@ import { AppEvents } from "./AppEvent.js";
 import { Construct } from "./Construct.js";
 import { Interaction } from "./Interaction.js";
 import { Facing } from "../types/Facing.js";
-import { Rule } from "./Rule.js";
+import { IRule, Rule } from "./Rule.js";
 import { MapOfSets } from "../util/MapOfSets.js";
 import { Word } from "./Word.js";
 import { ActionProcessor } from "./ActionProcessor.js";
@@ -18,6 +18,7 @@ import { debugPrint } from "../debug/debugPrint.js";
 export class LevelController {
 
     public actionProcessor: ActionProcessor | undefined;
+    public turnNumber: number = 0;
 
     public _started: boolean = false;
 
@@ -34,6 +35,7 @@ export class LevelController {
     public rules: Rule[] = [];
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
+    public entityMutations: IRule[] = [];
 
     public currentInteraction: Interaction | undefined;
     public _keyboardListener: (event: KeyboardEvent) => void;
@@ -73,9 +75,6 @@ export class LevelController {
 
         //populate entities
         this._resetEntitiesToInit();
-
-        this.rules = [...this.level.initData.defaultRules];
-        this.generateEntityTagsFromRules();
 
         //setup grid graphics object
         this.gridGraphic = new pixi.Graphics();
@@ -241,6 +240,7 @@ export class LevelController {
 
 
     public moveEntity(entity: Entity, facing: Facing, startX: number, startY: number, endX: number, endY: number): void {
+        console.log("MOVING ENTITY", entity.id, entity.name);
         this.entityGrid[startY][startX] = this.entityGrid[startY][startX]
             .filter(e => e !== entity);
         this.entityGrid[endY][endX].push(entity);
@@ -256,7 +256,7 @@ export class LevelController {
     }
 
 
-    public rebuildSentences(): void {
+    public findSentences(): void {
         const directions = ["horizontal", "vertical"] as const;
         type SentenceDirection = typeof directions[number];
         const cellsChecked = new Map<string, Record<SentenceDirection, boolean>>();
@@ -319,12 +319,27 @@ export class LevelController {
     }
 
 
-    public generateEntityTagsFromRules(): void {
+    public updateLevelRules(): void {
+        this.rules = [...this.level.initData.defaultRules];
+        for (const sentence of this.sentences) {
+            const sentenceRules = sentence.getRules();
+            this.rules.push(...sentenceRules);
+        }
+    }
+
+
+    public generateEntityTagsAndMutationsFromRules(): void {
         this.tagToEntities.clear();
         this.entityToTags.clear();
+        this.entityMutations = [];
         for (const {rule} of this.rules) {
             const complementWord = rule.complement.word;
             const complementIsTag = rule.complement.word.behavior.tag;
+            const complementIsMutation = rule.complement.word.behavior.noun;
+
+            if (complementIsMutation) {
+                this.entityMutations.push(rule);
+            }
 
             if (!complementIsTag) {
                 continue;
@@ -427,6 +442,8 @@ export class LevelController {
     start(): void {
         this.actionProcessor = new ActionProcessor(this);
         this._started = true;
+        //set a default interaction to init the level in first tick
+        this.currentInteraction = {interaction: {type: "wait"}};
     }
 
 
@@ -444,34 +461,43 @@ export class LevelController {
             return;
         }
 
+        if (!this.currentInteraction) {
+            return;
+        }
+
+        // Process the interaction and unset it
+        const interaction = this.currentInteraction;
+        this.currentInteraction = undefined;
+        this.actionProcessor!.doInteraction(interaction);
+
         const flags = this.tickFlags;
 
-        if (flags.rebuildSentences) {
-            this.rebuildSentences();
-            this.rules = [...this.level.initData.defaultRules];
-            for (const sentence of this.sentences) {
-                const sentenceRules = sentence.getRules();
-                this.rules.push(...sentenceRules);
-            }
-            this.generateEntityTagsFromRules();
+        let iterations: number = 0;
+        let tagsAndMutationsAlreadyGenerated: boolean = false;
+        while (flags.rebuildSentences) {
             flags.rebuildSentences = false;
-        }
+            this.findSentences();
+            this.updateLevelRules();
 
-        //check YOU
-        const youEntities = this.tagToEntities.get(words.you);
-        if (!youEntities || youEntities.size === 0) {
-            if (!flags._debugAlertedYouAreDead) {
-                alert("YOU DO NOT EXIST!");
-                flags._debugAlertedYouAreDead = true;
+            this.generateEntityTagsAndMutationsFromRules();
+            tagsAndMutationsAlreadyGenerated = true;
+
+            //check YOU
+            const youEntities = this.tagToEntities.get(words.you);
+            if (!youEntities || youEntities.size === 0) {
+                if (!flags._debugAlertedYouAreDead) {
+                    alert("YOU DO NOT EXIST!");
+                    flags._debugAlertedYouAreDead = true;
+                }
+            } else {
+                flags._debugAlertedYouAreDead = false;
             }
-        } else {
-            flags._debugAlertedYouAreDead = false;
         }
 
-        if (this.currentInteraction) {
-            const interaction = this.currentInteraction;
-            this.currentInteraction = undefined;
-            this.actionProcessor!.processInteraction(interaction);
+        if (!tagsAndMutationsAlreadyGenerated) {
+            this.generateEntityTagsAndMutationsFromRules();
         }
+
+        this.turnNumber++;
     }
 }
