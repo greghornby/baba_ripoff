@@ -3,6 +3,8 @@ import { Word, WordBehavior } from "./Word.js";
 
 export class Sentence {
 
+    static startingWordTypes: WordType[] = ["not", "prefixCondition", "noun"];
+
     static fromString(text: string) {
         const words = text.replace(/ +/g, " ").split(" ").map(word => Word.findWordFromText(word));
         return new Sentence(words);
@@ -121,6 +123,19 @@ export class Sentence {
             complements = complementsResult.data;
             wordsRemaining = complementsResult.wordsRemaining;
 
+            if (wordsRemaining) {
+                const complementFragment = complementsResult.fragment;
+                const lastComplementWord = complementFragment[complementFragment.length-1];
+                if (lastComplementWord.behavior.noun) {
+                    const maybeNotWord = complementFragment[complementFragment.length-2]?.behavior.not ? complementFragment[complementFragment.length-2] : undefined;
+                    if (maybeNotWord) {
+                        wordsRemaining.unshift(maybeNotWord, lastComplementWord);
+                    } else {
+                        wordsRemaining.unshift(lastComplementWord);
+                    }
+                }
+            }
+
             for (const subject of subjects) {
                 for (const complement of complements) {
 
@@ -141,14 +156,13 @@ export class Sentence {
 
 
     findRuleStart(words: Word[]): IFragmentOutput<undefined> {
-        const allowedStartingWords: WordType[] = ["not", "prefixCondition", "noun"];
         const discardedFragment: Word[] = [];
         let i: number;
         for (i = 0; i < words.length; i++) {
             const word = words[i];
             const behavior = word.behavior;
             let allowed = false;
-            for (const allowedWord of allowedStartingWords) {
+            for (const allowedWord of Sentence.startingWordTypes) {
                 if (behavior[allowedWord]) {
                     allowed = true;
                     break;

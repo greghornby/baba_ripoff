@@ -14,14 +14,16 @@ import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
 //         ___biy
 // `;
 const levelText = `
-        ____________w
-        _WWWWWWrip__i
-        _W_B__R____r
+        _
+        _WWWWWW
+        _W_B__R
         _WWWWWW
         _
         ____w
         ___biy
-        ____s
+        ____sr
+        ____i
+        ____p
 `;
 
 export const level01 = () => new Level({
