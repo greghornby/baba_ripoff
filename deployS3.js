@@ -18,7 +18,10 @@ async function main() {
         throw new Error("Key not defined");
     }
 
-    const files = ["index.html", "build/index.js"];
+    const files = [
+        "index.html",
+        ...fs.readdirSync("build").filter(f => !f.startsWith(".")).map(f => "build/"+f)
+    ];
 
     for (const file of files) {
         const key = `${KEY}/${file}`;
