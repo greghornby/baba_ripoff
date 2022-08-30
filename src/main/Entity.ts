@@ -59,7 +59,7 @@ export class Entity {
     public updateConstruct(construct: Construct) {
         this.construct = construct;
         this.pixiSprite.texture = construct.texture;
-        this.pixiSprite.zIndex = construct.zIndex;
+        this.pixiSprite.zIndex = construct.category.zIndex;
     }
 
 

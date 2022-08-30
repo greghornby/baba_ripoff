@@ -1,3 +1,4 @@
+import { categories } from "../objects/categories.js";
 import { Construct, ConstructData } from "./Construct.js";
 import { Level } from "./Level.js";
 
@@ -17,12 +18,12 @@ export class Word extends Construct {
 
     constructor(
         public readonly _string: string,
-        data: Omit<ConstructData, "associatedWord"> & {behavior: WordBehavior},
+        data: Omit<ConstructData, "associatedWord" | "category"> & {behavior: WordBehavior},
     ) {
         super({
             ...data,
             associatedWord: () => this,
-            zIndex: 1e7
+            category: categories.text
         });
         this._string = this._string.toLowerCase();
         this.behavior = data.behavior;

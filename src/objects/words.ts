@@ -45,7 +45,7 @@ export const words = {
 	}),
 
 	push: new Word("push", {
-		texture: texturePlaceholder,
+		texture: textures.words.push,
 		behavior: {
             tag: true
 		}
@@ -104,6 +104,13 @@ export const words = {
 		texture: textures.words.wall,
 		behavior: {
             noun: {selector: (construct) => construct === constructs.wall}
+		}
+	}),
+
+	rock: new Word("rock", {
+		texture: textures.words.rock,
+		behavior: {
+            noun: {selector: (construct) => construct === constructs.rock}
 		}
 	}),
 

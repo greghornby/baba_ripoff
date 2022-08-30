@@ -15,8 +15,8 @@ import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
 // `;
 const levelText = `
         __
-        _WWWWWW
-        _W_B
+        _WWWWWWrip
+        _W_B__R
         _WWWWWW
         _
         ____w
@@ -25,17 +25,20 @@ const levelText = `
 `;
 
 export const level01 = () => new Level({
-    width: 10,
-    height: 10,
+    width: 15,
+    height: 15,
     startingEntities: makeLevelGridFromString(levelText, {
         _: null,
         W: constructs.wall,
+        R: constructs.rock,
         B: constructs.baba,
         b: words.baba,
         i: words.is,
         y: words.you,
         w: words.wall,
-        s: words.stop
+        r: words.rock,
+        s: words.stop,
+        p: words.push,
     }),
     defaultRules: [
         // new Rule({

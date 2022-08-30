@@ -1,17 +1,18 @@
 import * as pixi from "pixi.js";
+import { Category } from "./Category.js";
 import type { Word } from "./Word.js";
 
 
 export class Construct {
     public texture: pixi.Texture;
     public associatedWord: () => Word;
-    public zIndex: number = 0;
+    public category: Category;
     constructor(
         data: ConstructData
     ) {
         this.texture = data.texture;
         this.associatedWord = data.associatedWord;
-        this.zIndex = data.zIndex ?? this.zIndex;
+        this.category = data.category;
     }
 
     toJSON() {
@@ -21,6 +22,6 @@ export class Construct {
 
 export interface ConstructData {
     texture: pixi.Texture;
-    zIndex?: number;
+    category: Category;
     associatedWord: () => Word;
 }
