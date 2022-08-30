@@ -31,30 +31,14 @@ export class Entity {
         this.construct = initData.construct;
         this.x = initData.x;
         this.y = initData.y;
+
         this.pixiSprite = new pixi.Sprite();
         this._facingGraphic = new pixi.Graphics();
-
-
-        this.id = this.controller.entityCount++;
-
-        this.setSpriteInfo();
-        this.setSpriteColor(undefined);
-        this.facing = Facing.down;
-        this.setFacing(this.facing);
-
         this.pixiSprite.addChild(this._facingGraphic);
-        this.controller.container.addChild(this.pixiSprite);
-        this.controller.entitySet.add(this);
-        this.updateSpriteScreenPosition();
-    }
-
-
-    public removeFromLevel(options: {noArrayMutations?: boolean} = {}) {
-        this.controller.container.removeChild(this.pixiSprite);
-        if (!options.noArrayMutations) {
-            this.controller.entitySet.delete(this);
-            this.pixiSprite.destroy();
-        }
+        this.setSpriteInfo();
+        this.setColor(undefined);
+        this.setFacing(this.facing = Facing.down);
+        this.setSpritePosition();
     }
 
 
@@ -64,7 +48,7 @@ export class Entity {
     }
 
 
-    public setSpriteColor(color: number | undefined) {
+    public setColor(color: number | undefined) {
         this.color = color;
         const filter = new pixi.filters.ColorMatrixFilter();
         if (color) {
@@ -131,13 +115,13 @@ export class Entity {
             return;
         }
 
-        this.updateSpriteScreenPosition(frame.x, frame.y);
+        this.setSpritePosition(frame.x, frame.y);
     }
 
 
-    public updateSpriteScreenPosition(): void;
-    public updateSpriteScreenPosition(x: number, y: number): void;
-    public updateSpriteScreenPosition(_x?: number, _y?: number) {
+    public setSpritePosition(): void;
+    public setSpritePosition(x: number, y: number): void;
+    public setSpritePosition(_x?: number, _y?: number) {
         const [x, y] = [_x ?? this.x, _y ?? this.y];
         this.pixiSprite.transform.position.x = x * this.level.TILE_SIZE;
         this.pixiSprite.transform.position.y = y * this.level.TILE_SIZE;

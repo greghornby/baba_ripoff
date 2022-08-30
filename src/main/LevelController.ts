@@ -17,6 +17,7 @@ import { debugPrint } from "../debug/debugPrint.js";
 
 export class LevelController {
 
+    //#region Props
     public actionProcessor: ActionProcessor | undefined;
     public turnNumber: number = 0;
 
@@ -50,6 +51,8 @@ export class LevelController {
         rebuildSentences?: boolean;
         _debugAlertedYouAreDead?: boolean;
     } = {};
+
+    //#endregion Props
 
     constructor(
         public level: Level
@@ -116,10 +119,6 @@ export class LevelController {
     }
 
 
-    public exit(): void {
-        globalThis.removeEventListener(AppEvents.resize, this.resizeListener);
-    }
-
     //#region GRAPHICAL
 
 
@@ -163,7 +162,18 @@ export class LevelController {
     public addEntity(entityData: EntityInitData) {
         const entity = new Entity(this.entityCount++, entityData);
         const {x,y} = entityData;
+        this.entitySet.add(entity);
         this.entityGrid[y][x].push(entity);
+        this.container.addChild(entity.pixiSprite);
+    }
+
+
+    public removeEntity(entity: Entity, options: {noArrayMutations?: boolean} = {}) {
+        this.container.removeChild(entity.pixiSprite);
+        if (!options.noArrayMutations) {
+            this.entitySet.delete(entity);
+            entity.pixiSprite.destroy();
+        }
     }
 
 
@@ -200,10 +210,10 @@ export class LevelController {
 
 
     public _removeAllEntities(): void {
-        type RemoveOptions = Parameters<Entity["removeFromLevel"]>[0];
+        type RemoveOptions = Parameters<LevelController["removeEntity"]>[1];
         const removeOptions: RemoveOptions  = {noArrayMutations: true};
         for (const entity of this.entitySet) {
-            entity.removeFromLevel(removeOptions);
+            this.removeEntity(entity, removeOptions);
         }
     }
 
@@ -243,9 +253,6 @@ export class LevelController {
     }
 
 
-    //#endregion ENTITY
-
-
     public moveEntity(entity: Entity, facing: Facing, startX: number, startY: number, endX: number, endY: number): void {
         console.log("MOVING ENTITY", entity.id, entity.name);
         this.entityGrid[startY][startX] = this.entityGrid[startY][startX]
@@ -273,9 +280,13 @@ export class LevelController {
                 y: entity.y
             });
         }
-        entity.removeFromLevel();
+        this.removeEntity(entity);
         return newEntities;
     }
+
+
+    //#endregion ENTITY
+    //#region RULES
 
 
     public findSentences(): void {
@@ -405,6 +416,10 @@ export class LevelController {
     }
 
 
+    //#endregion RULES
+    //#region INTERACTION
+
+
     public keyboardInteraction(event: KeyboardEvent): void {
 
         const app = App.get();
@@ -494,11 +509,19 @@ export class LevelController {
     }
 
 
+    //#endregion INTERACTION
+
+
     start(): void {
         this.actionProcessor = new ActionProcessor(this);
         this._started = true;
         //set a default interaction to init the level in first tick
         this.currentInteraction = {interaction: {type: "wait"}};
+    }
+
+
+    public exit(): void {
+        globalThis.removeEventListener(AppEvents.resize, this.resizeListener);
     }
 
 
