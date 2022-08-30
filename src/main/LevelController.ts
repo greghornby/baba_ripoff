@@ -41,6 +41,7 @@ export class LevelController {
     public _keyboardListener: (event: KeyboardEvent) => void;
     public _touchStartListener: (event: TouchEvent) => void;
     public _touchStopListener: (event: TouchEvent) => void;
+    public _touchDoubleTap: boolean = false;
     public touches: Touch[] = [];
 
     public entitiesToAnimate: Set<Entity> = new Set();
@@ -429,15 +430,33 @@ export class LevelController {
     }
 
 
-    public touchInteraction(event: TouchEvent) {
+    public touchInteraction(event: TouchEvent): void {
 
         let interactionType: Interaction["interaction"];
+        event.preventDefault();
+
+        if (!this._touchDoubleTap) {
+            this._touchDoubleTap = true;
+            setTimeout(() => {
+                this._touchDoubleTap = false;
+            }, 300);
+        } else {
+            interactionType = {type: "undo"};
+            this.currentInteraction = {interaction: interactionType};
+            return;
+        }
 
         const endTouch = event.changedTouches[0];
         const startTouch = this.touches.find(t => t.identifier === endTouch.identifier)!;
 
         const diffX = endTouch.pageX - startTouch.pageX;
         const diffY = endTouch.pageY - startTouch.pageY;
+
+        const requiredDistance = this.level.TILE_SIZE * this.container.scale.x;
+        if (Math.abs(diffX) < requiredDistance && Math.abs(diffY) < requiredDistance) {
+            return;
+        }
+
         if (Math.abs(diffX) > Math.abs(diffY)) {
             if (diffX > 0) {
                 interactionType = {type: "move", direction: Facing.right};
@@ -452,7 +471,6 @@ export class LevelController {
             }
         }
 
-        event.preventDefault();
         this.currentInteraction = {interaction: interactionType};
     }
 

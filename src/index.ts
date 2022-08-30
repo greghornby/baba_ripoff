@@ -13,6 +13,15 @@ function initGame() {
     app.pixiApp.view.focus();
     const level = level01();
     level.load();
+    if (isMobile()) {
+        alert("Swipe to move. Double Tap to undo");
+    } else {
+        alert("WASD/Arrows to move. Z to undo");
+    }
+}
+
+function isMobile() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 }
 
 document.addEventListener("DOMContentLoaded", initGame);
