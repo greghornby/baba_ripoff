@@ -7,12 +7,14 @@ export class Construct {
     public texture: pixi.Texture;
     public associatedWord: () => Word;
     public category: Category;
+    public defaultColor: number;
     constructor(
         data: ConstructData
     ) {
         this.texture = data.texture;
         this.associatedWord = data.associatedWord;
         this.category = data.category;
+        this.defaultColor = data.color;
     }
 
     toJSON() {
@@ -23,5 +25,6 @@ export class Construct {
 export interface ConstructData {
     texture: pixi.Texture;
     category: Category;
+    color: number;
     associatedWord: () => Word;
 }

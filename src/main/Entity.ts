@@ -15,6 +15,7 @@ export class Entity {
     public level: Level;
     public controller: LevelController;
     public pixiSprite: pixi.Sprite;
+    public color: number | undefined;
     public x: number;
     public y: number;
     public facing: Facing;
@@ -32,6 +33,7 @@ export class Entity {
         this.x = initData.x;
         this.y = initData.y;
         this.pixiSprite = new pixi.Sprite();
+        this.updateColor(undefined);
         this._facingGraphic = new pixi.Graphics();
         this.pixiSprite.addChild(this._facingGraphic);
 
@@ -60,6 +62,18 @@ export class Entity {
         this.construct = construct;
         this.pixiSprite.texture = construct.texture;
         this.pixiSprite.zIndex = construct.category.zIndex;
+    }
+
+
+    public updateColor(color: number | undefined) {
+        this.color = color;
+        const filter = new pixi.filters.ColorMatrixFilter();
+        if (color) {
+            filter.tint(color);
+        } else {
+            filter.tint(this.construct.defaultColor);
+        }
+        this.pixiSprite.filters = [filter];
     }
 
 

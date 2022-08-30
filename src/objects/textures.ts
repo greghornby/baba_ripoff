@@ -4,6 +4,7 @@ import objects_baba from "../images/objects/baba.png"
 import objects_rock from "../images/objects/rock.png"
 import objects_stone from "../images/objects/stone.png"
 import objects_wall from "../images/objects/wall.png"
+import objects_wall2 from "../images/objects/wall2.png"
 import words_baba from "../images/words/baba.png"
 import words_is from "../images/words/is.png"
 import words_push from "../images/words/push.png"
@@ -18,7 +19,8 @@ export const textures = {
         "baba": pixijs.Texture.from(objects_baba),
         "rock": pixijs.Texture.from(objects_rock),
         "stone": pixijs.Texture.from(objects_stone),
-        "wall": pixijs.Texture.from(objects_wall)
+        "wall": pixijs.Texture.from(objects_wall),
+        "wall2": pixijs.Texture.from(objects_wall2)
     },
     "words": {
         "baba": pixijs.Texture.from(words_baba),
