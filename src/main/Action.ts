@@ -20,7 +20,7 @@ export class Action {
     public _getNonCircularDataToHash(): Record<string, string | number> {
         if (this.data.type === "movement") {
             const {startX, startY, endX, endY} = this.data;
-            return {startX, startY, endX, endY};
+            return {startX, startY, endX, endY, entityId: this.data.entity.id};
         } else {
             return {};
         }
