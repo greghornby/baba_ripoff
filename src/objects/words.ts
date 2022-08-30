@@ -9,8 +9,11 @@ export const words = {
     text: new Word("text", {
 		texture: texturePlaceholder,
 		behavior: {
-            noun: {selector: (construct) => {
-					return construct instanceof Word
+			noun: {
+				type: "split",
+				subject: (construct) => construct instanceof Word,
+				complement: (construct, thisWord) => {
+					return construct.associatedWord() === thisWord;
 				}
 			}
 		}
@@ -19,7 +22,7 @@ export const words = {
     baba: new Word("baba", {
 		texture: textures.words.baba,
 		behavior: {
-            noun: {selector: (construct) => construct === constructs.baba}
+            noun: {type: "single", selector: constructs.baba}
 		}
 	}),
 
@@ -103,21 +106,21 @@ export const words = {
     wall: new Word("wall", {
 		texture: textures.words.wall,
 		behavior: {
-            noun: {selector: (construct) => construct === constructs.wall}
+            noun: {type: "single", selector: constructs.wall}
 		}
 	}),
 
 	rock: new Word("rock", {
 		texture: textures.words.rock,
 		behavior: {
-            noun: {selector: (construct) => construct === constructs.rock}
+            noun: {type: "single", selector: constructs.rock}
 		}
 	}),
 
     leaf: new Word("leaf", {
 		texture: texturePlaceholder,
 		behavior: {
-            noun: {selector: (construct) => construct === constructs.leaf}
+            noun: {type: "single", selector: constructs.leaf}
 		}
 	}),
 }

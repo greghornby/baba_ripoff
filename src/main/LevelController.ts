@@ -8,7 +8,7 @@ import { Interaction } from "./Interaction.js";
 import { Facing } from "../types/Facing.js";
 import { IRule, Rule } from "./Rule.js";
 import { MapOfSets } from "../util/MapOfSets.js";
-import { Word } from "./Word.js";
+import { NounSelectionFunction, Word } from "./Word.js";
 import { ActionProcessor } from "./ActionProcessor.js";
 import { Sentence } from "./Sentence.js";
 import { getPaths } from "../util/getPaths.js";
@@ -35,7 +35,7 @@ export class LevelController {
     public rules: Rule[] = [];
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
-    public entityMutations: IRule[] = [];
+    public entityMutations: Map<Entity, Construct[]> = new Map();
 
     public currentInteraction: Interaction | undefined;
     public _keyboardListener: (event: KeyboardEvent) => void;
@@ -331,25 +331,29 @@ export class LevelController {
     public generateEntityTagsAndMutationsFromRules(): void {
         this.tagToEntities.clear();
         this.entityToTags.clear();
-        this.entityMutations = [];
+        this.entityMutations.clear();
         for (const {rule} of this.rules) {
             const complementWord = rule.complement.word;
             const complementIsTag = rule.complement.word.behavior.tag;
             const complementIsMutation = rule.complement.word.behavior.noun;
 
-            if (complementIsMutation) {
-                this.entityMutations.push(rule);
-            }
-
-            if (!complementIsTag) {
+            if (!complementIsTag && !complementIsMutation) {
                 continue;
             }
 
-            const subjectWord = rule.subject.word;
-            const noun = subjectWord.behavior.noun!;
+            const levelConstructs = this.getAllConstructsInLevel();
 
-            const selectedConstructs = this.getAllConstructsInLevel()
-                .filter(construct => noun.selector(construct, this.level));
+            const subjectWord = rule.subject.word;
+            const subjectNoun = subjectWord.behavior.noun!;
+
+            console.log({complementIsMutation, complementIsTag, subjectNoun});
+
+            const subjectSelector = subjectNoun.type === "single" ? subjectNoun.selector : subjectNoun.subject;
+
+            const selectedConstructs =
+                subjectSelector instanceof Construct
+                ? [subjectSelector]
+                : levelConstructs.filter(construct => (subjectSelector as NounSelectionFunction)(construct, subjectWord, this.level));
 
             const entities: Entity[] = selectedConstructs.reduce(
                 (entities, construct) => {
@@ -359,9 +363,23 @@ export class LevelController {
                 [] as Entity[]
             );
 
-            this.tagToEntities.addToSet(complementWord, ...entities);
-            for (const entity of entities) {
-                this.entityToTags.addToSet(entity, complementWord);
+            if (complementIsTag) {
+                this.tagToEntities.addToSet(complementWord, ...entities);
+                for (const entity of entities) {
+                    this.entityToTags.addToSet(entity, complementWord);
+                }
+            } else if (complementIsMutation) {
+                for (const entity of entities) {
+                    const complementNoun = complementWord.behavior.noun!;
+                    const complementSelector = complementNoun.type === "single" ? complementNoun.selector : complementNoun.complement;
+                    const mutateToConstructs =
+                        complementSelector instanceof Construct
+                        ? [complementSelector]
+                        : levelConstructs.filter(construct => (complementSelector as NounSelectionFunction)(construct, complementWord, this.level));
+                    const entityToConstructs = this.entityMutations.get(entity) ?? [];
+                    entityToConstructs.push(...mutateToConstructs);
+                    this.entityMutations.set(entity, entityToConstructs);
+                }
             }
         }
     }
@@ -482,10 +500,13 @@ export class LevelController {
             this.generateEntityTagsAndMutationsFromRules();
             tagsAndMutationsAlreadyGenerated = true;
 
+            this.actionProcessor!.doMutations();
+
             //check YOU
             const youEntities = this.tagToEntities.get(words.you);
             if (!youEntities || youEntities.size === 0) {
                 if (!flags._debugAlertedYouAreDead) {
+                    console.log("YOU ARE DEAD");
                     alert("YOU DO NOT EXIST!");
                     flags._debugAlertedYouAreDead = true;
                 }

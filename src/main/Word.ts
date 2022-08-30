@@ -41,11 +41,13 @@ export class Word extends Construct {
     }
 }
 
+export type NounSelectionFunction = (testConstruct: Construct, thisWord: Word, level: Level) => boolean;
+
 
 export interface WordBehavior {
-    noun?: {
-        selector: (construct: Construct, level: Level) => boolean;
-    };
+    noun?:
+        | {type: "single"; selector: Construct | NounSelectionFunction}
+        | {type: "split"; subject: Construct | NounSelectionFunction; complement: Construct | NounSelectionFunction};
     tag?: true;
     verb?: boolean;
     not?: boolean;
