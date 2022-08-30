@@ -22,8 +22,8 @@ const levelText = `
         ____w
         ___biy
         ____sr
-        ____i
-        ____p
+        _____i
+        _____p
 `;
 
 export const level01 = () => new Level({
