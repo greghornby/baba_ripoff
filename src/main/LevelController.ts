@@ -1,6 +1,6 @@
 import { Level, Cell, LevelGrid, LevelRow } from "./Level.js";
 import * as pixi from "pixi.js";
-import { Entity } from "./Entity.js";
+import { Entity, EntityInitData } from "./Entity.js";
 import { App } from "./App.js";
 import { AppEvents } from "./AppEvent.js";
 import { Construct } from "./Construct.js";
@@ -160,6 +160,13 @@ export class LevelController {
     //#region ENTITY
 
 
+    public addEntity(entityData: EntityInitData) {
+        const entity = new Entity(this.entityCount++, entityData);
+        const {x,y} = entityData;
+        this.entityGrid[y][x].push(entity);
+    }
+
+
     public _resetEntitiesToInit(): void {
         this._removeAllEntities();
 
@@ -179,14 +186,13 @@ export class LevelController {
             for (let x = 0; x < row.length; x++) {
                 const constructs = row[x];
                 for (const construct of constructs) {
-                    const entity = new Entity({
+                    this.addEntity({
                         level: this.level,
                         controller: this,
                         construct: construct,
                         x: x,
                         y: y,
                     });
-                    this.entityGrid[y][x].push(entity);
                 }
             }
         }
@@ -254,6 +260,21 @@ export class LevelController {
         if (entity.construct instanceof Word) {
             this.tickFlags.rebuildSentences = true;
         }
+    }
+
+
+    public swapEntityWithConstructs(entity: Entity, constructs: Construct[]): Entity[] {
+        const newEntities: Entity[] = [];
+        for (const construct of constructs) {
+            this.addEntity({
+                ...entity.initData,
+                construct: construct,
+                x: entity.x,
+                y: entity.y
+            });
+        }
+        entity.removeFromLevel();
+        return newEntities;
     }
 
 
@@ -346,8 +367,6 @@ export class LevelController {
 
             const subjectWord = rule.subject.word;
             const subjectNoun = subjectWord.behavior.noun!;
-
-            console.log({complementIsMutation, complementIsTag, subjectNoun});
 
             const subjectSelector = subjectNoun.type === "single" ? subjectNoun.selector : subjectNoun.subject;
 

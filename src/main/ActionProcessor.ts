@@ -245,7 +245,7 @@ export class ActionProcessor {
     public doMutations() {
         for (const mutation of this.controller.entityMutations) {
             const [entityToChange, constructsToChangeTo] = mutation;
-            entityToChange.swapWithConstructs(constructsToChangeTo);
+            this.controller.swapEntityWithConstructs(entityToChange, constructsToChangeTo);
         }
     }
 }

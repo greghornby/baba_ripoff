@@ -9,7 +9,6 @@ import { debugFlags } from "../debug/debugFlags.js";
 
 export class Entity {
 
-    public id: number;
     public name: string;
     public construct: Construct;
     public level: Level;
@@ -24,7 +23,7 @@ export class Entity {
 
     public _facingGraphic: pixi.Graphics;
 
-    constructor(public initData: InitAbstractObjectData) {
+    constructor(public id: number, public initData: EntityInitData) {
         const associatedWord = initData.construct.associatedWord()._string;
         this.name = initData.construct instanceof Word ? `text:${associatedWord}` : associatedWord;
         this.level = initData.level;
@@ -62,22 +61,6 @@ export class Entity {
     public setSpriteInfo() {
         this.pixiSprite.texture = this.construct.texture;
         this.pixiSprite.zIndex = this.construct.category.zIndex;
-    }
-
-
-    public swapWithConstructs(constructs: Construct[]): Entity[] {
-        const entities: Entity[] = [];
-        for (const construct of constructs) {
-            const entity = new Entity({
-                ...this.initData,
-                construct: construct,
-                x: this.x,
-                y: this.y
-            });
-            entities.push(entity);
-        }
-        this.removeFromLevel();
-        return entities;
     }
 
 
@@ -161,7 +144,7 @@ export class Entity {
     }
 }
 
-export interface InitAbstractObjectData {
+export interface EntityInitData {
     level: Level;
     controller: LevelController;
     construct: Construct;
