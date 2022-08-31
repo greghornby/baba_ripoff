@@ -4,8 +4,7 @@ import * as fs from "fs";
 
 export default {
     entry: {
-        index: "./src/index.ts",
-        textures: "./src/objects/textures.ts"
+        index: "./src/index.ts"
     },
     devtool: "eval-cheap-source-map",
     experiments: {
@@ -36,6 +35,8 @@ export default {
                 default: false,
                 vendors: false,
 
+                minSize: false,
+
                 vendor: {
                     name: "vendor",
                     // sync + async chunks
@@ -43,6 +44,12 @@ export default {
                     // import file path containing node_modules
                     test: /node_modules/
                 },
+
+                textures: {
+                    name: "images",
+                    chunks: "all",
+                    test: /src\/images\/.*/
+                }
             }
         }
     },
