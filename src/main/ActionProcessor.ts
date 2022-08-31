@@ -37,20 +37,35 @@ export class ActionProcessor {
     public playActionsOnTopOfStack() {
         const actions = this.getTopOfStack();
 
+        console.log(`Playing ${actions.length - this.actionIndex} Actions from index ${this.actionIndex}`, actions[this.actionIndex]);
+
         for (let index = this.actionIndex; index < actions.length; index++) {
             const action = actions[index];
             switch (action.data.type) {
                 case "movement":
                     this.controller.moveEntity(
-                        action.data.entity,
+                        // action.data.entity,
+                        this.controller.entityMap.get(action.data.entityId)!,
                         action.data.endDirection,
                         action.data.startX,
                         action.data.startY,
                         action.data.endX,
                         action.data.endY
                     );
+                    break;
+                case "swapout":
+                    this.controller.swapOutEntity(action.data.entityId);
+                    break;
+                case "swapin":
+                    this.controller.swapInEntity(
+                        action.data.entityId,
+                        action.data.construct,
+                        action.data.x,
+                        action.data.y
+                    );
+                    break;
             }
-            this.actionIndex = index;
+            this.actionIndex = index+1;
         }
     }
 
@@ -63,13 +78,26 @@ export class ActionProcessor {
             switch (action.data.type) {
                 case "movement":
                     this.controller.moveEntity(
-                        action.data.entity,
+                        // action.data.entity,
+                        this.controller.entityMap.get(action.data.entityId)!,
                         action.data.startDirection,
                         action.data.endX,
                         action.data.endY,
                         action.data.startX,
                         action.data.startY
                     );
+                    break;
+                case "swapout":
+                    this.controller.swapInEntity(
+                        action.data.entityId,
+                        action.data.construct,
+                        action.data.x,
+                        action.data.y
+                    );
+                    break;
+                case "swapin":
+                    this.controller.swapOutEntity(action.data.entityId);
+                    break;
             }
             this.actionIndex = index;
         }
@@ -105,7 +133,6 @@ export class ActionProcessor {
 
             const movementActions = this._processMovement(interaction);
             movementActions.forEach(action => addAction(action));
-            debugPrint.actions(JSON.stringify(debugActions, null, 2));
             this.playActionsOnTopOfStack();
         }
 
@@ -201,7 +228,8 @@ export class ActionProcessor {
                     type: "movement",
                     startDirection: entity.facing,
                     endDirection: direction,
-                    entity: entity,
+                    // entity: entity,
+                    entityId: entity.id,
                     startX: startX,
                     startY: startY,
                     endX: nextX,
@@ -239,10 +267,32 @@ export class ActionProcessor {
 
 
     public doMutations() {
+        const actions: Action[] = [];
         for (const mutation of this.controller.entityMutations) {
             const [entityToChange, constructsToChangeTo] = mutation;
-            this.controller.swapEntityWithConstructs(entityToChange, constructsToChangeTo);
+            // this.controller.swapEntityWithConstructs(entityToChange, constructsToChangeTo);
+            const swapOutAction = new Action({
+                type: "swapout",
+                entityId: entityToChange.id,
+                construct: entityToChange.construct,
+                x: entityToChange.x,
+                y: entityToChange.y
+            });
+            actions.push(swapOutAction);
+            for (const construct of constructsToChangeTo) {
+                const swapInAction = new Action({
+                    type: "swapin",
+                    entityId: this.controller.entityCount++,
+                    construct: construct,
+                    x: entityToChange.x,
+                    y: entityToChange.y
+                });
+                actions.push(swapInAction);
+            }
         }
+        const topOfStack = this.getTopOfStack();
+        topOfStack.push(...actions);
+        this.playActionsOnTopOfStack();
     }
 }
 

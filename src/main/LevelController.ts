@@ -29,7 +29,8 @@ export class LevelController {
     public gridGraphic: pixi.Graphics;
 
     public entityCount: number = 0;
-    public entitySet: Set<Entity> = new Set();
+    /** id => Entity */
+    public entityMap: Map<number, Entity> = new Map();
     public entityGrid: LevelGrid<Entity> = [];
 
     public sentences: Sentence[] = [];
@@ -160,20 +161,20 @@ export class LevelController {
     //#region ENTITY
 
 
-    public addEntity(entityData: EntityInitData) {
-        const entity = new Entity(this.entityCount++, entityData);
+    public addEntity(entityData: EntityInitData, restoredId?: number) {
+        const entity = new Entity(restoredId ?? this.entityCount++, entityData);
         const {x,y} = entityData;
-        this.entitySet.add(entity);
+        this.entityMap.set(entity.id, entity);
         this.entityGrid[y][x].push(entity);
-        this.container.addChild(entity.pixiSprite);
+        this.container.addChild(entity.pixiContainer);
     }
 
 
     public removeEntity(entity: Entity, options: {noArrayMutations?: boolean} = {}) {
-        this.container.removeChild(entity.pixiSprite);
+        this.container.removeChild(entity.pixiContainer);
         if (!options.noArrayMutations) {
-            this.entitySet.delete(entity);
-            entity.pixiSprite.destroy();
+            this.entityMap.delete(entity.id);
+            entity.pixiContainer.destroy();
         }
     }
 
@@ -213,7 +214,7 @@ export class LevelController {
     public _removeAllEntities(): void {
         type RemoveOptions = Parameters<LevelController["removeEntity"]>[1];
         const removeOptions: RemoveOptions  = {noArrayMutations: true};
-        for (const entity of this.entitySet) {
+        for (const [entityId, entity] of this.entityMap) {
             this.removeEntity(entity, removeOptions);
         }
     }
@@ -230,18 +231,18 @@ export class LevelController {
 
 
     public getAllConstructsInLevel(): Construct[] {
-        return [...new Set([...this.entitySet].map(e => e.construct))];
+        return [...new Set([...this.entityMap].map(([id, entity]) => entity.construct))];
     }
 
 
     public getEntitiesOfConstruct(construct: Construct): Entity[] {
-        return [...this.entitySet].filter(e => e.construct === construct);
+        return [...this.entityMap].map(([id, entity]) => entity).filter(entity => entity.construct === construct);
     }
 
 
     public getAllConstructsWithEntitiesInLevel(): {construct: Construct; entities: Entity[]}[] {
         const map: Map<Construct, Entity[]> = new Map();
-        for (const entity of this.entitySet) {
+        for (const [entityId, entity] of this.entityMap) {
             let construct = entity.construct;
             let entityArray = map.get(construct);
             if (!entityArray) {
@@ -255,7 +256,6 @@ export class LevelController {
 
 
     public moveEntity(entity: Entity, facing: Facing, startX: number, startY: number, endX: number, endY: number): void {
-        console.log("MOVING ENTITY", entity.id, entity.name);
         this.entityGrid[startY][startX] = this.entityGrid[startY][startX]
             .filter(e => e !== entity);
         this.entityGrid[endY][endX].push(entity);
@@ -271,19 +271,38 @@ export class LevelController {
     }
 
 
-    public swapEntityWithConstructs(entity: Entity, constructs: Construct[]): Entity[] {
-        const newEntities: Entity[] = [];
-        for (const construct of constructs) {
-            this.addEntity({
-                ...entity.initData,
-                construct: construct,
-                x: entity.x,
-                y: entity.y
-            });
-        }
+    public swapOutEntity(entityId: number): void {
+        const entity = this.entityMap.get(entityId)!;
+        //@todo add animation
         this.removeEntity(entity);
-        return newEntities;
     }
+
+
+    public swapInEntity(entityId: number, construct: Construct, x: number, y: number): void {
+        const entity = this.addEntity({
+            level: this.level,
+            controller: this,
+            construct: construct,
+            x: x,
+            y: y
+        }, entityId);
+        //@todo add animation
+    }
+
+
+    // public swapEntityWithConstructs(entity: Entity, constructs: Construct[]): Entity[] {
+    //     const newEntities: Entity[] = [];
+    //     for (const construct of constructs) {
+    //         this.addEntity({
+    //             ...entity.initData,
+    //             construct: construct,
+    //             x: entity.x,
+    //             y: entity.y
+    //         });
+    //     }
+    //     this.removeEntity(entity);
+    //     return newEntities;
+    // }
 
 
     //#endregion ENTITY
@@ -584,6 +603,10 @@ export class LevelController {
         let iterations: number = 0;
         let tagsAndMutationsAlreadyGenerated: boolean = false;
         while (regenRules()) {
+            if (iterations++ >= 20) {
+                console.log("Too many loops");
+                break;
+            }
             tagsAndMutationsAlreadyGenerated = true;
 
             this.actionProcessor!.doMutations();

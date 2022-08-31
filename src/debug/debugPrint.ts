@@ -1,7 +1,7 @@
 const debugPrintEnabledFlags = {
     interactions: false,
-    actions: true,
-    sentences: true,
+    actions: false,
+    sentences: false,
 };
 
 type debugPrintObject = Record<keyof typeof debugPrintEnabledFlags, (...args: any[]) => void>;

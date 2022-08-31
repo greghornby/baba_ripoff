@@ -13,7 +13,8 @@ export class Entity {
     public construct: Construct;
     public level: Level;
     public controller: LevelController;
-    public pixiSprite: pixi.Sprite;
+    public pixiContainer: pixi.Container;
+    private pixiSprite: pixi.Sprite;
     public color: number | undefined;
     public colorPixiFilter: ColorMatrixFilter;
     public activeTextPixiFilter: ColorMatrixFilter;
@@ -36,7 +37,9 @@ export class Entity {
         this.y = initData.y;
         this.isActiveText = false;
 
+        this.pixiContainer = new pixi.Container();
         this.pixiSprite = new pixi.Sprite();
+        this.pixiContainer.addChild(this.pixiSprite);
         this.colorPixiFilter = new pixi.filters.ColorMatrixFilter();
         this.activeTextPixiFilter = new pixi.filters.ColorMatrixFilter();
         this.pixiSprite.filters = [
@@ -45,18 +48,19 @@ export class Entity {
         ];
         this.colorPixiFilter.tint
         this._facingGraphic = new pixi.Graphics();
-        this.pixiSprite.addChild(this._facingGraphic);
+        this.pixiContainer.addChild(this._facingGraphic);
         this.setSpriteInfo();
         this.setColor(undefined);
         this.setActiveTextSprite(this.isActiveText);
         this.setFacing(this.facing = Facing.down);
         this.setSpritePosition();
+        this.drawEntityId();
     }
 
 
     public setSpriteInfo() {
         this.pixiSprite.texture = this.construct.texture;
-        this.pixiSprite.zIndex = this.construct.category.zIndex;
+        this.pixiContainer.zIndex = this.construct.category.zIndex;
     }
 
 
@@ -105,6 +109,25 @@ export class Entity {
     }
 
 
+    public drawEntityId(): void {
+        if (!debugFlags.drawEntityIds) {
+            return;
+        }
+        const text = new pixi.Text(this.id, new pixi.TextStyle({
+            fontFamily : 'Arial',
+            fontSize: 12,
+            fill : 0xffffff,
+            align : 'left'
+        }));
+        const bounds = text.getBounds();
+        const bg = new pixi.Graphics();
+        bg.beginFill(0x000000);
+        bg.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        this.pixiContainer.addChild(bg);
+        this.pixiContainer.addChild(text);
+    }
+
+
     public animation(): EntityAnimation {
         const animation = this._animation ?? new EntityAnimation(this);
         this._animation = animation;
@@ -134,8 +157,8 @@ export class Entity {
     public setSpritePosition(x: number, y: number): void;
     public setSpritePosition(_x?: number, _y?: number) {
         const [x, y] = [_x ?? this.x, _y ?? this.y];
-        this.pixiSprite.transform.position.x = x * this.level.TILE_SIZE;
-        this.pixiSprite.transform.position.y = y * this.level.TILE_SIZE;
+        this.pixiContainer.transform.position.x = x * this.level.TILE_SIZE;
+        this.pixiContainer.transform.position.y = y * this.level.TILE_SIZE;
     }
 
 

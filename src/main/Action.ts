@@ -6,7 +6,7 @@ import objectHash from "object-hash";
 export class Action {
     public hash: string;
     public debug: any;
-    constructor(public data: MovementAction | DestroyEntityAction | CreateEntityAction) {
+    constructor(public data: MovementAction | DestroyEntityAction | CreateEntityAction | SwapOutEntityAction | SwapInEntityAction) {
         this.hash = this.calculateHash();
         this.setDebugData();
     }
@@ -20,7 +20,7 @@ export class Action {
     public _getNonCircularDataToHash(): Record<string, string | number> {
         if (this.data.type === "movement") {
             const {startX, startY, endX, endY} = this.data;
-            return {startX, startY, endX, endY, entityId: this.data.entity.id};
+            return {startX, startY, endX, endY, entityId: this.data.entityId};
         } else {
             return {};
         }
@@ -31,8 +31,7 @@ export class Action {
         const data = this.data;
         if (data.type === "movement") {
             this.debug = {
-                entityId: data.entity.id,
-                entityName: data.entity.name
+                entityId: data.entityId
             };
         } else {
             return;
@@ -51,7 +50,8 @@ export class Action {
 
 export interface MovementAction {
     type: "movement";
-    entity: Entity;
+    // entity: Entity;
+    entityId: number;
     startDirection: Facing;
     endDirection: Facing;
     startX: number;
@@ -64,6 +64,7 @@ export interface MovementAction {
 export interface DestroyEntityAction {
     type: "destroy";
     construct: Construct;
+    entityId: number;
     x: number;
     y: number;
 }
@@ -72,6 +73,25 @@ export interface DestroyEntityAction {
 export interface CreateEntityAction {
     type: "create";
     construct: Construct;
+    entityId: number;
+    x: number;
+    y: number;
+}
+
+
+export interface SwapOutEntityAction {
+    type: "swapout";
+    construct: Construct;
+    entityId: number;
+    x: number;
+    y: number;
+}
+
+
+export interface SwapInEntityAction {
+    type: "swapin";
+    construct: Construct;
+    entityId: number;
     x: number;
     y: number;
 }
