@@ -1,9 +1,10 @@
 import { LevelController } from "../main/LevelController.js";
 import * as pixi from "pixi.js";
-import { level01 } from "../levels/level01.js";
 import { App } from "../main/App.js";
+import { level01 } from "../levels/level01.js";
+import { levelDebug } from "../levels/levelDebug.js";
 
-const levels = [level01];
+const levels = [level01, levelDebug];
 let levelIndex = 0;
 
 export const loadLevel = () => {

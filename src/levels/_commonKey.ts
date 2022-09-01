@@ -3,6 +3,7 @@ import { words } from "../objects/words.js";
 
 export const _commonKey = {
     _: null,
+    " ": null,
     W: constructs.wall,
     R: constructs.rock,
     B: constructs.baba,

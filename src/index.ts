@@ -2,7 +2,6 @@ import { initFiles } from "./util/initFiles.js";
 initFiles();
 import { initDebug } from "./debug/debug.js";
 import { exposeGlobals } from "./debug/globals.js";
-import { level01 } from "./levels/level01.js";
 import { App } from "./main/App.js";
 import { setDebugFlagsFromQuery } from "./debug/setDebugFlagsFromQuery.js";
 import { loadLevel } from "./util/tempWinScreen.js";
