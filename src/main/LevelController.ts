@@ -32,7 +32,7 @@ export class LevelController {
     public ticker: pixi.Ticker;
     public container: pixi.Container;
     public resizeListener: EventListener;
-    public gridGraphic: pixi.Graphics;
+    public gridGraphic: pixi.Graphics | undefined;
 
     public entityCount: number = 0;
     /** id => Entity */
@@ -101,9 +101,7 @@ export class LevelController {
         this._resetEntitiesToInit();
 
         //setup grid graphics object
-        this.gridGraphic = new pixi.Graphics();
-        this.gridGraphic.zIndex = Number.MIN_SAFE_INTEGER;
-        this.container.addChild(this.gridGraphic);
+        this._drawGrid();
 
         //setup resize listener
         this._fitContainerToScreen();
@@ -173,8 +171,10 @@ export class LevelController {
 
 
     public _drawGrid(): void {
-        this.gridGraphic.clear();
-        this.gridGraphic.lineStyle(2, 0x999999, 0.8);
+        this.gridGraphic = new pixi.Graphics();
+        this.gridGraphic.zIndex = Number.MIN_SAFE_INTEGER;
+        this.container.addChild(this.gridGraphic);
+        this.gridGraphic.lineStyle(3, 0x999999, 1);
         for (let x = 0; x <= this.level.width; x++) {
             this.gridGraphic.moveTo(x * this.level.TILE_SIZE, 0);
             this.gridGraphic.lineTo(x * this.level.TILE_SIZE, this.level.pixelHeight);
@@ -183,6 +183,7 @@ export class LevelController {
             this.gridGraphic.moveTo(0, y * this.level.TILE_SIZE);
             this.gridGraphic.lineTo(this.level.pixelWidth, y * this.level.TILE_SIZE);
         }
+        this.gridGraphic.cacheAsBitmap = true;
     }
 
 
@@ -662,7 +663,6 @@ export class LevelController {
         if (!this._started) {
             this.start();
         }
-        this._drawGrid();
 
         //debug entities
         // for (const entity of this.entityMap.values()) {
