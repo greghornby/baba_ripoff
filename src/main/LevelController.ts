@@ -17,8 +17,11 @@ import { debugPrint } from "../debug/debugPrint.js";
 import { compareNegatableWord } from "../util/compareNegatableWord.js";
 import { notRuleIsMoreSpecific } from "../util/notRuleIsMoreSpecific.js";
 import { setAddMultiple } from "../util/setAddMultiple.js";
+import { tempWinScreen } from "../util/tempWinScreen.js";
 
 export class LevelController {
+
+    levelWon: boolean = false;
 
     //#region Props
     public actionProcessor: ActionProcessor | undefined;
@@ -36,6 +39,7 @@ export class LevelController {
     public entityMap: Map<number, Entity> = new Map();
     public entityGrid: LevelGrid<Entity> = [];
 
+    public defaultRules: Rule[] = [];
     public sentences: Sentence[] = [];
     public rules: Rule[] = [];
     /** Maps a cancelled out rule to the list of rules with NOT that cancel it out */
@@ -73,7 +77,7 @@ export class LevelController {
 
         // remove all children and render empty screen
         for (const child of pixiApp.stage.children) {
-            pixiApp.stage.removeChild(child)
+            pixiApp.stage.removeChild(child);
         }
         pixiApp.render();
 
@@ -84,6 +88,14 @@ export class LevelController {
         this.container = new pixi.Container();
         this.container.sortableChildren = true;
         pixiApp.stage.addChild(this.container);
+
+        this.defaultRules = [
+            new Rule({
+                subject: Rule.word(words.text),
+                verb: {word: words.is},
+                complement: Rule.word(words.push),
+            })
+        ];
 
         //populate entities
         this._resetEntitiesToInit();
@@ -130,18 +142,31 @@ export class LevelController {
     //#region GRAPHICAL
 
 
-    public _fitContainerToScreen(): void {
+    public _getScale(): number {
         const app = App.get();
         const view = app.pixiApp.view;
+
+        const xMult = view.width / this.level.pixelWidth;
+        const yMult = view.height / this.level.pixelHeight;
+
+        return this.level.pixelHeight * xMult > view.height ? yMult : xMult;
+    }
+
+
+    public _getCenter(type: "view" | "level" = "view"): [number, number] {
+        const app = App.get();
+        const view = app.pixiApp.view;
+        return type === "view" ? [view.width/2, view.height/2] : [this.level.pixelWidth/2, this.level.pixelHeight/2];
+    }
+
+
+    public _fitContainerToScreen(): void {
+        const center = this._getCenter();
         const level = this.level;
-
         this.container.pivot.set(level.pixelWidth/2, level.pixelHeight/2);
-        this.container.transform.position.set(view.width/2, view.height/2);
+        this.container.transform.position.set(center[0], center[1]);
 
-        const xMult = view.width / level.pixelWidth;
-        const yMult = view.height / level.pixelHeight;
-
-        const scaleMultiplier = level.pixelHeight * xMult > view.height ? yMult : xMult;
+        const scaleMultiplier = this._getScale();
 
         this.container.scale = {x: scaleMultiplier, y: scaleMultiplier};
     }
@@ -380,7 +405,7 @@ export class LevelController {
 
     public updateLevelRules(): void {
         const rulesSet: Set<Rule> = new Set();
-        setAddMultiple(rulesSet, ...this.level.initData.defaultRules);
+        setAddMultiple(rulesSet, ...this.defaultRules);
         // this.rules = [...this.level.initData.defaultRules];
         for (const sentence of this.sentences) {
             const sentenceRules = sentence.getRules();
@@ -633,6 +658,7 @@ export class LevelController {
 
 
     public exit(): void {
+        const app = App.get();
         globalThis.removeEventListener(AppEvents.resize, this.resizeListener);
     }
 
@@ -654,6 +680,9 @@ export class LevelController {
             entity.renderNextAnimationFrame();
         }
         if (isAnimating) {
+            return;
+        }
+        if (this.levelWon) {
             return;
         }
 
@@ -715,8 +744,10 @@ export class LevelController {
                 const getEntities = this.getEntitiesAtPosition(entity.x, entity.y);
                 const youEntity = getEntities.find(e => this.entityToTags.get(e)?.has(wordYou));
                 if (youEntity) {
-                    console.log("YOU'RE WINNER");
-                    alert("YOU'RE WINNER");
+                    // console.log("YOU'RE WINNER");
+                    // alert("YOU'RE WINNER");
+                    this.levelWon = true;
+                    tempWinScreen(this);
                 }
             }
         }

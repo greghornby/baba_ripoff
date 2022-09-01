@@ -37,7 +37,6 @@ export interface InitLevelData {
     width: number;
     height: number;
     startingEntities: () => LevelGrid<Construct>;
-    defaultRules: Rule[];
 }
 
 export type Cell<T> = T[];

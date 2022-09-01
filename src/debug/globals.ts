@@ -13,5 +13,5 @@ export const exposeGlobals = () => {
         Rule,
         Sentence,
         Word
-    })
+    });
 }
