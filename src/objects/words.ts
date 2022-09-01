@@ -42,6 +42,13 @@ export const words = {
 		}
 	}),
 
+	win: new Word("win", {
+		texture: textures.words.win,
+		behavior: {
+            tag: true
+		}
+	}),
+
 	stop: new Word("stop", {
 		texture: textures.words.stop,
 		behavior: {
@@ -118,6 +125,14 @@ export const words = {
 		color: colors.brightBrown,
 		behavior: {
             noun: {type: "single", selector: constructs.rock}
+		}
+	}),
+
+	flag: new Word("flag", {
+		texture: textures.words.flag,
+		color: colors.gold,
+		behavior: {
+            noun: {type: "single", selector: constructs.flag}
 		}
 	}),
 

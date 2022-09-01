@@ -19,12 +19,12 @@ import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
 // `;
 
 const levelText = `
-_biy
+_biy__fiv
 _WWWWWWWWWW__r
 _W________W__i
 _W_B______W___n
 _W____wis_W__p
-_W________W
+_W________W____F
 _WWWWWWWWWW__R
 _
 ______rip
@@ -38,6 +38,7 @@ export const level01 = () => new Level({
         W: constructs.wall,
         R: constructs.rock,
         B: constructs.baba,
+        F: constructs.flag,
         n: words.not,
         b: words.baba,
         i: words.is,
@@ -46,6 +47,8 @@ export const level01 = () => new Level({
         r: words.rock,
         s: words.stop,
         p: words.push,
+        f: words.flag,
+        v: words.win,
     }),
     defaultRules: [
         // new Rule({

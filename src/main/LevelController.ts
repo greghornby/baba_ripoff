@@ -708,6 +708,19 @@ export class LevelController {
             }
         }
 
+        const winEntities = this.tagToEntities.get(wordWin);
+        if (winEntities) {
+            console.log("Found win entities");
+            for (const entity of winEntities) {
+                const getEntities = this.getEntitiesAtPosition(entity.x, entity.y);
+                const youEntity = getEntities.find(e => this.entityToTags.get(e)?.has(wordYou));
+                if (youEntity) {
+                    console.log("YOU'RE WINNER");
+                    alert("YOU'RE WINNER");
+                }
+            }
+        }
+
         if (!tagsAndMutationsAlreadyGenerated) {
             this.generateEntityTagsAndMutationsFromRules();
         }
@@ -717,3 +730,4 @@ export class LevelController {
 }
 
 const wordYou = Word.findWordFromText("you");
+const wordWin = Word.findWordFromText("win");

@@ -4,6 +4,7 @@ export const colors = {
     brightBlue: 0x009999,
     red: 0x990000,
     pink: 0xff2299,
+    gold: 0xffcc00,
     lightBrown: 0x993311,
     brightBrown: 0xbb5500,
     darkGreen: 0x007700,

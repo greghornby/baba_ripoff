@@ -29,6 +29,13 @@ export const constructs = {
         color: colors.lightBrown
     }),
 
+    flag: new Construct({
+        texture: textures.objects.flag,
+        associatedWord: () => Word.findWordFromText("flag"),
+        category: categories.interactable,
+        color: colors.gold
+    }),
+
     leaf: new Construct({
         texture: texturePlaceholder,
         associatedWord: () => Word.findWordFromText("leaf"),
