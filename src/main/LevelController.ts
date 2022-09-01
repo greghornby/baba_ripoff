@@ -251,39 +251,49 @@ export class LevelController {
     }
 
 
-    public getGridCell(x: number, y: number): Cell<Entity> | undefined {
+    public getGridCell(x: number, y: number): Readonly<Cell<Entity>> | undefined {
         return this.entityGrid[y]?.[x];
     }
 
 
-    public getEntitiesAtPosition(x: number, y: number): Cell<Entity> {
+    public getEntitiesAtPosition(x: number, y: number): Readonly<Cell<Entity>> {
         return this.getGridCell(x, y) ?? [];
     }
 
 
     public getAllConstructsInLevel(): Construct[] {
-        return [...new Set([...this.entityMap].map(([id, entity]) => entity.construct))];
+        const constructs: Construct[] = [];
+        for (const entry of this.entityMap) {
+            constructs.push(entry[1].construct);
+        }
+        return constructs;
     }
 
 
     public getEntitiesOfConstruct(construct: Construct): Entity[] {
-        return [...this.entityMap].map(([id, entity]) => entity).filter(entity => entity.construct === construct);
-    }
-
-
-    public getAllConstructsWithEntitiesInLevel(): {construct: Construct; entities: Entity[]}[] {
-        const map: Map<Construct, Entity[]> = new Map();
-        for (const [entityId, entity] of this.entityMap) {
-            let construct = entity.construct;
-            let entityArray = map.get(construct);
-            if (!entityArray) {
-                entityArray = [];
-                map.set(construct, entityArray);
+        const entities: Entity[] = [];
+        for (const entry of this.entityMap) {
+            if (entry[1].construct === construct) {
+                entities.push(entry[1]);
             }
-            entityArray.push(entity);
         }
-        return [...map.entries()].map(entry => ({construct: entry[0], entities: entry[1]}));
+        return entities;
     }
+
+
+    // public getAllConstructsWithEntitiesInLevel(): {construct: Construct; entities: Entity[]}[] {
+    //     const map: Map<Construct, Entity[]> = new Map();
+    //     for (const [entityId, entity] of this.entityMap) {
+    //         let construct = entity.construct;
+    //         let entityArray = map.get(construct);
+    //         if (!entityArray) {
+    //             entityArray = [];
+    //             map.set(construct, entityArray);
+    //         }
+    //         entityArray.push(entity);
+    //     }
+    //     return [...map.entries()].map(entry => ({construct: entry[0], entities: entry[1]}));
+    // }
 
 
     public moveEntity(entity: Entity, facing: Facing, startX: number, startY: number, endX: number, endY: number): void {
@@ -319,21 +329,6 @@ export class LevelController {
         }, entityId);
         //@todo add animation
     }
-
-
-    // public swapEntityWithConstructs(entity: Entity, constructs: Construct[]): Entity[] {
-    //     const newEntities: Entity[] = [];
-    //     for (const construct of constructs) {
-    //         this.addEntity({
-    //             ...entity.initData,
-    //             construct: construct,
-    //             x: entity.x,
-    //             y: entity.y
-    //         });
-    //     }
-    //     this.removeEntity(entity);
-    //     return newEntities;
-    // }
 
 
     //#endregion ENTITY

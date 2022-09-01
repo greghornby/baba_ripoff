@@ -165,7 +165,7 @@ export class ActionProcessor {
 
         let pathBlocked = false;
         let actions: Action[] = [];
-        let nextEntities: Cell<Entity> = [startEntity];
+        let nextEntities: Readonly<Cell<Entity>> = [startEntity];
         let nextX = startEntity.x;
         let nextY = startEntity.y;
 
