@@ -15,7 +15,10 @@
             //   "--verbose",
             //   "--silent",
               "--config",
-              "${workspaceRoot}/jest.config.js"
+              "${workspaceRoot}/jest.config.ts",
+
+              //files
+              "./tests/Sentence.getRules.test.ts"
             ],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",

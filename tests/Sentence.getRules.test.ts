@@ -22,7 +22,7 @@ describe("X IS YOU with NOT variants", () => {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: false},
-        verb: words.is,
+        verb: {word: words.is},
         complement: {word: words.you, not: false}
     });
 
@@ -30,7 +30,7 @@ describe("X IS YOU with NOT variants", () => {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: true},
-        verb: words.is,
+        verb: {word: words.is},
         complement: {word: words.you, not: false}
     });
 
@@ -38,7 +38,7 @@ describe("X IS YOU with NOT variants", () => {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: false},
-        verb: words.is,
+        verb: {word: words.is},
         complement: {word: words.you, not: true}
     });
 
@@ -46,7 +46,7 @@ describe("X IS YOU with NOT variants", () => {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: true},
-        verb: words.is,
+        verb: {word: words.is},
         complement: {word: words.you, not: true}
     });
 
@@ -54,7 +54,7 @@ describe("X IS YOU with NOT variants", () => {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: false},
-        verb: words.is,
+        verb: {word: words.is},
         complement: {word: words.you, not: false}
     });
 
@@ -62,7 +62,7 @@ describe("X IS YOU with NOT variants", () => {
         preCondition: undefined,
         postCondition: undefined,
         subject: {word: words.baba, not: true},
-        verb: words.is,
+        verb: {word: words.is},
         complement: {word: words.you, not: false}
     });
 });
@@ -74,7 +74,7 @@ describe("X [Post Condition] IS YOU", () => {
         preCondition: undefined,
         postCondition: [{...$Word(words.facing), selector: [$Word(words.wall), $Word(words.leaf)]}],
         subject: $Word(words.baba),
-        verb: words.is,
+        verb: {word: words.is},
         complement: $Word(words.you)
     });
 
@@ -86,7 +86,18 @@ describe("X [Post Condition] IS YOU", () => {
             {...$Word(words.facing), selector: [$Word(words.wall)]},
             {...$Word(words.on), selector: [$Word(words.leaf)]}
         ],
-        verb: words.is,
+        verb: {word: words.is},
+        complement: $Word(words.you)
+    });
+
+
+    generateSentenceRulesTest(test, "baba facing wall and leaf is you", {
+        preCondition: undefined,
+        subject: $Word(words.baba),
+        postCondition: [
+            {...$Word(words.facing), selector: [$Word(words.wall), $Word(words.leaf)]},
+        ],
+        verb: {word: words.is},
         complement: $Word(words.you)
     });
 
@@ -96,7 +107,46 @@ describe("X [Post Condition] IS YOU", () => {
         preCondition: undefined,
         subject: $Word(words.leaf),
         postCondition: [{...$Word(words.on), selector: [$Word(words.leaf)]}],
-        verb: words.is,
+        verb: {word: words.is},
         complement: $Word(words.you)
     });
 });
+
+
+describe("[Pre Condition] X IS YOU", () => {
+
+    generateSentenceRulesTest(test, "lonely baba is you", {
+        preCondition: [$Word(words.lonely)],
+        postCondition: undefined,
+        subject: $Word(words.baba),
+        verb: {word: words.is},
+        complement: $Word(words.you)
+    });
+
+    generateSentenceRulesTest(test, "lonely and powered baba is you", {
+        preCondition: [$Word(words.lonely), $Word(words.powered)],
+        postCondition: undefined,
+        subject: $Word(words.baba),
+        verb: {word: words.is},
+        complement: $Word(words.you)
+    });
+});
+
+
+test.only("Broken Sentences no rules", () => {
+
+    const sentencesArray: string[] = [
+        // "wall and",
+        "rock is not",
+        // "wall and is you"
+        // "lonely and powered baba facing wall and is you"
+    ];
+
+    for (const text of sentencesArray) {
+        console.log(`Checking broken: "${text}"`);
+        const sentence = Sentence.fromString(text);
+        const rules = sentence.getRules();
+        expect(rules).toHaveLength(0);
+        console.log(`Checked!`);
+    }
+})

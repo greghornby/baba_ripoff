@@ -1,5 +1,5 @@
 import { Entity } from "./Entity.js";
-import { IRule, NegatableWord, Rule } from "./Rule.js";
+import { IRule, RuleNegatableWrapper, Rule } from "./Rule.js";
 import { Word, WordBehavior } from "./Word.js";
 
 export class Sentence {
@@ -63,7 +63,7 @@ export class Sentence {
                 ]
             ),
 
-            rule.verb._string,
+            rule.verb.word._string,
 
             rule.complement.not ? "not" : undefined,
             rule.complement.word._string
@@ -117,6 +117,7 @@ export class Sentence {
                 addActiveEntitiesFromFragment(preConResult.fragment);
             }
             let nounsResult = this.parseSimpleConjuctionWords(wordsRemaining, ["noun"]);
+            //@todo fix WALL AND here
             if (!nounsResult) {
                 continue;
             }
@@ -215,12 +216,12 @@ export class Sentence {
         let valid = false;
         let not = false;
         let checkForAnd = false;
-        let conditions: NegatableWord[] = [];
+        let conditions: RuleNegatableWrapper[] = [];
         const fragment: WordAndEntity[] = [];
         let i: number;
         for (i = 0; i < words.length; i++) {
             const _word = words[i];
-            const word = _word.word;
+            const {word, entity} = _word;
             const behavior = word.behavior;
             if (checkForAnd) {
                 if (behavior.and) {
@@ -237,10 +238,10 @@ export class Sentence {
                     not = !not;
                 } else if (behavior.prefixCondition) {
                     fragment.push(_word);
-                    conditions.push({word: word, not: not});
+                    conditions.push({word: word, not: not, entity: entity});
                     not = false;
                     valid = true;
-                    break;
+                    checkForAnd = true;
                 } else {
                     break;
                 }
@@ -258,16 +259,16 @@ export class Sentence {
     }
 
 
-    parseSimpleConjuctionWords(words: WordAndEntity[], allowedTypes: WordType[]): IFragmentOutput<NegatableWord[]> {
+    parseSimpleConjuctionWords(words: WordAndEntity[], allowedTypes: WordType[]): IFragmentOutput<RuleNegatableWrapper[]> {
         let valid = false;
         let checkForAnd = false;
         let not = false;
         const fragment: WordAndEntity[] = [];
-        const listWords: NegatableWord[] = [];
+        const listWords: RuleNegatableWrapper[] = [];
         let i: number;
         for (i = 0; i < words.length; i++) {
             const _word = words[i];
-            const word = _word.word;
+            const {word, entity} = _word;
             const behavior = word.behavior;
             if (checkForAnd) {
                 if (behavior.and) {
@@ -293,7 +294,7 @@ export class Sentence {
                 }
                 if (currentWordIsAllowed) {
                     fragment.push(_word);
-                    listWords.push({word, not});
+                    listWords.push({word, not, entity: entity});
                     checkForAnd = true;
                     not = false;
                     valid = true;
@@ -319,8 +320,8 @@ export class Sentence {
         let not = false;
         let checkForAnd = false;
         let checkForSelector = false;
-        let currentCondition: NegatableWord | undefined;
-        let currentSelectors: NegatableWord[] = [];
+        let currentCondition: RuleNegatableWrapper | undefined;
+        let currentSelectors: RuleNegatableWrapper[] = [];
         let conditions: IRule["postCondition"] = [];
 
         const conditionAllowsWord = (conditionWord: Word, word: Word): boolean => {
@@ -338,7 +339,7 @@ export class Sentence {
         const fragment: WordAndEntity[] = [];
         for (let i = 0; i < words.length; i++) {
             const _word = words[i];
-            const word = _word.word;
+            const {word, entity} = _word;
             const behavior = word.behavior;
             if (checkForAnd) {
                 if (behavior.and) {
@@ -353,7 +354,7 @@ export class Sentence {
             } else if (checkForSelector) {
                 if (conditionAllowsWord(currentCondition!.word, word)) {
                     fragment.push(_word);
-                    currentSelectors.push({word: word, not: not});
+                    currentSelectors.push({word: word, not: not, entity: entity});
                     not = false;
                     checkForSelector = false;
                     checkForAnd = true;
@@ -367,7 +368,7 @@ export class Sentence {
                     if (currentCondition) {
                         conditions.push({...currentCondition, selector: currentSelectors});
                     }
-                    currentCondition = {word: word, not: not};
+                    currentCondition = {word: word, not: not, entity: entity};
                     currentSelectors = [];
                     valid = false;
                     not = false;
@@ -376,7 +377,7 @@ export class Sentence {
                     continue;
                 } else if (currentCondition && conditionAllowsWord(currentCondition.word, word)) {
                     fragment.push(_word);
-                    currentSelectors.push({word: word, not: not});
+                    currentSelectors.push({word: word, not: not, entity: entity});
                     not = false;
                     checkForAnd = true;
                     valid = true;
@@ -405,12 +406,12 @@ export class Sentence {
         if (!_word) {
             return false;
         }
-        const word = _word.word;
+        const {word,entity}  = _word;
         const fragment: WordAndEntity[] = [];
         if (word.behavior.verb) {
             fragment.push(_word);
             return {
-                data: word,
+                data: {word: word, entity: entity},
                 fragment: [_word],
                 wordsRemaining: words.slice(fragment.length)
             };

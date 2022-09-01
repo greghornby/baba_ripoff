@@ -9,7 +9,8 @@ export default {
         }
     },
     setupFiles: [
-        "jest-canvas-mock"
+        "./tests/setup/initFiles.ts",
+        "jest-canvas-mock",
     ],
     testRegex: "tests/.*\.test\.ts$",
     testPathIgnorePatterns: ['/node_modules/'],

@@ -40,7 +40,7 @@ test("complex rule to asSimplifiedSentence", () => {
             {...$Word.not(words.near), selector: [$Word(words.leaf)]},
         ],
         subject: $Word.not(words.baba),
-        verb: words.is,
+        verb: $Word(words.is),
         complement: $Word.not(words.you)
     });
 

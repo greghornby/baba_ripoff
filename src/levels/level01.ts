@@ -7,8 +7,8 @@ import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
 
 const levelText = `
         _
-        _WWWWWW
-        _W_B__R
+        _WWWWWW_____n
+        _W_B__R___ri_p
         _WWWWWW
         _
         ____w
@@ -26,6 +26,7 @@ export const level01 = () => new Level({
         W: constructs.wall,
         R: constructs.rock,
         B: constructs.baba,
+        n: words.not,
         b: words.baba,
         i: words.is,
         y: words.you,
@@ -47,7 +48,7 @@ export const level01 = () => new Level({
         // }),
         new Rule({
             subject: Rule.word(words.text),
-            verb: words.is,
+            verb: {word: words.is},
             complement: Rule.word(words.push),
         })
     ]

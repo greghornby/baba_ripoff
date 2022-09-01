@@ -6,7 +6,7 @@ import { AppEvents } from "./AppEvent.js";
 import { Construct } from "./Construct.js";
 import { Interaction } from "./Interaction.js";
 import { Facing } from "../types/Facing.js";
-import { IRule, Rule } from "./Rule.js";
+import { IRule, Rule, RuleNegatableWrapper } from "./Rule.js";
 import { MapOfSets } from "../util/MapOfSets.js";
 import { NounSelectionFunction, Word } from "./Word.js";
 import { ActionProcessor } from "./ActionProcessor.js";
@@ -14,6 +14,8 @@ import { Sentence } from "./Sentence.js";
 import { getPaths } from "../util/getPaths.js";
 import { words } from "../objects/words.js";
 import { debugPrint } from "../debug/debugPrint.js";
+import { compareNegatableWord } from "../util/compareNegatableWord.js";
+import { notRuleIsMoreSpecific } from "../util/notRuleIsMoreSpecific.js";
 
 export class LevelController {
 
@@ -35,6 +37,9 @@ export class LevelController {
 
     public sentences: Sentence[] = [];
     public rules: Rule[] = [];
+    /** Maps a cancelled out rule to the list of rules with NOT that cancel it out */
+    public cancelledRules: Map<Rule, Rule[]> = new Map();
+    public cancelledWordEntities: Set<Entity> = new Set();
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
     public entityMutations: Map<Entity, Construct[]> = new Map();
@@ -378,6 +383,50 @@ export class LevelController {
             const sentenceRules = sentence.getRules();
             this.rules.push(...sentenceRules);
         }
+
+        for (const entity of this.cancelledWordEntities) {
+            entity.setCancelledWord(false);
+        }
+        this.cancelledRules.clear();
+        this.cancelledWordEntities.clear();
+
+        const complementRules: Rule[] = [];
+        const notComplementRules: Rule[] = [];
+        for (const rule of this.rules) {
+            (rule.rule.complement.not ? notComplementRules : complementRules).push(rule);
+        }
+
+        for (const rule of complementRules) {
+            for (const notRule of notComplementRules) {
+                // skip if they don't have the same subject or complement
+                // as a not rule can only cancel out a rule
+                // of the same subject
+                const {match: sameSubject} = compareNegatableWord(rule.rule.subject, notRule.rule.subject);
+                const {match: sameComplement} = compareNegatableWord(rule.rule.complement, notRule.rule.complement, true); //ignore not with true boolean
+                if (!sameSubject || !sameComplement) {
+                    continue;
+                }
+                const notIsMoreSpecific = notRuleIsMoreSpecific(rule, notRule);
+                if (notIsMoreSpecific) {
+                    continue;
+                }
+                const cancelledBy = this.cancelledRules.get(rule) ?? [];
+                cancelledBy.push(notRule);
+                this.cancelledRules.set(rule, cancelledBy);
+
+                //only cancel words of simple rules for now
+                //@todo figure out a way to display cancelled complex sentences
+                if (!rule.rule.preCondition && !rule.rule.postCondition) {
+                    this.cancelledWordEntities.add(rule.rule.subject.entity!);
+                    this.cancelledWordEntities.add(rule.rule.verb.entity!);
+                    this.cancelledWordEntities.add(rule.rule.complement.entity!);
+                }
+            }
+        }
+
+        for (const entity of this.cancelledWordEntities) {
+            entity.setCancelledWord(true);
+        }
     }
 
 
@@ -564,6 +613,12 @@ export class LevelController {
             this.start();
         }
         this._drawGrid();
+
+        //debug entities
+        for (const entity of this.entityMap.values()) {
+            entity._debugFacingGraphic();
+            entity._debugEntityId();
+        }
 
         const isAnimating = this.entitiesToAnimate.size > 0;
         for (const entity of this.entitiesToAnimate) {

@@ -1,3 +1,4 @@
+import { Entity } from "./Entity.js";
 import { Word } from "./Word.js";
 
 export class Rule {
@@ -5,11 +6,11 @@ export class Rule {
         public rule: IRule
     ) {}
 
-    static word: StaticWordMethod = <StaticWordMethod>((word: Word, invert?: true): NegatableWord => {
+    static word: StaticWordMethod = <StaticWordMethod>((word: Word, invert?: true): RuleNegatableWrapper => {
         return {not: invert ? !false : false, word: word};
     });
 
-    static notWord: StaticWordMethod = <StaticWordMethod>((word: Word, invert?: true): NegatableWord => {
+    static notWord: StaticWordMethod = <StaticWordMethod>((word: Word, invert?: true): RuleNegatableWrapper => {
         return {not: invert ? !true : true, word: word};
     });
 }
@@ -17,19 +18,23 @@ Rule.word.not = Rule.notWord;
 Rule.notWord.not = Rule.word;
 
 interface StaticWordMethod {
-    (word: Word, invert?: true): NegatableWord;
+    (word: Word, invert?: true): RuleNegatableWrapper;
     not: StaticWordMethod;
 }
 
 export interface IRule {
-    preCondition?: NegatableWord[];
-    postCondition?: (NegatableWord & {selector: NegatableWord[]})[];
-    subject: NegatableWord;
-    verb: Word;
-    complement: NegatableWord;
+    preCondition?: RuleNegatableWrapper[];
+    postCondition?: (RuleNegatableWrapper & {selector: RuleNegatableWrapper[]})[];
+    subject: RuleNegatableWrapper;
+    verb: RuleWordWrapper;
+    complement: RuleNegatableWrapper;
 }
 
-export interface NegatableWord {
+export interface RuleWordWrapper {
     word: Word;
+    entity?: Entity;
+}
+
+export interface RuleNegatableWrapper extends RuleWordWrapper {
     not: boolean;
 }
