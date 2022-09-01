@@ -7,7 +7,6 @@ const notCancels = true;
 test("notRuleIsMoreSpecific", () => {
 
     const sentences: [textA: string, textB: string, expectedResult: boolean][] = [
-        ["text is push", "rock is not push", notCancels],
         ["baba is you", "baba is not you", cancels],
         ["lonely baba is you", "lonely baba is not you", cancels],
         ["baba is you", "lonely baba is not you", notCancels],

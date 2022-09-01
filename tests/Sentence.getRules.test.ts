@@ -133,13 +133,13 @@ describe("[Pre Condition] X IS YOU", () => {
 });
 
 
-test.only("Broken Sentences no rules", () => {
+test("Broken Sentences no rules", () => {
 
     const sentencesArray: string[] = [
-        // "wall and",
+        "wall and",
         "rock is not",
-        // "wall and is you"
-        // "lonely and powered baba facing wall and is you"
+        "wall and is you",
+        "lonely and powered baba facing wall and is you"
     ];
 
     for (const text of sentencesArray) {

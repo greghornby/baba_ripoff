@@ -119,6 +119,9 @@ export class Sentence {
             let nounsResult = this.parseSimpleConjuctionWords(wordsRemaining, ["noun"]);
             //@todo fix WALL AND here
             if (!nounsResult) {
+                //special case, a noun should be found if the sentence had a start
+                //to prevent infinite loop, remove first word from wordsRemaining
+                wordsRemaining.shift();
                 continue;
             }
             subjects = nounsResult.data;
