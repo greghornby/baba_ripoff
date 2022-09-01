@@ -199,6 +199,10 @@ export class LevelController {
         this.entityMap.set(entity.id, entity);
         this.entityGrid[y][x].push(entity);
         this.container.addChild(entity.pixiContainer);
+
+        if (entityData.construct instanceof Word) {
+            this.tickFlags.rebuildSentences = true;
+        }
     }
 
 
@@ -206,7 +210,13 @@ export class LevelController {
         this.container.removeChild(entity.pixiContainer);
         if (!options.noArrayMutations) {
             this.entityMap.delete(entity.id);
+            this.entitiesToAnimate.delete(entity);
+            this.removeEntityFromCell(entity);
             entity.pixiContainer.destroy();
+        }
+
+        if (entity.construct instanceof Word) {
+            this.tickFlags.rebuildSentences = true;
         }
     }
 
@@ -252,6 +262,22 @@ export class LevelController {
     }
 
 
+    public removeEntityFromCell(entity: Entity): void;
+    public removeEntityFromCell(entity: Entity, x: number, y: number): void;
+    public removeEntityFromCell(entity: Entity, x?: number, y?: number): void {
+        this.entityGrid[y ?? entity.y][x ?? entity.x] =
+            this.entityGrid[y ?? entity.y][x ?? entity.x]
+            .filter(e => e !== entity);
+    }
+
+
+    public addEntityToCell(entity: Entity): void;
+    public addEntityToCell(entity: Entity, x: number, y: number): void;
+    public addEntityToCell(entity: Entity, x?: number, y?: number): void {
+        this.entityGrid[y ?? entity.y][x ?? entity.x].push(entity);
+    }
+
+
     public getGridCell(x: number, y: number): Readonly<Cell<Entity>> | undefined {
         return this.entityGrid[y]?.[x];
     }
@@ -265,6 +291,9 @@ export class LevelController {
     public getAllConstructsInLevel(): Construct[] {
         const constructs: Construct[] = [];
         for (const entry of this.entityMap) {
+            if (constructs.includes(entry[1].construct)) {
+                continue;
+            }
             constructs.push(entry[1].construct);
         }
         return constructs;
@@ -282,29 +311,12 @@ export class LevelController {
     }
 
 
-    // public getAllConstructsWithEntitiesInLevel(): {construct: Construct; entities: Entity[]}[] {
-    //     const map: Map<Construct, Entity[]> = new Map();
-    //     for (const [entityId, entity] of this.entityMap) {
-    //         let construct = entity.construct;
-    //         let entityArray = map.get(construct);
-    //         if (!entityArray) {
-    //             entityArray = [];
-    //             map.set(construct, entityArray);
-    //         }
-    //         entityArray.push(entity);
-    //     }
-    //     return [...map.entries()].map(entry => ({construct: entry[0], entities: entry[1]}));
-    // }
-
-
     public moveEntity(entity: Entity, facing: Facing, startX: number, startY: number, endX: number, endY: number): void {
-        this.entityGrid[startY][startX] = this.entityGrid[startY][startX]
-            .filter(e => e !== entity);
-        this.entityGrid[endY][endX].push(entity);
-
-        entity.setFacing(facing);
+        this.removeEntityFromCell(entity);
         entity.x = endX;
         entity.y = endY;
+        this.addEntityToCell(entity, endX, endY);
+        entity.setFacing(facing);
         entity.animation().addMotionSlide({startX, startY, endX, endY, frames: 5});
 
         if (entity.construct instanceof Word) {
@@ -664,11 +676,11 @@ export class LevelController {
             this.start();
         }
 
-        //debug entities
-        // for (const entity of this.entityMap.values()) {
-        //     entity._debugFacingGraphic();
-        //     entity._debugEntityId();
-        // }
+        // debug entities
+        for (const entity of this.entityMap.values()) {
+            entity._debugFacingGraphic();
+            entity._debugEntityId();
+        }
 
         const isAnimating = this.entitiesToAnimate.size > 0;
         for (const entity of this.entitiesToAnimate) {

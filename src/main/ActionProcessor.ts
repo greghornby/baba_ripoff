@@ -41,6 +41,7 @@ export class ActionProcessor {
 
         for (let index = this.actionIndex; index < actions.length; index++) {
             const action = actions[index];
+            debugPrint.actions(action);
             switch (action.data.type) {
                 case "movement":
                     this.controller.moveEntity(
@@ -270,26 +271,34 @@ export class ActionProcessor {
         const actions: Action[] = [];
         for (const mutation of this.controller.entityMutations) {
             const [entityToChange, constructsToChangeTo] = mutation;
-            // this.controller.swapEntityWithConstructs(entityToChange, constructsToChangeTo);
+            const debugData = {
+                fromEntity: entityToChange.name,
+                toConstructs: constructsToChangeTo.map(c => c.associatedWord()._string)
+            };
             const swapOutAction = new Action({
                 type: "swapout",
                 entityId: entityToChange.id,
                 construct: entityToChange.construct,
                 x: entityToChange.x,
                 y: entityToChange.y
-            });
+            }, debugData);
             actions.push(swapOutAction);
             for (const construct of constructsToChangeTo) {
+                const debugData = {
+                    fromEntity: entityToChange.name,
+                    construct: construct.associatedWord()._string
+                }
                 const swapInAction = new Action({
                     type: "swapin",
                     entityId: this.controller.entityCount++,
                     construct: construct,
                     x: entityToChange.x,
                     y: entityToChange.y
-                });
+                }, debugData);
                 actions.push(swapInAction);
             }
         }
+        this.controller.entityMutations.clear();
         const topOfStack = this.getTopOfStack();
         topOfStack.push(...actions);
         this.playActionsOnTopOfStack();

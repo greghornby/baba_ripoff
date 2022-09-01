@@ -31,10 +31,11 @@ export class Entity {
 
     public _debug: {
         idGraphic?: pixi.Graphics;
+        redrawFacing?: boolean;
         facingGraphic?: pixi.Graphics;
     } = {};
 
-    constructor(public id: number, public initData: EntityInitData) {
+    constructor(public readonly id: number, public initData: EntityInitData) {
         const associatedWord = initData.construct.associatedWord()._string;
         this.name = initData.construct instanceof Word ? `text:${associatedWord}` : associatedWord;
         this.level = initData.level;
@@ -89,6 +90,7 @@ export class Entity {
     public setFacing(facing: Facing) {
         this.facing = facing;
 
+        this._debug.redrawFacing = true;
     }
 
 
@@ -188,6 +190,11 @@ export class Entity {
             this._debug.facingGraphic = undefined;
             return;
         }
+        if (!this._debug.redrawFacing) {
+            return;
+        }
+        this._debug.redrawFacing = false;
+
         if (!this._debug.facingGraphic) {
             this._debug.facingGraphic = new pixi.Graphics();
             this._debug.facingGraphic.zIndex = 101;
@@ -195,9 +202,6 @@ export class Entity {
         }
 
         this._debug.facingGraphic.clear();
-        if (!debugFlags.drawFacingArrows) {
-            return;
-        }
         this._debug.facingGraphic.lineStyle(2, 0x00ff00, 1.0);
         const half = this.level.TILE_SIZE/2;
         const quarter = this.level.TILE_SIZE/4;

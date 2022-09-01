@@ -5,13 +5,13 @@ import { _commonKey } from "./_commonKey.js";
 
 const levelText = `
 _biy__fiv
-_WWWWWWWWWW__r
-_W________W__i
-_W_B______W___n
-_W____wis_W__p
-_W________W____F
+_WWWWWWWWWW___n
+_W________W___r
+_W_B______W___i
+_W____wis_W__r
+_W________W____
 _WWWWWWWWWW__R
-_
+_F
 ______rip
 `;
 

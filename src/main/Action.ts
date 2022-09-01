@@ -6,7 +6,10 @@ import objectHash from "object-hash";
 export class Action {
     public hash: string;
     public debug: any;
-    constructor(public data: MovementAction | DestroyEntityAction | CreateEntityAction | SwapOutEntityAction | SwapInEntityAction) {
+    constructor(
+        public data: MovementAction | DestroyEntityAction | CreateEntityAction | SwapOutEntityAction | SwapInEntityAction,
+        public inputDebug?: any
+    ) {
         this.hash = this.calculateHash();
         this.setDebugData();
     }
@@ -33,9 +36,13 @@ export class Action {
             this.debug = {
                 entityId: data.entityId
             };
-        } else {
-            return;
         }
+        else if (data.type === "swapin" || data.type === "swapout") {
+            this.debug = {
+                constructName: data.construct.associatedWord()._string
+            };
+        }
+        Object.assign(this.debug, this.inputDebug);
     }
 
     toJSON(): Record<string, string | number> {
