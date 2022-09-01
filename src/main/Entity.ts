@@ -18,10 +18,12 @@ export class Entity {
     public y: number;
     public facing: Facing;
     public isActiveText: boolean;
+    public isCancelledText: boolean;
 
+    public cacheContainerOnUpdate: boolean = false;
     public pixiContainer: pixi.Container;
     private cancelledTextGraphic: pixi.Graphics | undefined;
-    private pixiSprite: pixi.Sprite;
+    private sprite: pixi.Container;
     private colorPixiFilter: ColorMatrixFilter;
     private activeTextPixiFilter: ColorMatrixFilter;
 
@@ -41,29 +43,34 @@ export class Entity {
         this.x = initData.x;
         this.y = initData.y;
         this.isActiveText = false;
+        this.isCancelledText = false;
 
         this.pixiContainer = new pixi.Container();
         this.pixiContainer.sortableChildren = true;
-        this.pixiSprite = new pixi.Sprite();
-        this.pixiSprite.zIndex = 0;
-        this.pixiContainer.addChild(this.pixiSprite);
+        this.pixiContainer.zIndex = this.construct.category.zIndex;
+        this.sprite = new pixi.Sprite(this.construct.texture);
+        this.sprite.addChild(this.sprite);
+        this.pixiContainer.addChild(this.sprite);
         this.colorPixiFilter = new pixi.filters.ColorMatrixFilter();
         this.activeTextPixiFilter = new pixi.filters.ColorMatrixFilter();
-        this.pixiSprite.filters = [
+        this.sprite.filters = [
             this.colorPixiFilter,
             this.activeTextPixiFilter
         ];
-        this.setSpriteInfo();
         this.setColor(undefined);
         this.setActiveTextSprite(this.isActiveText);
         this.setFacing(this.facing = Facing.down);
         this.setSpritePosition();
+        this.cacheContainerOnUpdate = true;
+        this.cacheContainer();
     }
 
 
-    public setSpriteInfo() {
-        this.pixiSprite.texture = this.construct.texture;
-        this.pixiContainer.zIndex = this.construct.category.zIndex;
+    public cacheContainer() {
+        if (this.cacheContainerOnUpdate) {
+            this.pixiContainer.cacheAsBitmap = false;
+            this.pixiContainer.cacheAsBitmap = true;
+        }
     }
 
 
@@ -75,6 +82,7 @@ export class Entity {
         } else {
             this.colorPixiFilter.tint(this.construct.defaultColor);
         }
+        this.cacheContainer();
     }
 
 
@@ -119,14 +127,18 @@ export class Entity {
 
 
     public setActiveTextSprite(active: boolean): void {
-        this.isActiveText = active;
         if (!(this.construct instanceof Word)) {
             return;
         }
+        if (this.isActiveText === active) {
+            return;
+        }
+        this.isActiveText = active;
         this.activeTextPixiFilter.reset();
         if (!active) {
             this.activeTextPixiFilter.brightness(0.5, false);
         }
+        this.cacheContainer();
     }
 
 
@@ -134,6 +146,10 @@ export class Entity {
         if (!(this.construct instanceof Word)) {
             return;
         }
+        if (this.isCancelledText === cancelled) {
+            return;
+        }
+        this.isCancelledText = cancelled;
         if (!this.cancelledTextGraphic) {
             this.cancelledTextGraphic = new pixi.Graphics();
             this.cancelledTextGraphic.zIndex = 100;
@@ -149,7 +165,7 @@ export class Entity {
             g.lineTo(half - quarter, half + quarter);
         }
         this.cancelledTextGraphic.visible = cancelled;
-
+        this.cacheContainer();
     }
 
 
@@ -207,6 +223,7 @@ export class Entity {
                 this._debug.facingGraphic.lineTo(...point);
             }
         }
+        this.cacheContainer();
     }
 
 
@@ -234,6 +251,7 @@ export class Entity {
         bg.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
         this._debug.idGraphic.addChild(bg);
         this._debug.idGraphic.addChild(text);
+        this.cacheContainer();
     }
 }
 

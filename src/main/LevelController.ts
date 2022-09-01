@@ -670,10 +670,10 @@ export class LevelController {
         this._drawGrid();
 
         //debug entities
-        for (const entity of this.entityMap.values()) {
-            entity._debugFacingGraphic();
-            entity._debugEntityId();
-        }
+        // for (const entity of this.entityMap.values()) {
+        //     entity._debugFacingGraphic();
+        //     entity._debugEntityId();
+        // }
 
         const isAnimating = this.entitiesToAnimate.size > 0;
         for (const entity of this.entitiesToAnimate) {
