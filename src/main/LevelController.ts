@@ -16,6 +16,7 @@ import { words } from "../objects/words.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { compareNegatableWord } from "../util/compareNegatableWord.js";
 import { notRuleIsMoreSpecific } from "../util/notRuleIsMoreSpecific.js";
+import { setAddMultiple } from "../util/setAddMultiple.js";
 
 export class LevelController {
 
@@ -378,10 +379,13 @@ export class LevelController {
 
 
     public updateLevelRules(): void {
-        this.rules = [...this.level.initData.defaultRules];
+        const rulesSet: Set<Rule> = new Set();
+        setAddMultiple(rulesSet, ...this.level.initData.defaultRules);
+        // this.rules = [...this.level.initData.defaultRules];
         for (const sentence of this.sentences) {
             const sentenceRules = sentence.getRules();
-            this.rules.push(...sentenceRules);
+            setAddMultiple(rulesSet, ...sentenceRules);
+            // this.rules.push(...sentenceRules);
         }
 
         for (const entity of this.cancelledWordEntities) {
@@ -392,7 +396,7 @@ export class LevelController {
 
         const complementRules: Rule[] = [];
         const notComplementRules: Rule[] = [];
-        for (const rule of this.rules) {
+        for (const rule of rulesSet) {
             (rule.rule.complement.not ? notComplementRules : complementRules).push(rule);
         }
 
@@ -424,6 +428,11 @@ export class LevelController {
             }
         }
 
+        for (const [rule] of this.cancelledRules) {
+            rulesSet.delete(rule);
+        }
+        this.rules = [...rulesSet];
+
         for (const entity of this.cancelledWordEntities) {
             entity.setCancelledWord(true);
         }
@@ -449,6 +458,7 @@ export class LevelController {
         this.entityToTags.clear();
         this.entityMutations.clear();
         for (const {rule} of this.rules) {
+            const complementNot = rule.complement.not;
             const complementWord = rule.complement.word;
             const complementIsTag = rule.complement.word.behavior.tag;
             const complementIsMutation = rule.complement.word.behavior.noun;
@@ -459,15 +469,26 @@ export class LevelController {
 
             const levelConstructs = this.getAllConstructsInLevel();
 
+            const subjectNot = rule.subject.not;
             const subjectWord = rule.subject.word;
             const subjectNoun = subjectWord.behavior.noun!;
 
             const subjectSelector = subjectNoun.type === "single" ? subjectNoun.selector : subjectNoun.subject;
 
-            const selectedConstructs =
-                subjectSelector instanceof Construct
-                ? [subjectSelector]
-                : levelConstructs.filter(construct => (subjectSelector as NounSelectionFunction)(construct, subjectWord, this.level));
+            const selectorFn = (construct: Construct): boolean => {
+                let result: boolean;
+                if (subjectSelector instanceof Construct) {
+                    result = construct === subjectSelector;
+                } else {
+                    result = (subjectSelector as NounSelectionFunction)(construct, subjectWord, this.level);
+                }
+                if (subjectNot) {
+                    result = !result;
+                }
+                return result;
+            };
+
+            const selectedConstructs = levelConstructs.filter(selectorFn);
 
             const entities: Entity[] = selectedConstructs.reduce(
                 (entities, construct) => {
@@ -478,11 +499,19 @@ export class LevelController {
             );
 
             if (complementIsTag) {
-                this.tagToEntities.addToSet(complementWord, ...entities);
-                for (const entity of entities) {
-                    this.entityToTags.addToSet(entity, complementWord);
+                if (complementNot) {
+                    this.tagToEntities.removeFromSet(complementWord, ...entities);
+                } else {
+                    this.tagToEntities.addToSet(complementWord, ...entities);
                 }
-            } else if (complementIsMutation) {
+                for (const entity of entities) {
+                    if (complementNot) {
+                        this.entityToTags.removeFromSet(entity, complementWord);
+                    } else {
+                        this.entityToTags.addToSet(entity, complementWord);
+                    }
+                }
+            } else if (complementIsMutation && !complementNot) {
                 for (const entity of entities) {
                     const complementNoun = complementWord.behavior.noun!;
                     const complementSelector = complementNoun.type === "single" ? complementNoun.selector : complementNoun.complement;

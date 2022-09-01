@@ -9,7 +9,7 @@
     "tsc": "tsc",
     "webpack": "webpack",
     "jest": "node --no-warnings --experimental-vm-modules node_modules/.bin/jest --detectOpenHandles",
-    "gen:image-imports": "ts-node-esm ./scripts/gen_image_imports.cts",
+    "images": "ts-node-esm ./scripts/gen_image_imports.cts",
     "deploy:s3": "node ./deployS3.js"
   },
   "dependencies": {

@@ -1,5 +1,6 @@
 import { Entity } from "../main/Entity.js";
 import { LevelController } from "../main/LevelController.js";
+import { Sentence } from "../main/Sentence.js";
 import { Word } from "../main/Word.js";
 
 const _debug = {
@@ -19,6 +20,13 @@ const _debug = {
         }
         console.log("TAG TO ENTITIES", JSON.stringify(objTagToEntities, null, 2));
         console.log("ENTITY TO TAGS", JSON.stringify(objEntityToTags, null, 2));
+    },
+
+    printRules(controller: LevelController) {
+        const rules = controller.rules;
+        for (const rule of rules) {
+            console.log("Rule:", ...Sentence.ruleToTextArray(rule));
+        }
     }
 };
 

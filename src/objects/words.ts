@@ -57,7 +57,7 @@ export const words = {
 	}),
 
     not: new Word("not", {
-		texture: texturePlaceholder,
+		texture: textures.words.not,
 		behavior: {
             not: true
 		}
