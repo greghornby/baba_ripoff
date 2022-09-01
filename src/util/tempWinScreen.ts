@@ -9,6 +9,9 @@ const levels = [level01, levelDebug];
 let levelIndex = queryParams.level  && !isNaN(parseInt(queryParams.level)) ? parseInt(queryParams.level) : 0;
 
 export const loadLevel = () => {
+    if (levelIndex >= levels.length) {
+        levelIndex = 0;
+    }
     const level = levels[levelIndex];
     if (level) {
         levelIndex++;
