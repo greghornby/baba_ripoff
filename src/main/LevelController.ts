@@ -515,11 +515,15 @@ export class LevelController {
                 continue;
             }
 
-            const levelConstructs = this.getAllConstructsInLevel();
+            let levelConstructs = this.getAllConstructsInLevel();
 
             const subjectNot = rule.subject.not;
             const subjectWord = rule.subject.word;
             const subjectNoun = subjectWord.behavior.noun!;
+
+            if (subjectWord !== wordText) {
+                levelConstructs = levelConstructs.filter(c => !(c instanceof Word));
+            }
 
             const subjectSelector = subjectNoun.type === "single" ? subjectNoun.selector : subjectNoun.subject;
 
@@ -748,13 +752,11 @@ export class LevelController {
         const flags = this.tickFlags;
 
         let iterations: number = 0;
-        let tagsAndMutationsAlreadyGenerated: boolean = false;
         while (regenRules()) {
             if (iterations++ >= 20) {
                 console.log("Too many loops");
                 break;
             }
-            tagsAndMutationsAlreadyGenerated = true;
 
             this.actionProcessor!.doMutations();
             this.actionProcessor!.addStep();
@@ -771,6 +773,8 @@ export class LevelController {
             }
         }
 
+        this.generateEntityTagsAndMutationsFromRules();
+
         this.animationSytem!.createAnimationsFromActions(this.actionProcessor!.getTopOfStack(), false);
 
         const winEntities = this.tagToEntities.get(wordWin);
@@ -785,13 +789,10 @@ export class LevelController {
             }
         }
 
-        if (!tagsAndMutationsAlreadyGenerated) {
-            this.generateEntityTagsAndMutationsFromRules();
-        }
-
         this.turnNumber++;
     }
 }
 
 const wordYou = Word.findWordFromText("you");
 const wordWin = Word.findWordFromText("win");
+const wordText = Word.findWordFromText("text");
