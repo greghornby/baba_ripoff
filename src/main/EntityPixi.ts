@@ -115,8 +115,8 @@ export class EntityPixi {
     @pixiUpdate({noCache: true})
     setPosition(x?: number, y?: number): void {
         const m = this.controller.level.TILE_SIZE;
-        const _x = (x ? x*m : this.container.transform.position.x) + this.controller.level.TILE_SIZE / 2;
-        const _y = (y ? y*m : this.container.transform.position.y)  + this.controller.level.TILE_SIZE / 2;
+        const _x = (x !== undefined ? x*m : this.container.transform.position.x) + this.controller.level.TILE_SIZE / 2;
+        const _y = (y !== undefined ? y*m : this.container.transform.position.y)  + this.controller.level.TILE_SIZE / 2;
         if (this._visible) {
             this.container.transform.position.set(_x, _y);
         }
