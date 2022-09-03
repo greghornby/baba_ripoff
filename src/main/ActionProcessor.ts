@@ -12,15 +12,20 @@ export class ActionProcessor {
     public level: Level;
     public controller: LevelController;
 
-    public _waitingForInteraction: boolean = true;
     public interactions: Interaction[] = [];
 
+    public step: number = 0;
     public stack: Action[][] = [];
     public actionIndex: number = 0;
 
     constructor (controller: LevelController) {
         this.controller = controller;
         this.level = controller.level;
+    }
+
+
+    public addStep(): void {
+        this.step++;
     }
 
 
@@ -37,7 +42,7 @@ export class ActionProcessor {
     public playActionsOnTopOfStack() {
         const actions = this.getTopOfStack();
 
-        console.log(`Playing ${actions.length - this.actionIndex} Actions from index ${this.actionIndex}`, actions[this.actionIndex]);
+        // console.log(`Playing ${actions.length - this.actionIndex} Actions from index ${this.actionIndex}`, actions[this.actionIndex]);
 
         for (let index = this.actionIndex; index < actions.length; index++) {
             const action = actions[index];
@@ -71,7 +76,7 @@ export class ActionProcessor {
     }
 
 
-    public reverseActionsOnTopOfStack() {
+    public reverseActionsOnTopOfStack(): Action[] {
         const actions = this.getTopOfStack();
 
         for (let index = this.actionIndex - 1; index >= 0; index--) {
@@ -102,48 +107,42 @@ export class ActionProcessor {
             }
             this.actionIndex = index;
         }
+
+        return actions;
     }
 
 
-    public doInteraction(interaction: Interaction): void {
-        if (!this._waitingForInteraction) {
-            return;
+    public doUndo(): Action[] {
+        if (this.controller.turnNumber === 0) {
+            return [];
         }
+        this.controller.turnNumber--;
+        this.interactions.pop();
+        this.actionIndex = this.getTopOfStack().length;
+        const actions = this.reverseActionsOnTopOfStack();
+        this.stack.length--;
+        return actions;
+    }
+
+
+    public doMovement(interaction: Interaction): void {
         this.interactions.push(interaction);
-        this._waitingForInteraction = false;
         debugPrint.interactions(JSON.stringify(interaction));
 
-        if (interaction.interaction.type === "undo") {
-            if (this.controller.turnNumber > 0) {
-                this.controller.turnNumber--;
-                this.actionIndex = this.getTopOfStack().length;
-                this.reverseActionsOnTopOfStack();
-                this.stack.length--;
-            }
-        } else {
-            const topOfStack = this.getTopOfStack();
-            const debugActions: Action[] = [];
-            const actionsHashSet = new Set<string>();
-            const addAction = (action: Action) => {
-                if (!actionsHashSet.has(action.hash)) {
-                    topOfStack.push(action);
-                    debugActions.push(action);
-                    actionsHashSet.add(action.hash);
-                }
-            }
-
-            const movementActions = this._processMovement(interaction);
-            movementActions.forEach(action => addAction(action));
-            this.playActionsOnTopOfStack();
+        if (!(interaction.interaction.type === "move" || interaction.interaction.type === "wait")) {
+            return;
         }
 
-        setTimeout(() => {this._waitingForInteraction = true}, 50);
-    }
-
-
-    public _processMovement(interaction: Interaction): Action[] {
-
-        const movementActions: Action[] = [];
+        const topOfStack = this.getTopOfStack();
+        const debugActions: Action[] = [];
+        const actionsHashSet = new Set<string>();
+        const addAction = (action: Action) => {
+            if (!actionsHashSet.has(action.hash)) {
+                topOfStack.push(action);
+                debugActions.push(action);
+                actionsHashSet.add(action.hash);
+            }
+        }
 
         if (interaction.interaction.type === "move") {
             const youEntities = this.controller.tagToEntities.getSet(wordYou);
@@ -151,11 +150,13 @@ export class ActionProcessor {
             // set all you Entities to the facing position
             for (const entity of youEntities) {
                 const actions = this._attemptToCreateEntityMovementAction(entity, interaction.interaction.direction);
-                movementActions.push(...actions);
+                for (const action of actions) {
+                    addAction(action);
+                }
             }
         }
 
-        return movementActions;
+        this.playActionsOnTopOfStack();
     }
 
 
@@ -225,7 +226,7 @@ export class ActionProcessor {
             }
 
             for (const entity of entitiesToMove) {
-                actions.push(new Action({
+                actions.push(new Action(this.step, {
                     type: "movement",
                     startDirection: entity.facing,
                     endDirection: direction,
@@ -275,7 +276,7 @@ export class ActionProcessor {
                 fromEntity: entityToChange.name,
                 toConstructs: constructsToChangeTo.map(c => c.associatedWord()._string)
             };
-            const swapOutAction = new Action({
+            const swapOutAction = new Action(this.step, {
                 type: "swapout",
                 entityId: entityToChange.id,
                 construct: entityToChange.construct,
@@ -288,7 +289,7 @@ export class ActionProcessor {
                     fromEntity: entityToChange.name,
                     construct: construct.associatedWord()._string
                 }
-                const swapInAction = new Action({
+                const swapInAction = new Action(this.step, {
                     type: "swapin",
                     entityId: this.controller.entityCount++,
                     construct: construct,

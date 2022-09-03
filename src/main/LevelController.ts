@@ -18,6 +18,7 @@ import { compareNegatableWord } from "../util/compareNegatableWord.js";
 import { notRuleIsMoreSpecific } from "../util/notRuleIsMoreSpecific.js";
 import { setAddMultiple } from "../util/setAddMultiple.js";
 import { tempWinScreen } from "../util/tempWinScreen.js";
+import { AnimationSystem } from "./AnimationSystem.js";
 
 export class LevelController {
 
@@ -25,6 +26,7 @@ export class LevelController {
 
     //#region Props
     public actionProcessor: ActionProcessor | undefined;
+    public animationSytem: AnimationSystem | undefined;
     public turnNumber: number = 0;
 
     public _started: boolean = false;
@@ -35,8 +37,16 @@ export class LevelController {
     public gridGraphic: pixi.Graphics | undefined;
 
     public entityCount: number = 0;
-    /** id => Entity */
-    public entityMap: Map<number, Entity> = new Map();
+    /** Stores all Entities current present in the level */
+    public entities: Set<Entity> = new Set();
+    /**
+     * A map of an Entity id to the Entity object.
+     * This map may contain Entities no longer present in the level
+     * For that I have used the Omit type to make this map not iterable in Typescript
+     */
+    public entityMap: Omit<Map<number, Entity>, typeof Symbol.iterator> = new Map();
+    /** A set of entities to remove from entityMap when no longer needed by anything  */
+    public entityMapMarkedForCleanup: Set<number> = new Set();
     public entityGrid: LevelGrid<Entity> = [];
 
     public defaultRules: Rule[] = [];
@@ -56,8 +66,6 @@ export class LevelController {
     public _touchStopListener: (event: TouchEvent) => void;
     public _touchDoubleTap: boolean = false;
     public touches: Touch[] = [];
-
-    public entitiesToAnimate: Set<Entity> = new Set();
 
     public tickFlags: {
         rebuildSentences?: boolean;
@@ -193,26 +201,36 @@ export class LevelController {
     //#region ENTITY
 
 
-    public addEntity(entityData: EntityInitData, restoredId?: number) {
-        const entity = new Entity(restoredId ?? this.entityCount++, entityData);
+    public addEntity(
+        entityData: EntityInitData,
+        options?: {restoredId?: number, visibleOnInit?: boolean}
+    ): Entity {
+        const entity = new Entity(options?.restoredId ?? this.entityCount++, entityData);
         const {x,y} = entityData;
+        this.entities.add(entity);
         this.entityMap.set(entity.id, entity);
+        this.entityMapMarkedForCleanup.delete(entity.id);
         this.entityGrid[y][x].push(entity);
-        this.container.addChild(entity.pixiContainer);
+        entity.entityPixi.addContainerToController();
+        if (options?.visibleOnInit === false) {
+            entity.entityPixi.setVisible(false);
+        }
 
         if (entityData.construct instanceof Word) {
             this.tickFlags.rebuildSentences = true;
         }
+        return entity;
     }
 
 
-    public removeEntity(entity: Entity, options: {noArrayMutations?: boolean} = {}) {
-        this.container.removeChild(entity.pixiContainer);
+    public removeEntity(entity: Entity, options: {noArrayMutations?: boolean; instant?: boolean}) {
         if (!options.noArrayMutations) {
-            this.entityMap.delete(entity.id);
-            this.entitiesToAnimate.delete(entity);
+            this.entities.delete(entity);
+            this.entityMapMarkedForCleanup.add(entity.id);
             this.removeEntityFromCell(entity);
-            entity.pixiContainer.destroy();
+            if (options.instant !== false) {
+                entity.entityPixi.destroy();
+            }
         }
 
         if (entity.construct instanceof Word) {
@@ -255,8 +273,8 @@ export class LevelController {
 
     public _removeAllEntities(): void {
         type RemoveOptions = Parameters<LevelController["removeEntity"]>[1];
-        const removeOptions: RemoveOptions  = {noArrayMutations: true};
-        for (const [entityId, entity] of this.entityMap) {
+        const removeOptions: RemoveOptions  = {noArrayMutations: true, instant: true};
+        for (const entity of this.entities) {
             this.removeEntity(entity, removeOptions);
         }
     }
@@ -290,11 +308,11 @@ export class LevelController {
 
     public getAllConstructsInLevel(): Construct[] {
         const constructs: Construct[] = [];
-        for (const entry of this.entityMap) {
-            if (constructs.includes(entry[1].construct)) {
+        for (const entity of this.entities) {
+            if (constructs.includes(entity.construct)) {
                 continue;
             }
-            constructs.push(entry[1].construct);
+            constructs.push(entity.construct);
         }
         return constructs;
     }
@@ -302,9 +320,9 @@ export class LevelController {
 
     public getEntitiesOfConstruct(construct: Construct): Entity[] {
         const entities: Entity[] = [];
-        for (const entry of this.entityMap) {
-            if (entry[1].construct === construct) {
-                entities.push(entry[1]);
+        for (const entity of this.entities) {
+            if (entity.construct === construct) {
+                entities.push(entity);
             }
         }
         return entities;
@@ -317,7 +335,6 @@ export class LevelController {
         entity.y = endY;
         this.addEntityToCell(entity, endX, endY);
         entity.setFacing(facing);
-        entity.animation().addMotionSlide({startX, startY, endX, endY, frames: 5});
 
         if (entity.construct instanceof Word) {
             this.tickFlags.rebuildSentences = true;
@@ -327,8 +344,7 @@ export class LevelController {
 
     public swapOutEntity(entityId: number): void {
         const entity = this.entityMap.get(entityId)!;
-        //@todo add animation
-        this.removeEntity(entity);
+        this.removeEntity(entity, {instant: false});
     }
 
 
@@ -339,8 +355,7 @@ export class LevelController {
             construct: construct,
             x: x,
             y: y
-        }, entityId);
-        //@todo add animation
+        }, {restoredId: entityId, visibleOnInit: false});
     }
 
 
@@ -474,13 +489,13 @@ export class LevelController {
 
     public updateActiveTextEntities(): void {
         for (const entity of this.activeTextEntities) {
-            entity.setActiveTextSprite(false);
+            entity.setActiveText(false);
         }
         this.activeTextEntities.clear();
         for (const sentence of this.sentences) {
             for (const entity of sentence.activeTextEntities) {
                 this.activeTextEntities.add(entity);
-                entity.setActiveTextSprite(true);
+                entity.setActiveText(true);
             }
         }
     }
@@ -659,6 +674,7 @@ export class LevelController {
 
     start(): void {
         this.actionProcessor = new ActionProcessor(this);
+        this.animationSytem = new AnimationSystem(this);
         this._started = true;
         //set a default interaction to init the level in first tick
         this.currentInteraction = {interaction: {type: "wait"}};
@@ -676,19 +692,27 @@ export class LevelController {
             this.start();
         }
 
-        // debug entities
-        for (const entity of this.entityMap.values()) {
-            entity._debugFacingGraphic();
-            entity._debugEntityId();
-        }
+        // // debug entities
+        // for (const entity of this.entityMap.values()) {
+        //     entity._debugFacingGraphic();
+        //     entity._debugEntityId();
+        // }
 
-        const isAnimating = this.entitiesToAnimate.size > 0;
-        for (const entity of this.entitiesToAnimate) {
-            entity.renderNextAnimationFrame();
-        }
-        if (isAnimating) {
+        const animation = this.animationSytem!.getAnimation();
+        if (animation) {
+            animation.next();
             return;
         }
+
+        for (const entityId of this.entityMapMarkedForCleanup) {
+            const entity = this.entityMap.get(entityId);
+            if (entity) {
+                entity.entityPixi.destroy();
+                this.entityMap.delete(entityId);
+            }
+
+        }
+
         if (this.levelWon) {
             return;
         }
@@ -712,11 +736,14 @@ export class LevelController {
         // Process the interaction and unset it
         const interaction = this.currentInteraction;
         this.currentInteraction = undefined;
-        this.actionProcessor!.doInteraction(interaction);
         if (interaction.interaction.type === "undo") {
+            const actions = this.actionProcessor!.doUndo();
+            this.animationSytem!.createAnimationsFromActions(actions, true);
             regenRules();
             return;
         }
+        this.actionProcessor!.doMovement(interaction);
+        this.actionProcessor!.addStep();
 
         const flags = this.tickFlags;
 
@@ -730,13 +757,13 @@ export class LevelController {
             tagsAndMutationsAlreadyGenerated = true;
 
             this.actionProcessor!.doMutations();
+            this.actionProcessor!.addStep();
 
             //check YOU
             const youEntities = this.tagToEntities.get(wordYou);
             if (!youEntities || youEntities.size === 0) {
                 if (!flags._debugAlertedYouAreDead) {
-                    console.log("YOU ARE DEAD");
-                    alert("YOU DO NOT EXIST!");
+                    // alert("YOU DO NOT EXIST!");
                     flags._debugAlertedYouAreDead = true;
                 }
             } else {
@@ -744,15 +771,14 @@ export class LevelController {
             }
         }
 
+        this.animationSytem!.createAnimationsFromActions(this.actionProcessor!.getTopOfStack(), false);
+
         const winEntities = this.tagToEntities.get(wordWin);
         if (winEntities) {
-            console.log("Found win entities");
             for (const entity of winEntities) {
                 const getEntities = this.getEntitiesAtPosition(entity.x, entity.y);
                 const youEntity = getEntities.find(e => this.entityToTags.get(e)?.has(wordYou));
                 if (youEntity) {
-                    // console.log("YOU'RE WINNER");
-                    // alert("YOU'RE WINNER");
                     this.levelWon = true;
                     tempWinScreen(this);
                 }

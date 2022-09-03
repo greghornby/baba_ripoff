@@ -7,6 +7,7 @@ export class Action {
     public hash: string;
     public debug: any;
     constructor(
+        public step: number,
         public data: MovementAction | DestroyEntityAction | CreateEntityAction | SwapOutEntityAction | SwapInEntityAction,
         public inputDebug?: any
     ) {
