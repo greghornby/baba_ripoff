@@ -1,5 +1,5 @@
-import { Rule, RuleNegatableWrapper } from "../main/Rule.js";
-import { Word } from "../main/Word.js";
+import { Rule, RuleNegatableWrapper } from "../../main/Rule.js";
+import { Word } from "../../main/Word.js";
 import { compareNegatableWord } from "./compareNegatableWord.js";
 
 export const notRuleIsMoreSpecific = (

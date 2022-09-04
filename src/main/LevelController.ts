@@ -1,24 +1,27 @@
-import { Level, Cell, LevelGrid, LevelRow } from "./Level.js";
 import * as pixi from "pixi.js";
-import { Entity, EntityInitData } from "./Entity.js";
+import { debugPrint } from "../debug/debugPrint.js";
+import { words } from "../objects/words.js";
+import { Facing } from "../types/Facing.js";
+import { arrayRemove } from "../util/arrayRemove.js";
+import { setEntityTagsAndMutationsFromRule } from "../util/controller/setEntityTagsAndMutationsFromRule.js";
+import { getPaths } from "../util/getPaths.js";
+import { MapOfSets } from "../util/MapOfSets.js";
+import { compareNegatableWord } from "../util/rules/compareNegatableWord.js";
+import { isNotComplement } from "../util/rules/isNotComplement.js";
+import { notRuleIsMoreSpecific } from "../util/rules/notRuleIsMoreSpecific.js";
+import { setAddMultiple } from "../util/setAddMultiple.js";
+import { tempWinScreen } from "../util/tempWinScreen.js";
+import { ActionProcessor } from "./ActionProcessor.js";
+import { AnimationSystem } from "./AnimationSystem.js";
 import { App } from "./App.js";
 import { AppEvents } from "./AppEvent.js";
 import { Construct } from "./Construct.js";
+import { Entity, EntityInitData } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
-import { Facing } from "../types/Facing.js";
-import { IRule, Rule, RuleNegatableWrapper } from "./Rule.js";
-import { MapOfSets } from "../util/MapOfSets.js";
-import { NounSelectionFunction, Word } from "./Word.js";
-import { ActionProcessor } from "./ActionProcessor.js";
+import { Cell, Level, LevelGrid, LevelRow } from "./Level.js";
+import { Rule } from "./Rule.js";
 import { Sentence } from "./Sentence.js";
-import { getPaths } from "../util/getPaths.js";
-import { words } from "../objects/words.js";
-import { debugPrint } from "../debug/debugPrint.js";
-import { compareNegatableWord } from "../util/compareNegatableWord.js";
-import { notRuleIsMoreSpecific } from "../util/notRuleIsMoreSpecific.js";
-import { setAddMultiple } from "../util/setAddMultiple.js";
-import { tempWinScreen } from "../util/tempWinScreen.js";
-import { AnimationSystem } from "./AnimationSystem.js";
+import { Word } from "./Word.js";
 
 export class LevelController {
 
@@ -283,9 +286,13 @@ export class LevelController {
     public removeEntityFromCell(entity: Entity): void;
     public removeEntityFromCell(entity: Entity, x: number, y: number): void;
     public removeEntityFromCell(entity: Entity, x?: number, y?: number): void {
-        this.entityGrid[y ?? entity.y][x ?? entity.x] =
-            this.entityGrid[y ?? entity.y][x ?? entity.x]
-            .filter(e => e !== entity);
+        // this.entityGrid[y ?? entity.y][x ?? entity.x] =
+        //     this.entityGrid[y ?? entity.y][x ?? entity.x]
+        //     .filter(e => e !== entity);
+        arrayRemove(
+            this.entityGrid[y ?? entity.y][x ?? entity.x],
+            entity
+        );
     }
 
 
@@ -444,8 +451,27 @@ export class LevelController {
 
         const complementRules: Rule[] = [];
         const notComplementRules: Rule[] = [];
+        const xIsXRules: Rule[] = [];
         for (const rule of rulesSet) {
             (rule.rule.complement.not ? notComplementRules : complementRules).push(rule);
+            if (
+                !rule.rule.subject.not &&
+                !rule.rule.complement.not &&
+                rule.rule.subject.word === rule.rule.complement.word
+            ) {
+                xIsXRules.push(rule);
+            }
+        }
+
+        for (const rule of rulesSet) {
+            if (rule.rule.subject.not || rule.rule.complement.not) {
+                continue;
+            }
+            for (const checkRule of xIsXRules) {
+                if (rule.rule.subject.word === checkRule.rule.subject.word) {
+                    this.cancelledRules.set(rule, [checkRule]);
+                }
+            }
         }
 
         for (const rule of complementRules) {
@@ -505,77 +531,16 @@ export class LevelController {
         this.tagToEntities.clear();
         this.entityToTags.clear();
         this.entityMutations.clear();
-        for (const {rule} of this.rules) {
-            const complementNot = rule.complement.not;
-            const complementWord = rule.complement.word;
-            const complementIsTag = rule.complement.word.behavior.tag;
-            const complementIsMutation = rule.complement.word.behavior.noun;
-
-            if (!complementIsTag && !complementIsMutation) {
+        const notComplimentRules: Rule[] = [];
+        for (const rule of this.rules) {
+            if (isNotComplement(rule)) {
+                notComplimentRules.push(rule);
                 continue;
             }
-
-            let levelConstructs = this.getAllConstructsInLevel();
-
-            const subjectNot = rule.subject.not;
-            const subjectWord = rule.subject.word;
-            const subjectNoun = subjectWord.behavior.noun!;
-
-            if (subjectWord !== wordText) {
-                levelConstructs = levelConstructs.filter(c => !(c instanceof Word));
-            }
-
-            const subjectSelector = subjectNoun.type === "single" ? subjectNoun.selector : subjectNoun.subject;
-
-            const selectorFn = (construct: Construct): boolean => {
-                let result: boolean;
-                if (subjectSelector instanceof Construct) {
-                    result = construct === subjectSelector;
-                } else {
-                    result = (subjectSelector as NounSelectionFunction)(construct, subjectWord, this.level);
-                }
-                if (subjectNot) {
-                    result = !result;
-                }
-                return result;
-            };
-
-            const selectedConstructs = levelConstructs.filter(selectorFn);
-
-            const entities: Entity[] = selectedConstructs.reduce(
-                (entities, construct) => {
-                    entities.push(...this.getEntitiesOfConstruct(construct));
-                    return entities;
-                },
-                [] as Entity[]
-            );
-
-            if (complementIsTag) {
-                if (complementNot) {
-                    this.tagToEntities.removeFromSet(complementWord, ...entities);
-                } else {
-                    this.tagToEntities.addToSet(complementWord, ...entities);
-                }
-                for (const entity of entities) {
-                    if (complementNot) {
-                        this.entityToTags.removeFromSet(entity, complementWord);
-                    } else {
-                        this.entityToTags.addToSet(entity, complementWord);
-                    }
-                }
-            } else if (complementIsMutation && !complementNot) {
-                for (const entity of entities) {
-                    const complementNoun = complementWord.behavior.noun!;
-                    const complementSelector = complementNoun.type === "single" ? complementNoun.selector : complementNoun.complement;
-                    const mutateToConstructs =
-                        complementSelector instanceof Construct
-                        ? [complementSelector]
-                        : levelConstructs.filter(construct => (complementSelector as NounSelectionFunction)(construct, complementWord, this.level));
-                    const entityToConstructs = this.entityMutations.get(entity) ?? [];
-                    entityToConstructs.push(...mutateToConstructs);
-                    this.entityMutations.set(entity, entityToConstructs);
-                }
-            }
+            setEntityTagsAndMutationsFromRule(this, rule);
+        }
+        for (const rule of notComplimentRules) {
+            setEntityTagsAndMutationsFromRule(this, rule);
         }
     }
 

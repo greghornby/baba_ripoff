@@ -1,4 +1,4 @@
-import { RuleNegatableWrapper } from "../main/Rule.js"
+import { RuleNegatableWrapper } from "../../main/Rule.js"
 
 export const compareNegatableWord = (
     wordA: RuleNegatableWrapper,

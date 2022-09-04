@@ -1,6 +1,4 @@
 import { Construct } from "./Construct.js";
-import { Entity } from "./Entity.js";
-import { Rule } from "./Rule.js";
 import { LevelController } from "./LevelController.js";
 
 export class Level {

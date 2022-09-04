@@ -2,7 +2,7 @@ import { debugPrint } from "../debug/debugPrint.js";
 import { Facing } from "../types/Facing.js";
 import { Action } from "./Action.js";
 import { Entity } from "./Entity.js";
-import { Interaction, InteractionMove } from "./Interaction.js";
+import { Interaction } from "./Interaction.js";
 import { Cell, Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
 import { Word } from "./Word.js";

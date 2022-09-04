@@ -1,9 +1,11 @@
 import { Entity } from "./Entity.js";
+import { Sentence } from "./Sentence.js";
 import { Word } from "./Word.js";
 
 export class Rule {
     constructor(
-        public rule: IRule
+        public rule: IRule,
+        public fromSentence?: Sentence
     ) {}
 
     static word: StaticWordMethod = <StaticWordMethod>((word: Word, invert?: true): RuleNegatableWrapper => {

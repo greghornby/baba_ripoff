@@ -1,7 +1,6 @@
+import objectHash from "object-hash";
 import { Facing } from "../types/Facing.js";
 import { Construct } from "./Construct.js";
-import { Entity } from "./Entity.js";
-import objectHash from "object-hash";
 
 export class Action {
     public hash: string;

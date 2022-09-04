@@ -1,10 +1,10 @@
-import { Construct } from "./Construct.js";
 import * as pixi from "pixi.js";
+import { Facing } from "../types/Facing.js";
+import { Construct } from "./Construct.js";
+import { EntityPixi } from "./EntityPixi.js";
 import { Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
 import { Word } from "./Word.js";
-import { Facing } from "../types/Facing.js";
-import { EntityPixi } from "./EntityPixi.js";
 
 export class Entity {
 

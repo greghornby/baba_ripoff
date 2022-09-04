@@ -1,5 +1,5 @@
 import { Entity } from "./Entity.js";
-import { IRule, RuleNegatableWrapper, Rule } from "./Rule.js";
+import { IRule, Rule, RuleNegatableWrapper } from "./Rule.js";
 import { Word, WordBehavior } from "./Word.js";
 
 export class Sentence {
@@ -173,7 +173,7 @@ export class Sentence {
                         postCondition: postCondition,
                         verb: verb,
                         complement: complement
-                    });
+                    }, this);
                     rules.push(rule);
                 }
             }
