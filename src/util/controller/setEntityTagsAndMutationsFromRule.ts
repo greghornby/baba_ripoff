@@ -4,6 +4,7 @@ import { LevelController } from "../../main/LevelController.js";
 import { IRule, Rule } from "../../main/Rule.js";
 import { INounSelector, NounSelector, Word } from "../../main/Word.js";
 import { arrayRemove } from "../arrayRemove.js";
+import { setAddMultiple } from "../setAddMultiple.js";
 
 export const setEntityTagsAndMutationsFromRule = (
     controller: LevelController,
@@ -92,15 +93,35 @@ const modifyMutationsOnSelectedEntities = (controller: LevelController, levelCon
             constructs = selectOutputConstructsWithEntity(selector as DynamicSelectors, levelConstructs, entity, complement);
         }
 
-        const entityToConstructs = controller.entityMutations.get(entity) ?? [];
-        if (complementNot) {
-            if (constructs.length > 0) {
-                arrayRemove(entityToConstructs, ...constructs);
+        // handle self mutation
+        for (const construct of constructs) {
+            if (entity.construct === construct) {
+                controller.entityStrictlySelfMutations.add(entity);
+                controller.entityMutations.delete(entity);
+                continue;
             }
-        } else {
-            entityToConstructs.push(...constructs);
         }
-        controller.entityMutations.set(entity, entityToConstructs);
+
+        if (controller.entityStrictlySelfMutations.has(entity)) {
+            continue;
+        }
+
+        /** The Set of mutations this entity will undergo. We will manipulate this array with insertions or deletions */
+        if (complementNot) {
+            const entityNotMutations = controller.entityNotMutations.get(entity) ?? new Set();
+            controller.entityNotMutations.set(entity, entityNotMutations);
+            setAddMultiple(entityNotMutations, ...constructs);
+        } else {
+            const entityMutations = controller.entityMutations.get(entity) ?? new Set();
+            controller.entityMutations.set(entity, entityMutations);
+            const entityNotMutations = controller.entityNotMutations.get(entity);
+            for (const construct of constructs) {
+                //if this mutation is cancelled out by a NOT, add it to the mutations Set
+                if (!entityNotMutations?.has(construct)) {
+                    entityMutations.add(construct);
+                }
+            }
+        }
     }
 }
 

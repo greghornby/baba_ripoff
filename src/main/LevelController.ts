@@ -67,7 +67,9 @@ export class LevelController {
     public cancelledWordEntities: Set<Entity> = new Set();
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
-    public entityMutations: Map<Entity, Construct[]> = new Map();
+    public entityMutations: Map<Entity, Set<Construct>> = new Map();
+    public entityNotMutations: Map<Entity, Set<Construct>> = new Map();
+    public entityStrictlySelfMutations: Set<Entity> = new Set();
     public entityIsItself: Set<Entity> = new Set();
     public activeTextEntities: Set<Entity> = new Set();
 
@@ -519,24 +521,19 @@ export class LevelController {
     public generateEntityTagsAndMutationsFromRules(): void {
         this.tagToEntities.clear();
         this.entityToTags.clear();
+        this.entityNotMutations.clear();
         this.entityMutations.clear();
-        const xIsXRules: Rule[] = [];
-        const notComplimentRules: Rule[] = [];
+        this.entityStrictlySelfMutations.clear();
+
+        const _2ndPassRules: Rule[] = [];
         for (const rule of this.rules) {
-            if (isNotComplement(rule)) {
-                notComplimentRules.push(rule);
-                continue;
-            }
-            if (ruleIs_X_IS_X(rule)) {
-                xIsXRules.push(rule);
+            if (!isNotComplement(rule)) {
+                _2ndPassRules.push(rule);
                 continue;
             }
             setEntityTagsAndMutationsFromRule(this, rule);
         }
-        for (const rule of xIsXRules) {
-            setEntityTagsAndMutationsFromRule(this, rule);
-        }
-        for (const rule of notComplimentRules) {
+        for (const rule of _2ndPassRules) {
             setEntityTagsAndMutationsFromRule(this, rule);
         }
     }

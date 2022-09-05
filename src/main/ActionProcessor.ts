@@ -272,12 +272,12 @@ export class ActionProcessor {
         const actions: Action[] = [];
         for (const mutation of this.controller.entityMutations) {
             const [entityToChange, constructsToChangeTo] = mutation;
-            if (constructsToChangeTo.length === 0) {
+            if (constructsToChangeTo.size === 0) {
                 continue;
             }
             const debugData = {
                 fromEntity: entityToChange.name,
-                toConstructs: constructsToChangeTo.map(c => c.associatedWord()._string)
+                toConstructs: constructsToChangeTo//.map(c => c.associatedWord()._string)
             };
             const swapOutAction = new Action(this.step, {
                 type: "swapout",
