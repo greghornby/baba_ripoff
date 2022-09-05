@@ -11,7 +11,9 @@ export namespace AppEventInterface {
     }
 
     export interface DoubleTap {
-        x: number;
-        y: number;
+        fingerCount: number;
+        fingers: {
+            taps: [{x: number; y: number}, {x: number; y: number}]
+        }[]
     }
 }

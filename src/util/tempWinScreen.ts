@@ -34,6 +34,7 @@ export const tempWinScreen = async (controller: LevelController) => {
     controller.container.addChild(winGraphic);
 
     for await (const alpha of fadeIn(winGraphic)) {}
+    controller.exit();
     loadLevel();
 };
 

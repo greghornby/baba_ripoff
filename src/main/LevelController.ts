@@ -29,6 +29,8 @@ import { Word } from "./Word.js";
 
 export class LevelController {
 
+    static instance: LevelController;
+
     levelWon: boolean = false;
 
     //#region Props
@@ -68,9 +70,9 @@ export class LevelController {
     public activeTextEntities: Set<Entity> = new Set();
 
     public currentInteraction: Interaction | undefined;
-    public _keyboardListener: Function;
-    public _swipeListener: Function;
-    public _doubleTapListener: Function;
+    public _keyboardListener: {};
+    public _swipeListener: {};
+    public _doubleTapListener: {};
 
     public tickFlags: {
         rebuildSentences?: boolean;
@@ -82,6 +84,8 @@ export class LevelController {
     constructor(
         public level: Level
     ) {
+
+        LevelController.instance = this;
 
         (globalThis as any)["controller"] = this;
 
@@ -554,11 +558,14 @@ export class LevelController {
         return true;
     }
 
-    public doubleTapInteraction(event: AppEventInterface.DoubleTap): boolean {
-        if (!this.currentInteraction) {
-            this.currentInteraction = getInteractionFromDoubleTap(event);
+    public doubleTapInteraction(event: AppEventInterface.DoubleTap): boolean | void {
+        const interaction = getInteractionFromDoubleTap(event);
+        if (interaction) {
+            if (!this.currentInteraction) {
+                this.currentInteraction = interaction;
+            }
+            return true;
         }
-        return true;
     }
     //#endregion INTERACTION
 
@@ -575,6 +582,9 @@ export class LevelController {
     public exit(): void {
         const app = App.get();
         globalThis.removeEventListener(AppEventEnum.resize, this.resizeListener);
+        app.events.removeListener(this._keyboardListener);
+        app.events.removeListener(this._swipeListener);
+        app.events.removeListener(this._doubleTapListener);
     }
 
 
@@ -610,6 +620,11 @@ export class LevelController {
 
         if (!this.currentInteraction) {
             return;
+        }
+
+        if (this.currentInteraction.interaction.type === "restart") {
+            this.exit();
+            new LevelController(this.level);
         }
 
         const regenRules = () => {

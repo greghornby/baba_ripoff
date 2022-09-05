@@ -1,3 +1,4 @@
+import { iteratorFromLength } from "../util/iteratorFromLength.js";
 import { App } from "./App.js";
 import { AppEventEnum } from "./AppEventEnum.js";
 import { AppEventInterface } from "./AppEventInterface.js";
@@ -6,10 +7,12 @@ export class AppEventSystem {
 
     public events: Map<EventName, EventCallback<any, any>[]> = new Map();
 
+    public tokenToEvent: WeakMap<Token, [eventName: string, eventFunc: Function]> = new WeakMap();
+
     public _domEvents: {[K in keyof WindowEventMap]?: (event: WindowEventMap[K]) => void};
 
     public _touches: Touch[] = [];
-    public _doubleTap: boolean = false;
+    public _doubleTapFingerCount: number = 0;
 
     constructor() {
 
@@ -25,15 +28,16 @@ export class AppEventSystem {
             "touchend": event => {
                 if (this._endTouchIsSwipe(event)) {
                     this.emitSwipeEvent(event);
+                    this._doubleTapFingerCount = 0;
+                } else if (!this._doubleTapFingerCount) {
+                    this._doubleTapFingerCount = event.changedTouches.length;
+                    setTimeout(() => {
+                        this._doubleTapFingerCount = 0;
+                    }, 300);
+                } else if (event.changedTouches.length !== this._doubleTapFingerCount) {
+                    this._doubleTapFingerCount = 0;
                 } else {
-                    if (!this._doubleTap) {
-                        this._doubleTap = true;
-                        setTimeout(() => {
-                            this._doubleTap = false;
-                        }, 300);
-                    } else {
-                        this.emitDoubleTap(event);
-                    }
+                    this.emitDoubleTap(event);
                 }
                 for (let i = 0; i < event.changedTouches.length; i++) {
                     const currentTouch = event.changedTouches[i];
@@ -51,16 +55,19 @@ export class AppEventSystem {
     }
 
 
-    public getEventListeners(eventName: EventName) {
-        const listeners = this.events.get(eventName) ?? [];
-        this.events.set(eventName, listeners);
+    public getEventListeners(eventName: string) {
+        if (!(AppEventEnum as any)[eventName]) {
+            return [];
+        }
+        const listeners = this.events.get(eventName as EventName) ?? [];
+        this.events.set(eventName as EventName, listeners);
         return listeners;
     }
 
-    addListener<T extends EventCallback<AppEventInterface.DoubleTap, TouchEvent>>(eventName: EventEnum["doubleTap"], cb: T): T;
-    addListener<T extends EventCallback<AppEventInterface.Swipe, TouchEvent>>(eventName: EventEnum["swipe"], cb: T): T;
-    addListener<T extends EventCallback<AppEventInterface.Keyboard, KeyboardEvent>>(eventName: EventEnum["keyboard"], cb: T): T;
-    addListener(eventName: EventName, cb: EventCallback<any, any>): EventCallback<any, any> {
+    addListener<T extends EventCallback<AppEventInterface.DoubleTap, TouchEvent>>(eventName: EventEnum["doubleTap"], cb: T): Token;
+    addListener<T extends EventCallback<AppEventInterface.Swipe, TouchEvent>>(eventName: EventEnum["swipe"], cb: T): Token;
+    addListener<T extends EventCallback<AppEventInterface.Keyboard, KeyboardEvent>>(eventName: EventEnum["keyboard"], cb: T): Token;
+    addListener(eventName: EventName, cb: EventCallback<any, any>): Token {
         const wrapped: EventCallback<any, Event> = function(event, originalEvent) {
             const app = App.get();
             if (document.activeElement !== app.pixiApp.view) {
@@ -72,12 +79,19 @@ export class AppEventSystem {
             }
         }
         this.getEventListeners(eventName).push(wrapped);
+        const token: Token = {};
+        this.tokenToEvent.set(token, [eventName, wrapped]);
         return cb;
     }
 
-    removeListener(eventName: EventName, cb: EventCallback<any, any>): void {
+    removeListener(token: Token): void {
+        const data = this.tokenToEvent.get(token);
+        if (!data) {
+            return;
+        }
+        const [eventName, listener] = data;
         const listeners = this.getEventListeners(eventName);
-        const index = listeners.indexOf(cb);
+        const index = listeners.indexOf(listener as any);
         if (index > -1) {
             listeners.splice(index, 1);
         }
@@ -105,10 +119,17 @@ export class AppEventSystem {
     }
 
     emitDoubleTap(originalEvent: TouchEvent) {
-        const endTouch = originalEvent.changedTouches[0];
         const simpleEvent: AppEventInterface.DoubleTap = {
-            x: endTouch.pageX,
-            y: endTouch.pageY
+            fingerCount: originalEvent.changedTouches.length,
+            fingers: [...iteratorFromLength(originalEvent.changedTouches)].map(endTouch => {
+                const startTouch = this._getStartTouch(endTouch);
+                return {
+                    taps: [
+                        {x: startTouch.pageX, y: startTouch.pageY},
+                        {x: endTouch.pageX, y: endTouch.pageY}
+                    ]
+                };
+            })
         };
         this.emitEvent(AppEventEnum.doubleTap, simpleEvent, originalEvent);
     }
@@ -164,6 +185,7 @@ export class AppEventSystem {
     }
 }
 
+type Token = {};
 type EventEnum = (typeof AppEventEnum);
 type EventName = (EventEnum)[keyof EventEnum];
 type EventCallback<T = any, E extends Event = Event> = (event: T, originalEvent: E) => boolean | undefined | void;
