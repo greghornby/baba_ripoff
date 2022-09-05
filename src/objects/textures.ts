@@ -13,6 +13,7 @@ import words_not from "../images/words/not.png"
 import words_push from "../images/words/push.png"
 import words_rock from "../images/words/rock.png"
 import words_stop from "../images/words/stop.png"
+import words_text from "../images/words/text.png"
 import words_wall from "../images/words/wall.png"
 import words_win from "../images/words/win.png"
 import words_you from "../images/words/you.png"
@@ -35,6 +36,7 @@ export const textures = {
         "push": pixijs.Texture.from(words_push),
         "rock": pixijs.Texture.from(words_rock),
         "stop": pixijs.Texture.from(words_stop),
+        "text": pixijs.Texture.from(words_text),
         "wall": pixijs.Texture.from(words_wall),
         "win": pixijs.Texture.from(words_win),
         "you": pixijs.Texture.from(words_you)

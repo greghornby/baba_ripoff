@@ -18,4 +18,5 @@ export const _commonKey = {
     p: words.push,
     f: words.flag,
     v: words.win,
+    t: words.text
 };

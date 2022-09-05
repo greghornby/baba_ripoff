@@ -9,7 +9,7 @@ const texturePlaceholder = textures.missing;
 export const words = {
 
     text: new Word("text", {
-		texture: texturePlaceholder,
+		texture: textures.words.text,
 		behavior: {
 			noun: {
 				subject: new NounSelector.compareLevelConstructs(construct => construct instanceof Word),
