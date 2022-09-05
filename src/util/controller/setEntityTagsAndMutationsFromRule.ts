@@ -24,7 +24,6 @@ export const setEntityTagsAndMutationsFromRule = (
     if (complementIsTag) {
         modifyTagsOnSelectedEntities(controller, selectedEntities, rule.complement);
     } else if (complementIsMutation) {
-        console.log(rule.complement.word)
         modifyMutationsOnSelectedEntities(controller, levelConstructs, selectedEntities, rule.complement);
     }
 }
@@ -40,7 +39,6 @@ const selectEntities = (controller: LevelController, _levelConstructs: Construct
         const wordConstructs = levelConstructs.filter(c => c instanceof Word);
         arrayRemove(levelConstructs, ...wordConstructs);
     }
-    console.log("Selecting non-text", levelConstructs);
 
     if (selector instanceof NounSelector.single) {
         if (subjectNot) {
@@ -80,8 +78,6 @@ const modifyMutationsOnSelectedEntities = (controller: LevelController, levelCon
     const complementNot = complement.not;
     const complementWord = complement.word;
     const selector = complement.word.behavior.noun!.compliment;
-
-    console.log("Selected Entities", entities);
 
     const fixedOutputConstructs =
         (selector instanceof NounSelector.single || selector instanceof NounSelector.compareLevelConstructs)
