@@ -1,7 +1,7 @@
 import { categories } from "../objects/categories.js";
 import { colors } from "../objects/colors.js";
 import { Construct, ConstructData } from "./Construct.js";
-import { Level } from "./Level.js";
+import { Entity } from "./Entity.js";
 
 export class Word extends Construct {
 
@@ -44,13 +44,14 @@ export class Word extends Construct {
     }
 }
 
-export type NounSelectionFunction = (testConstruct: Construct, thisWord: Word, level: Level) => boolean;
-
-
 export interface WordBehavior {
-    noun?:
-        | {type: "single"; selector: Construct | NounSelectionFunction}
-        | {type: "split"; subject: Construct | NounSelectionFunction; complement: Construct | NounSelectionFunction};
+    // noun?:
+    //     | {type: "single"; selector: Construct | NounSelectorCompareLevelConstructsFunction}
+    //     | {type: "split"; subject: Construct | NounSelectorCompareLevelConstructsFunction; complement: Construct | NounSelectorCompareLevelConstructsFunction};
+    noun?: {
+        subject: InstanceType<INounSelector["single"] | INounSelector["compareLevelConstructs"]>; //only these 2 selectors apply
+        compliment: InstanceType<INounSelector[keyof INounSelector]>; //all selectors apply
+    };
     tag?: true;
     verb?: boolean;
     not?: boolean;
@@ -60,3 +61,25 @@ export interface WordBehavior {
         wordTypes: (keyof WordBehavior)[];
     };
 }
+
+export type NounSelectorCompareLevelConstructsFunction = (testConstruct: Construct, thisWord: Word) => boolean;
+export type NounSelectorCompareLevelConstructsWithEntityFunction = (entity: Entity, testConstruct: Construct, thisWord: Word) => boolean;
+export type NounSelectorFromEntityFunction = (entity: Entity, thisWord: Word) => Construct[];
+
+export const NounSelector = {
+    single: class NounSelectorSingle {
+        constructor(public construct: Construct) {}
+    },
+    compareLevelConstructs: class NounSelectorCompareLevelConstructs {
+        constructor(public compareFn: NounSelectorCompareLevelConstructsFunction) {}
+    },
+    compareLevelConstructsWithEntityFunction: class NounSelectorCompareLevelConstructsWithEntity {
+        constructor(public compareFn: NounSelectorCompareLevelConstructsWithEntityFunction) {}
+    },
+    fromEntity: class NounSelectorFromEntity {
+        constructor(public entityFn: NounSelectorFromEntityFunction) {}
+    }
+}
+
+export type INounSelector = typeof NounSelector;
+export type INounSelectorType = InstanceType<INounSelector[keyof INounSelector]>;

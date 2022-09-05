@@ -15,6 +15,7 @@ import { MapOfSets } from "../util/MapOfSets.js";
 import { compareNegatableWord } from "../util/rules/compareNegatableWord.js";
 import { isNotComplement } from "../util/rules/isNotComplement.js";
 import { notRuleIsMoreSpecific } from "../util/rules/notRuleIsMoreSpecific.js";
+import { ruleIs_X_IS_X } from "../util/rules/ruleIs_X_IS_X.js";
 import { setAddMultiple } from "../util/setAddMultiple.js";
 import { tempWinScreen } from "../util/tempWinScreen.js";
 import { ActionProcessor } from "./ActionProcessor.js";
@@ -67,6 +68,7 @@ export class LevelController {
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
     public entityMutations: Map<Entity, Construct[]> = new Map();
+    public entityIsItself: Set<Entity> = new Set();
     public activeTextEntities: Set<Entity> = new Set();
 
     public currentInteraction: Interaction | undefined;
@@ -429,11 +431,9 @@ export class LevelController {
     public updateLevelRules(): void {
         const rulesSet: Set<Rule> = new Set();
         setAddMultiple(rulesSet, ...this.defaultRules);
-        // this.rules = [...this.level.initData.defaultRules];
         for (const sentence of this.sentences) {
             const sentenceRules = sentence.getRules();
             setAddMultiple(rulesSet, ...sentenceRules);
-            // this.rules.push(...sentenceRules);
         }
 
         for (const entity of this.cancelledWordEntities) {
@@ -447,11 +447,7 @@ export class LevelController {
         const xIsXRules: Rule[] = [];
         for (const rule of rulesSet) {
             (rule.rule.complement.not ? notComplementRules : complementRules).push(rule);
-            if (
-                !rule.rule.subject.not &&
-                !rule.rule.complement.not &&
-                rule.rule.subject.word === rule.rule.complement.word
-            ) {
+            if (ruleIs_X_IS_X(rule)) {
                 xIsXRules.push(rule);
             }
         }
@@ -524,12 +520,20 @@ export class LevelController {
         this.tagToEntities.clear();
         this.entityToTags.clear();
         this.entityMutations.clear();
+        const xIsXRules: Rule[] = [];
         const notComplimentRules: Rule[] = [];
         for (const rule of this.rules) {
             if (isNotComplement(rule)) {
                 notComplimentRules.push(rule);
                 continue;
             }
+            if (ruleIs_X_IS_X(rule)) {
+                xIsXRules.push(rule);
+                continue;
+            }
+            setEntityTagsAndMutationsFromRule(this, rule);
+        }
+        for (const rule of xIsXRules) {
             setEntityTagsAndMutationsFromRule(this, rule);
         }
         for (const rule of notComplimentRules) {

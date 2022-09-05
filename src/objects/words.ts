@@ -1,4 +1,5 @@
-import { Word } from "../main/Word.js";
+import { NounSelector, Word } from "../main/Word.js";
+import { behaviorNoun } from "../util/behaviorNounAndComplement.js";
 import { colors } from "./colors.js";
 import { constructs } from "./constructs.js";
 import { textures } from "./textures.js";
@@ -11,11 +12,8 @@ export const words = {
 		texture: texturePlaceholder,
 		behavior: {
 			noun: {
-				type: "split",
-				subject: (construct) => construct instanceof Word,
-				complement: (construct, thisWord) => {
-					return construct.associatedWord() === thisWord;
-				}
+				subject: new NounSelector.compareLevelConstructs(construct => construct instanceof Word),
+				compliment: new NounSelector.fromEntity(entity => [entity.construct.associatedWord()])
 			}
 		}
 	}),
@@ -24,7 +22,7 @@ export const words = {
 		texture: textures.words.baba,
 		color: colors.pink,
 		behavior: {
-            noun: {type: "single", selector: constructs.baba}
+			noun: behaviorNoun(new NounSelector.single(constructs.baba))
 		}
 	}),
 
@@ -116,7 +114,7 @@ export const words = {
 		texture: textures.words.wall,
 		color: colors.brightBlue,
 		behavior: {
-            noun: {type: "single", selector: constructs.wall}
+			noun: behaviorNoun(new NounSelector.single(constructs.wall))
 		}
 	}),
 
@@ -124,7 +122,7 @@ export const words = {
 		texture: textures.words.rock,
 		color: colors.brightBrown,
 		behavior: {
-            noun: {type: "single", selector: constructs.rock}
+			noun: behaviorNoun(new NounSelector.single(constructs.rock))
 		}
 	}),
 
@@ -132,7 +130,7 @@ export const words = {
 		texture: textures.words.flag,
 		color: colors.gold,
 		behavior: {
-            noun: {type: "single", selector: constructs.flag}
+			noun: behaviorNoun(new NounSelector.single(constructs.flag))
 		}
 	}),
 
@@ -140,7 +138,7 @@ export const words = {
 		texture: texturePlaceholder,
 		color: colors.darkGreen,
 		behavior: {
-            noun: {type: "single", selector: constructs.leaf}
+			noun: behaviorNoun(new NounSelector.single(constructs.leaf))
 		}
 	}),
 }
