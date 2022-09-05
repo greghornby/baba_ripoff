@@ -1,6 +1,6 @@
 import * as pixi from "pixi.js";
+import { App } from "../app/App.js";
 import { Facing } from "../types/Facing.js";
-import { App } from "./App.js";
 import { Entity } from "./Entity.js";
 import { LevelController } from "./LevelController.js";
 

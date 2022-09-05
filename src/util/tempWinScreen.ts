@@ -1,8 +1,7 @@
-import { LevelController } from "../main/LevelController.js";
 import * as pixi from "pixi.js";
-import { App } from "../main/App.js";
 import { level01 } from "../levels/level01.js";
 import { levelDebug } from "../levels/levelDebug.js";
+import { LevelController } from "../main/LevelController.js";
 import { queryParams } from "./queryParams.js";
 
 const levels = [level01, levelDebug];
@@ -20,8 +19,6 @@ export const loadLevel = () => {
 }
 
 export const tempWinScreen = async (controller: LevelController) => {
-
-    const app = App.get();
     const winGraphic = new pixi.Text("WINNER!!!", new pixi.TextStyle({
         fontFamily : 'Arial',
         fontSize: 100,

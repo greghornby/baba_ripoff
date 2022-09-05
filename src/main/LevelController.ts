@@ -1,8 +1,14 @@
 import * as pixi from "pixi.js";
+import { App } from "../app/App.js";
+import { AppEventEnum } from "../app/AppEventEnum.js";
+import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { words } from "../objects/words.js";
 import { Facing } from "../types/Facing.js";
 import { arrayRemove } from "../util/arrayRemove.js";
+import { getInteractionFromDoubleTap } from "../util/controller/getInteractionFromDoubleTap.js";
+import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
+import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
 import { setEntityTagsAndMutationsFromRule } from "../util/controller/setEntityTagsAndMutationsFromRule.js";
 import { getPaths } from "../util/getPaths.js";
 import { MapOfSets } from "../util/MapOfSets.js";
@@ -13,8 +19,6 @@ import { setAddMultiple } from "../util/setAddMultiple.js";
 import { tempWinScreen } from "../util/tempWinScreen.js";
 import { ActionProcessor } from "./ActionProcessor.js";
 import { AnimationSystem } from "./AnimationSystem.js";
-import { App } from "./App.js";
-import { AppEvents } from "./AppEvent.js";
 import { Construct } from "./Construct.js";
 import { Entity, EntityInitData } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
@@ -64,11 +68,9 @@ export class LevelController {
     public activeTextEntities: Set<Entity> = new Set();
 
     public currentInteraction: Interaction | undefined;
-    public _keyboardListener: (event: KeyboardEvent) => void;
-    public _touchStartListener: (event: TouchEvent) => void;
-    public _touchStopListener: (event: TouchEvent) => void;
-    public _touchDoubleTap: boolean = false;
-    public touches: Touch[] = [];
+    public _keyboardListener: Function;
+    public _swipeListener: Function;
+    public _doubleTapListener: Function;
 
     public tickFlags: {
         rebuildSentences?: boolean;
@@ -117,25 +119,12 @@ export class LevelController {
         //setup resize listener
         this._fitContainerToScreen();
         this.resizeListener = () => this._fitContainerToScreen();
-        globalThis.addEventListener(AppEvents.resize, this.resizeListener);
+        globalThis.addEventListener(AppEventEnum.resize, this.resizeListener);
 
-        //setup keyboard listener
-        this._keyboardListener = (event: KeyboardEvent) => this.keyboardInteraction(event);
-        this._touchStartListener = (event: TouchEvent) => {
-            for (let i = 0; i < event.changedTouches.length; i++) {
-                this.touches.push(event.changedTouches[i]);
-            }
-        }
-        this._touchStopListener = (event: TouchEvent) => {
-            this.touchInteraction(event);
-            for (let i = 0; i < event.changedTouches.length; i++) {
-                const currentTouch = event.changedTouches[i];
-                this.touches = this.touches.filter(t => t.identifier !== currentTouch.identifier);
-            }
-        };
-        globalThis.addEventListener("keydown", this._keyboardListener);
-        globalThis.addEventListener("touchstart", this._touchStartListener);
-        globalThis.addEventListener("touchend", this._touchStopListener);
+        //setup listeners
+        this._keyboardListener = app.events.addListener("keyboard", event => event.type === "down" ? this.keyboardInteraction(event) : undefined);
+        this._swipeListener = app.events.addListener("swipe", event => this.swipeInteraction(event));
+        this._doubleTapListener = app.events.addListener("doubleTap", event => this.doubleTapInteraction(event));
 
         //add the main `tick` function and start the ticker again
         type TickFlags = typeof this.tickFlags;
@@ -546,98 +535,31 @@ export class LevelController {
 
 
     //#endregion RULES
+
     //#region INTERACTION
-
-
-    public keyboardInteraction(event: KeyboardEvent): void {
-
-        const app = App.get();
-        if (document.activeElement !== app.pixiApp.view) {
-            return;
+    public keyboardInteraction(event: AppEventInterface.Keyboard): boolean | void {
+        const interaction = getInteractionFromKeyboard(event);
+        if (interaction) {
+            if (!this.currentInteraction) {
+                this.currentInteraction = interaction;
+            }
+            return true;
         }
-
-        const key = event.key;
-        let interactionType: Interaction["interaction"] | undefined;
-
-        switch (key) {
-            case "w":
-            case "ArrowUp":
-                interactionType = {type: "move", direction: Facing.up};
-                break;
-            case "a":
-            case "ArrowLeft":
-                interactionType = {type: "move", direction: Facing.left};
-                break;
-            case "d":
-            case "ArrowRight":
-                interactionType = {type: "move", direction: Facing.right};
-                break;
-            case "s":
-            case "ArrowDown":
-                interactionType = {type: "move", direction: Facing.down};
-                break;
-            case " ":
-                interactionType = {type: "wait"};
-                break;
-            case "z":
-                interactionType = {type: "undo"};
-                break;
-        }
-
-        if (!interactionType) {
-            return;
-        }
-
-        event.preventDefault();
-        this.currentInteraction = {interaction: interactionType};
     }
 
-
-    public touchInteraction(event: TouchEvent): void {
-
-        let interactionType: Interaction["interaction"];
-        event.preventDefault();
-
-        if (!this._touchDoubleTap) {
-            this._touchDoubleTap = true;
-            setTimeout(() => {
-                this._touchDoubleTap = false;
-            }, 300);
-        } else {
-            interactionType = {type: "undo"};
-            this.currentInteraction = {interaction: interactionType};
-            return;
+    public swipeInteraction(event: AppEventInterface.Swipe): boolean {
+        if (!this.currentInteraction) {
+            this.currentInteraction = getInteractionFromSwipe(this, event);
         }
-
-        const endTouch = event.changedTouches[0];
-        const startTouch = this.touches.find(t => t.identifier === endTouch.identifier)!;
-
-        const diffX = endTouch.pageX - startTouch.pageX;
-        const diffY = endTouch.pageY - startTouch.pageY;
-
-        const requiredDistance = this.level.TILE_SIZE * this.container.scale.x;
-        if (Math.abs(diffX) < requiredDistance && Math.abs(diffY) < requiredDistance) {
-            return;
-        }
-
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-            if (diffX > 0) {
-                interactionType = {type: "move", direction: Facing.right};
-            } else {
-                interactionType = {type: "move", direction: Facing.left};
-            }
-        } else {
-            if (diffY > 0) {
-                interactionType = {type: "move", direction: Facing.down};
-            } else {
-                interactionType = {type: "move", direction: Facing.up};
-            }
-        }
-
-        this.currentInteraction = {interaction: interactionType};
+        return true;
     }
 
-
+    public doubleTapInteraction(event: AppEventInterface.DoubleTap): boolean {
+        if (!this.currentInteraction) {
+            this.currentInteraction = getInteractionFromDoubleTap(event);
+        }
+        return true;
+    }
     //#endregion INTERACTION
 
 
@@ -652,7 +574,7 @@ export class LevelController {
 
     public exit(): void {
         const app = App.get();
-        globalThis.removeEventListener(AppEvents.resize, this.resizeListener);
+        globalThis.removeEventListener(AppEventEnum.resize, this.resizeListener);
     }
 
 
