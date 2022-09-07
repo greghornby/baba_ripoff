@@ -18,7 +18,7 @@
               "${workspaceRoot}/jest.config.ts",
 
               //files
-              "./tests/Sentence.getRules.test.ts"
+              "./tests/checkIfRulesCancel.test.ts"
             ],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",

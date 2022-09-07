@@ -10,6 +10,7 @@
     "webpack": "webpack",
     "jest": "node --no-warnings --experimental-vm-modules node_modules/.bin/jest --detectOpenHandles",
     "images": "ts-node-esm ./scripts/gen_image_imports.cts",
+    "sen": "ts-node-esm ./scripts/make_all_sentences.cts",
     "deploy:s3": "node ./deployS3.js"
   },
   "dependencies": {

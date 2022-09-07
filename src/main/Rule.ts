@@ -3,10 +3,13 @@ import { Sentence } from "./Sentence.js";
 import { Word } from "./Word.js";
 
 export class Rule {
+    public isSimple: boolean;
     constructor(
         public rule: IRule,
         public fromSentence?: Sentence
-    ) {}
+    ) {
+        this.isSimple = !rule.preCondition && !rule.postCondition;
+    }
 
     static word: StaticWordMethod = <StaticWordMethod>((word: Word, invert?: true): RuleNegatableWrapper => {
         return {not: invert ? !false : false, word: word};

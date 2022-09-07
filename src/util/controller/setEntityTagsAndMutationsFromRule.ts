@@ -8,29 +8,29 @@ import { setAddMultiple } from "../setAddMultiple.js";
 
 export const setEntityTagsAndMutationsFromRule = (
     controller: LevelController,
-    _rule: Rule
+    rule: Rule
 ) => {
-    const {rule} = _rule;
 
-    const complementIsTag = rule.complement.word.behavior.tag;
-    const complementIsMutation = rule.complement.word.behavior.noun;
+    const complementIsTag = rule.rule.complement.word.behavior.tag;
+    const complementIsMutation = rule.rule.complement.word.behavior.noun;
     if (!complementIsTag && !complementIsMutation) {
         return;
     }
 
     const levelConstructs = controller.getAllConstructsInLevel();
 
-    const selectedEntities: Entity[] = selectEntities(controller, levelConstructs, rule.subject);
+    const selectedEntities: Entity[] = selectEntities(controller, rule, levelConstructs);
 
     if (complementIsTag) {
-        modifyTagsOnSelectedEntities(controller, selectedEntities, rule.complement);
+        modifyTagsOnSelectedEntities(controller, rule, selectedEntities);
     } else if (complementIsMutation) {
-        modifyMutationsOnSelectedEntities(controller, levelConstructs, selectedEntities, rule.complement);
+        modifyMutationsOnSelectedEntities(controller, rule, levelConstructs, selectedEntities);
     }
 }
 
 
-const selectEntities = (controller: LevelController, _levelConstructs: Construct[], subject: IRule["subject"]): Entity[] => {
+const selectEntities = (controller: LevelController, rule: Rule, _levelConstructs: Construct[]): Entity[] => {
+    const subject = rule.rule.subject;
     const subjectNot = subject.not;
     const subjectWord = subject.word;
     const selector = subjectWord.behavior.noun!.subject;
@@ -57,7 +57,8 @@ const selectEntities = (controller: LevelController, _levelConstructs: Construct
 }
 
 
-const modifyTagsOnSelectedEntities = (controller: LevelController, entities: Entity[], complement: IRule["complement"]) => {
+const modifyTagsOnSelectedEntities = (controller: LevelController, rule: Rule, entities: Entity[]) => {
+    const complement = rule.rule.complement;
     const complementNot = complement.not;
     const complementWord = complement.word;
     if (complementNot) {
@@ -75,9 +76,9 @@ const modifyTagsOnSelectedEntities = (controller: LevelController, entities: Ent
 }
 
 
-const modifyMutationsOnSelectedEntities = (controller: LevelController, levelConstructs: Construct[], entities: Entity[], complement: IRule["complement"]) => {
+const modifyMutationsOnSelectedEntities = (controller: LevelController, rule: Rule, levelConstructs: Construct[], entities: Entity[]) => {
+    const complement = rule.rule.complement;
     const complementNot = complement.not;
-    const complementWord = complement.word;
     const selector = complement.word.behavior.noun!.compliment;
 
     const fixedOutputConstructs =
@@ -168,17 +169,5 @@ const getEntitiesFromConstructsArray = (controller: LevelController, constructs:
         [] as Entity[]
     )
 }
-
-function* filterIterator<T>(
-    iterator: Iterable<T>,
-    compareFn: (value: T) => boolean
-) {
-    for (const i of iterator) {
-        if (compareFn(i)) {
-            yield i;
-        }
-    }
-}
-
 
 const wordText = Word.findWordFromText("text");

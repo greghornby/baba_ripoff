@@ -10,12 +10,12 @@ import { getInteractionFromDoubleTap } from "../util/controller/getInteractionFr
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
 import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
 import { setEntityTagsAndMutationsFromRule } from "../util/controller/setEntityTagsAndMutationsFromRule.js";
+import { visuallyCancelSentences } from "../util/controller/visuallyCancelSentences.js";
+import { generatePairsFromArray } from "../util/generatePairsFromArray.js";
 import { getPaths } from "../util/getPaths.js";
 import { MapOfSets } from "../util/MapOfSets.js";
-import { compareNegatableWord } from "../util/rules/compareNegatableWord.js";
 import { isNotComplement } from "../util/rules/isNotComplement.js";
-import { notRuleIsMoreSpecific } from "../util/rules/notRuleIsMoreSpecific.js";
-import { ruleIs_X_IS_X } from "../util/rules/ruleIs_X_IS_X.js";
+import { rulesCancel } from "../util/rules/rulesCancel.js";
 import { setAddMultiple } from "../util/setAddMultiple.js";
 import { tempWinScreen } from "../util/tempWinScreen.js";
 import { ActionProcessor } from "./ActionProcessor.js";
@@ -61,14 +61,22 @@ export class LevelController {
 
     public defaultRules: Rule[] = [];
     public sentences: Sentence[] = [];
-    public rules: Rule[] = [];
+    public rules: Set<Rule> = new Set();
     /** Maps a cancelled out rule to the list of rules with NOT that cancel it out */
-    public cancelledRules: Map<Rule, Rule[]> = new Map();
-    public cancelledWordEntities: Set<Entity> = new Set();
+    public _cancelledRules: Set<Rule> = new Set();
+    public _cancelledWordEntities: Set<Entity> = new Set();
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
     public entityMutations: Map<Entity, Set<Construct>> = new Map();
     public entityNotMutations: Map<Entity, Set<Construct>> = new Map();
+    public mutationMap: Map<Entity, {
+        sentence: Sentence;
+        subjectWord: Word;
+        constructs: {
+            construct: Construct;
+            complementWord: Word;
+        }[];
+    }[]> = new Map();
     public entityStrictlySelfMutations: Set<Entity> = new Set();
     public entityIsItself: Set<Entity> = new Set();
     public activeTextEntities: Set<Entity> = new Set();
@@ -431,76 +439,38 @@ export class LevelController {
 
 
     public updateLevelRules(): void {
-        const rulesSet: Set<Rule> = new Set();
-        setAddMultiple(rulesSet, ...this.defaultRules);
+        this.rules.clear();
+        setAddMultiple(this.rules, ...this.defaultRules);
+
+        const sentenceToRules = new Map<Sentence, Rule[]>();
         for (const sentence of this.sentences) {
             const sentenceRules = sentence.getRules();
-            setAddMultiple(rulesSet, ...sentenceRules);
+            setAddMultiple(this.rules, ...sentenceRules);
+
+            const x = sentenceToRules.get(sentence) ?? [];
+            sentenceToRules.set(sentence, x);
+            x.push(...sentenceRules);
         }
 
-        for (const entity of this.cancelledWordEntities) {
-            entity.setCancelledWord(false);
-        }
-        this.cancelledRules.clear();
-        this.cancelledWordEntities.clear();
+        this._cancelledRules.clear();
 
-        const complementRules: Rule[] = [];
-        const notComplementRules: Rule[] = [];
-        const xIsXRules: Rule[] = [];
-        for (const rule of rulesSet) {
-            (rule.rule.complement.not ? notComplementRules : complementRules).push(rule);
-            if (ruleIs_X_IS_X(rule)) {
-                xIsXRules.push(rule);
+        for (const [ruleA, ruleB] of generatePairsFromArray([...this.rules])) {
+            const cancelledRule = rulesCancel(ruleA, ruleB);
+            if (cancelledRule) {
+                this._cancelledRules.add(cancelledRule);
             }
         }
 
-        for (const rule of rulesSet) {
-            if (rule.rule.subject.not || rule.rule.complement.not) {
-                continue;
-            }
-            for (const checkRule of xIsXRules) {
-                if (rule.rule.subject.word === checkRule.rule.subject.word) {
-                    this.cancelledRules.set(rule, [checkRule]);
-                }
-            }
-        }
+        visuallyCancelSentences(this, sentenceToRules);
 
-        for (const rule of complementRules) {
-            for (const notRule of notComplementRules) {
-                // skip if they don't have the same subject or complement
-                // as a not rule can only cancel out a rule
-                // of the same subject
-                const {match: sameSubject} = compareNegatableWord(rule.rule.subject, notRule.rule.subject);
-                const {match: sameComplement} = compareNegatableWord(rule.rule.complement, notRule.rule.complement, true); //ignore not with true boolean
-                if (!sameSubject || !sameComplement) {
-                    continue;
-                }
-                const notIsMoreSpecific = notRuleIsMoreSpecific(rule, notRule);
-                if (notIsMoreSpecific) {
-                    continue;
-                }
-                const cancelledBy = this.cancelledRules.get(rule) ?? [];
-                cancelledBy.push(notRule);
-                this.cancelledRules.set(rule, cancelledBy);
-
-                //only cancel words of simple rules for now
-                //@todo figure out a way to display cancelled complex sentences
-                if (!rule.rule.preCondition && !rule.rule.postCondition) {
-                    this.cancelledWordEntities.add(rule.rule.subject.entity!);
-                    this.cancelledWordEntities.add(rule.rule.verb.entity!);
-                    this.cancelledWordEntities.add(rule.rule.complement.entity!);
-                }
-            }
+        for (const rule of this._cancelledRules) {
+            this.rules.delete(rule);
         }
+    }
 
-        for (const [rule] of this.cancelledRules) {
-            rulesSet.delete(rule);
-        }
-        this.rules = [...rulesSet];
 
-        for (const entity of this.cancelledWordEntities) {
-            entity.setCancelledWord(true);
-        }
+    public setCancelledSentences(sentences: Sentence[]) {
+
     }
 
 

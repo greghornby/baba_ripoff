@@ -18,6 +18,13 @@ export const words = {
 		}
 	}),
 
+	all: new Word("all", {
+		texture: texturePlaceholder,
+		behavior: {
+			noun: behaviorNoun(new NounSelector.single(constructs.baba)) //@todo placeholder
+		}
+	}),
+
     baba: new Word("baba", {
 		texture: textures.words.baba,
 		color: colors.pink,
