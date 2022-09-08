@@ -4,8 +4,8 @@ import { _commonKey } from "./_commonKey.js";
 
 
 const levelText = `
-_biy__fi_v
-________x
+_biy__fiv
+___xiz_X
 _WWWWWWWWWW___n
 _W________W___r
 _W_B______W___i

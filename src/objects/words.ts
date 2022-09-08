@@ -161,10 +161,18 @@ export const words = {
 	}),
 
     leaf: new Word("leaf", {
-		texture: texturePlaceholder,
+		texture: textures.words.leaf,
 		color: colors.darkGreen,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.leaf))
+		}
+	}),
+
+	skull: new Word("skull", {
+		texture: textures.words.skull,
+		color: 0xa61b03,
+		behavior: {
+			noun: behaviorNoun(new NounSelector.single(constructs.skull))
 		}
 	}),
 }

@@ -37,10 +37,17 @@ export const constructs = {
     }),
 
     leaf: new Construct({
-        texture: texturePlaceholder,
+        texture: textures.objects.leaf,
         associatedWord: () => Word.findWordFromText("leaf"),
         category: categories.interactable,
         color: colors.darkGreen
+    }),
+
+    skull: new Construct({
+        texture: textures.objects.skull,
+        associatedWord: () => Word.findWordFromText("skull"),
+        category: categories.character, //@todo create danger category
+        color: 0xa61b03
     }),
 
 }
