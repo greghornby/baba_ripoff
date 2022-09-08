@@ -167,6 +167,7 @@ export class ActionProcessor {
         let actions: Action[] = [];
         let nextEntities: Readonly<Cell<Entity>> = [startEntity];
         const nextPoint: [number, number] = [startEntity.x, startEntity.y];
+        const originEntityPoint = [...nextPoint];
         let pullCheck = false;
 
         let pullCheckIterationsRemaining = 1e3;
@@ -185,35 +186,51 @@ export class ActionProcessor {
             }
         }
 
+
+        type ToMove = [entity: Entity, startX: number, startY: number, endX: number, endY: number];
+        let pullBlocked = false;
+        const entitiesToMove: ToMove[] = [];
+        const pullEntitiesToMove: ToMove[] = [];
+
         // while loop failsafe
         let iterationsRemaining = 1e3;
-
-        let firstPass = true;
         while (iterationsRemaining--) {
+
+            const isOrigin = nextPoint[0] === originEntityPoint[0] && nextPoint[1] === originEntityPoint[1];
+
+            if (pullCheck && pullBlocked) {
+                continue;
+            }
 
             let cellBlocked = false;
             let checkAgain = false;
 
-            let entitiesToMove: Entity[] = [];
+            const toMove: Entity[] = [];
 
             for (const nextEntity of nextEntities) {
-                if (firstPass || nextEntity === startEntity) {
-                    entitiesToMove.push(nextEntity);
+                if (nextEntity === startEntity) {
+                    toMove.push(nextEntity);
                     checkAgain = true;
-                    if (nextEntity === startEntity) {
-                        pullCheck = false;
-                    }
-                    continue;
+                    break;
                 }
                 if (!this._entityIsSolid(nextEntity)) {
                     continue;
                 }
-                if (!this._entityIsPushable(nextEntity, pullCheck)) {
-                    cellBlocked = true;
-                    break;
+                if (!this._entityIsPushable(nextEntity, isOrigin ? false : pullCheck)) {
+                    if (pullCheck) {
+                        pullBlocked = true;
+                        continue;
+                    } else {
+                        cellBlocked = true;
+                        break;
+                    }
                 }
-                entitiesToMove.push(nextEntity);
+                toMove.push(nextEntity);
                 checkAgain = true;
+            }
+
+            if (pullCheck && isOrigin) {
+                pullCheck = false;
             }
 
             if (cellBlocked) {
@@ -229,18 +246,15 @@ export class ActionProcessor {
 
             this._movePoint(nextPoint, direction);
 
-            for (const entity of entitiesToMove) {
-                actions.push(new Action(this.step, {
-                    type: "movement",
-                    startDirection: entity.facing,
-                    endDirection: direction,
-                    // entity: entity,
-                    entityId: entity.id,
-                    startX: startX,
-                    startY: startY,
-                    endX: nextPoint[0],
-                    endY: nextPoint[1]
-                }));
+            //move action
+            for (const entity of toMove) {
+                (pullCheck ? pullEntitiesToMove : entitiesToMove).push([
+                    entity,
+                    startX,
+                    startY,
+                    nextPoint[0],
+                    nextPoint[1]
+                ]);
             }
 
             const nextCell = this.controller.getGridCell(nextPoint[0], nextPoint[1]);
@@ -249,8 +263,24 @@ export class ActionProcessor {
                 break;
             }
             nextEntities = nextCell;
+        }
 
-            firstPass = false;
+        if (!pullBlocked) {
+            entitiesToMove.unshift(...pullEntitiesToMove);
+        }
+
+        for (const [entity, startX, startY, endX, endY] of entitiesToMove) {
+            actions.push(new Action(this.step, {
+                type: "movement",
+                startDirection: entity.facing,
+                endDirection: direction,
+                // entity: entity,
+                entityId: entity.id,
+                startX: startX,
+                startY: startY,
+                endX: endX,
+                endY: endY
+            }));
         }
 
         if (pathBlocked) {
