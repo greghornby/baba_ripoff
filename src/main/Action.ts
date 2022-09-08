@@ -41,6 +41,8 @@ export class Action {
             this.debug = {
                 constructName: data.construct.associatedWord()._string
             };
+        } else {
+            this.debug = {};
         }
         Object.assign(this.debug, this.inputDebug);
     }
@@ -57,7 +59,6 @@ export class Action {
 
 export interface MovementAction {
     type: "movement";
-    // entity: Entity;
     entityId: number;
     startDirection: Facing;
     endDirection: Facing;

@@ -210,10 +210,14 @@ export class LevelController {
 
 
     public addEntity(
-        entityData: EntityInitData,
+        entityData: Omit<EntityInitData, "level" | "controller">,
         options?: {restoredId?: number, visibleOnInit?: boolean}
     ): Entity {
-        const entity = new Entity(options?.restoredId ?? this.entityCount++, entityData);
+        const entity = new Entity(options?.restoredId ?? this.entityCount++, {
+            ...entityData,
+            level: this.level,
+            controller: this
+        });
         const {x,y} = entityData;
         this.entities.add(entity);
         this.entityMap.set(entity.id, entity);
@@ -231,7 +235,7 @@ export class LevelController {
     }
 
 
-    public removeEntity(entity: Entity, options: {noArrayMutations?: boolean; instant?: boolean}) {
+    public removeEntity(entity: Entity, options: {noArrayMutations?: boolean; instant?: boolean} = {}) {
         if (!options.noArrayMutations) {
             this.entities.delete(entity);
             this.entityMapMarkedForCleanup.add(entity.id);
@@ -244,6 +248,15 @@ export class LevelController {
         if (entity.construct instanceof Word) {
             this.tickFlags.rebuildSentences = true;
         }
+    }
+
+
+    public breakEntity(
+        entity: Entity,
+    ) {
+        this.removeEntity(entity, {instant: false});
+
+        //implement has logic etc
     }
 
 
@@ -267,8 +280,6 @@ export class LevelController {
                 const constructs = row[x];
                 for (const construct of constructs) {
                     this.addEntity({
-                        level: this.level,
-                        controller: this,
                         construct: construct,
                         x: x,
                         y: y,
@@ -362,8 +373,6 @@ export class LevelController {
 
     public swapInEntity(entityId: number, construct: Construct, x: number, y: number): void {
         const entity = this.addEntity({
-            level: this.level,
-            controller: this,
             construct: construct,
             x: x,
             y: y
@@ -617,12 +626,25 @@ export class LevelController {
             const actions = this.actionProcessor!.doUndo();
             this.animationSytem!.createAnimationsFromActions(actions, true);
             regenRules();
+            this.generateEntityTagsAndMutationsFromRules();
             return;
         }
         this.actionProcessor!.doMovement(interaction);
         this.actionProcessor!.addStep();
 
         const flags = this.tickFlags;
+
+        const sequence = () => {
+            this.actionProcessor!.doDestruction();
+            this.actionProcessor!.addStep();
+
+            this.actionProcessor!.doCreate();
+            this.actionProcessor!.addStep();
+
+            this.generateEntityTagsAndMutationsFromRules();
+        }
+
+        sequence();
 
         let iterations: number = 0;
         while (regenRules()) {
@@ -633,6 +655,8 @@ export class LevelController {
 
             this.actionProcessor!.doMutations();
             this.actionProcessor!.addStep();
+
+            sequence();
 
             //check YOU
             const youEntities = this.tagToEntities.get(wordYou);
@@ -645,8 +669,6 @@ export class LevelController {
                 flags._debugAlertedYouAreDead = false;
             }
         }
-
-        this.generateEntityTagsAndMutationsFromRules();
 
         this.animationSytem!.createAnimationsFromActions(this.actionProcessor!.getTopOfStack(), false);
 

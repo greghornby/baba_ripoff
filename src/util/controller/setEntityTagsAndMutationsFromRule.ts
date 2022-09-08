@@ -95,11 +95,13 @@ const modifyMutationsOnSelectedEntities = (controller: LevelController, rule: Ru
         }
 
         // handle self mutation
-        for (const construct of constructs) {
-            if (entity.construct === construct) {
-                controller.entityStrictlySelfMutations.add(entity);
-                controller.entityMutations.delete(entity);
-                continue;
+        if (!complementNot) {
+            for (const construct of constructs) {
+                if (entity.construct === construct) {
+                    controller.entityStrictlySelfMutations.add(entity);
+                    controller.entityMutations.delete(entity);
+                    continue;
+                }
             }
         }
 

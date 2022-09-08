@@ -20,5 +20,6 @@ export const _commonKey = {
     "[": words.pull,
     f: words.flag,
     v: words.win,
+    x: words.defeat,
     t: words.text
 };

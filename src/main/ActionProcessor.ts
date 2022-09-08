@@ -39,7 +39,7 @@ export class ActionProcessor {
     }
 
 
-    public playActionsOnTopOfStack() {
+    public playActionsOnTopOfStack(): void {
         const actions = this.getTopOfStack();
 
         for (let index = this.actionIndex; index < actions.length; index++) {
@@ -67,6 +67,16 @@ export class ActionProcessor {
                         action.data.x,
                         action.data.y
                     );
+                    break;
+                case "create":
+                    this.controller.addEntity({
+                        construct: action.data.construct,
+                        x: action.data.x,
+                        y: action.data.y
+                    }, {restoredId: action.data.entityId, visibleOnInit: true});
+                    break;
+                case "destroy":
+                    this.controller.breakEntity(this.controller.entityMap.get(action.data.entityId)!);
                     break;
             }
             this.actionIndex = index+1;
@@ -101,6 +111,16 @@ export class ActionProcessor {
                     break;
                 case "swapin":
                     this.controller.swapOutEntity(action.data.entityId);
+                    break;
+                case "create":
+                    this.controller.removeEntity(this.controller.entityMap.get(action.data.entityId)!, {instant: false});
+                    break;
+                case "destroy":
+                    this.controller.addEntity({
+                        construct: action.data.construct,
+                        x: action.data.x,
+                        y: action.data.y
+                    }, {restoredId: action.data.entityId, visibleOnInit: true});
                     break;
             }
             this.actionIndex = index;
@@ -143,13 +163,15 @@ export class ActionProcessor {
         }
 
         if (interaction.interaction.type === "move") {
-            const youEntities = this.controller.tagToEntities.getSet(wordYou);
+            const youEntities = this.controller.tagToEntities.get(wordYou);
 
             // set all you Entities to the facing position
-            for (const entity of youEntities) {
-                const actions = this._attemptToCreateEntityMovementAction(entity, interaction.interaction.direction);
-                for (const action of actions) {
-                    addAction(action);
+            if (youEntities) {
+                for (const entity of youEntities) {
+                    const actions = this._attemptToCreateEntityMovementAction(entity, interaction.interaction.direction);
+                    for (const action of actions) {
+                        addAction(action);
+                    }
                 }
             }
         }
@@ -311,22 +333,30 @@ export class ActionProcessor {
 
     public _entityIsSolid(entity: Entity): boolean {
         /** @todo add pull */
-        const entityTags = this.controller.entityToTags.getSet(entity);
-        return entityTags.has(wordStop) || entityTags.has(wordPush) || entityTags.has(wordPull);
-    }
-
-
-    public _entityIsPushable(entity: Entity, pullCheck: boolean): boolean {
-        const entityTags = this.controller.entityToTags.getSet(entity);
-        if (pullCheck) {
-            return entityTags.has(wordPush) || entityTags.has(wordPull);
+        const entityTags = this.controller.entityToTags.get(entity);
+        if (entityTags) {
+            return entityTags.has(wordStop) || entityTags.has(wordPush) || entityTags.has(wordPull);
         } else {
-            return entityTags.has(wordPush);
+            return false;
         }
     }
 
 
-    public doMutations() {
+    public _entityIsPushable(entity: Entity, pullCheck: boolean): boolean {
+        const entityTags = this.controller.entityToTags.get(entity);
+        if (entityTags) {
+            if (pullCheck) {
+                return entityTags.has(wordPush) || entityTags.has(wordPull);
+            } else {
+                return entityTags.has(wordPush);
+            }
+        } else {
+            return false;
+        }
+    }
+
+
+    public doMutations(): void {
         const actions: Action[] = [];
         for (const mutation of this.controller.entityMutations) {
             const [entityToChange, constructsToChangeTo] = mutation;
@@ -365,9 +395,71 @@ export class ActionProcessor {
         topOfStack.push(...actions);
         this.playActionsOnTopOfStack();
     }
+
+
+    public doDestruction(): void {
+
+        const topOfStack = this.getTopOfStack();
+        const entitiesToDestroy: Entity[] = [];
+
+        //check for X IS NOT X
+        for (const [entity, notConstructs] of this.controller.entityNotMutations.entries()) {
+            if (notConstructs.has(entity.construct)) {
+                entitiesToDestroy.push(entity);
+            }
+        }
+
+        //check for YOU AND DEFEAT
+        const youEntities = this.controller.tagToEntities.get(wordYou);
+        if (youEntities) {
+            for (const you of youEntities) {
+                const entitiesOnSameCell = this.controller.getEntitiesAtPosition(you.x, you.y);
+                for (const cellEntity of entitiesOnSameCell) {
+                    const tags = this.controller.entityToTags.get(cellEntity);
+                    if (tags && tags.has(wordDefeat)) {
+                        entitiesToDestroy.push(you);
+                    }
+                }
+            }
+        }
+
+        for (const entity of entitiesToDestroy) {
+            const action = new Action(this.step, {
+                type: "destroy",
+                entityId: entity.id,
+                construct: entity.construct,
+                x: entity.x,
+                y: entity.y
+            });
+            topOfStack.push(action);
+        }
+
+        this.playActionsOnTopOfStack();
+    }
+
+
+    public doCreate(): void {
+
+        const topOfStack = this.getTopOfStack();
+        const entitiesToCreate: Entity[] = [];
+
+        for (const entity of entitiesToCreate) {
+            const action = new Action(this.step, {
+                type: "destroy",
+                entityId: entity.id,
+                construct: entity.construct,
+                x: entity.x,
+                y: entity.y
+            });
+            topOfStack.push(action);
+        }
+
+        this.playActionsOnTopOfStack();
+    }
 }
 
 const wordYou = Word.findWordFromText("you");
 const wordStop = Word.findWordFromText("stop");
 const wordPush = Word.findWordFromText("push");
 const wordPull = Word.findWordFromText("pull");
+const wordDefeat = Word.findWordFromText("defeat");

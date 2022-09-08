@@ -56,6 +56,16 @@ export class AnimationSystem {
                     ? (currentStep.swapIn = currentStep.swapIn ?? [])
                     : (currentStep.swapOut = currentStep.swapOut ?? []);
                 swap.push(action.entityId);
+            } else if (action.type === "create") {
+                let arr: number[] = reverse
+                    ? (currentStep.destroy = currentStep.destroy ?? [])
+                    : (currentStep.create = currentStep.create ?? []);
+                arr.push(action.entityId);
+            } else if (action.type === "destroy") {
+                let arr: number[] = reverse
+                    ? (currentStep.create = currentStep.create ?? [])
+                    : (currentStep.destroy = currentStep.destroy ?? []);
+                arr.push(action.entityId);
             }
         }
     }
@@ -90,6 +100,18 @@ export class AnimationSystem {
                     const x = isLastFrame ? ex : (sx + (f+1)*dx);
                     const y = isLastFrame ? ey : (sy + (f+1)*dy);
                     entity.entityPixi.setPosition(x, y);
+                }
+            }
+
+            if (step.create) {
+                //@todo implement animation maybe?
+            }
+
+            if (step.destroy) {
+                //@todo implement animation, but make sprite invisible for now
+                for (const entityId of step.destroy) {
+                    const entity = this.controller.entityMap.get(entityId)!;
+                    entity.entityPixi.setVisible(false);
                 }
             }
 
@@ -133,4 +155,6 @@ export interface AnimationStep {
     movement?: Map<EntityId, {sx: number; sy: number; ex: number; ey: number}>;
     swapIn?: EntityId[];
     swapOut?: EntityId[];
+    create?: EntityId[];
+    destroy?: EntityId[];
 }

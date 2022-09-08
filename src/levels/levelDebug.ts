@@ -4,7 +4,8 @@ import { _commonKey } from "./_commonKey.js";
 
 
 const levelText = `
-_biy__fiv
+_biy__fi_v
+________x
 _WWWWWWWWWW___n
 _W________W___r
 _W_B______W___i
@@ -17,6 +18,6 @@ ___fi[__rip
 
 export const levelDebug = () => new Level({
     width: 20,
-    height: 10,
+    height: 11,
     startingEntities: makeLevelGridFromString(levelText, _commonKey)
 });
