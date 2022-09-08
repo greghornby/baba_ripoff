@@ -42,8 +42,6 @@ export class ActionProcessor {
     public playActionsOnTopOfStack() {
         const actions = this.getTopOfStack();
 
-        // console.log(`Playing ${actions.length - this.actionIndex} Actions from index ${this.actionIndex}`, actions[this.actionIndex]);
-
         for (let index = this.actionIndex; index < actions.length; index++) {
             const action = actions[index];
             debugPrint.actions(action);
@@ -168,12 +166,29 @@ export class ActionProcessor {
         let pathBlocked = false;
         let actions: Action[] = [];
         let nextEntities: Readonly<Cell<Entity>> = [startEntity];
-        let nextX = startEntity.x;
-        let nextY = startEntity.y;
+        const nextPoint: [number, number] = [startEntity.x, startEntity.y];
+        let pullCheck = false;
+
+        let pullCheckIterationsRemaining = 1e3;
+        while (pullCheckIterationsRemaining--) {
+            let _cacheNextPoint = [nextPoint[0], nextPoint[1]];
+            this._movePoint(nextPoint, direction, true);
+            const previousCell = this.controller.getGridCell(nextPoint[0], nextPoint[1]);
+            const foundPullEntities = previousCell?.filter(e => this.controller.entityToTags.get(e)?.has(wordPull));
+            if (!foundPullEntities || foundPullEntities.length === 0) {
+                nextPoint[0] = _cacheNextPoint[0];
+                nextPoint[1] = _cacheNextPoint[1];
+                break;
+            } else {
+                pullCheck = true;
+                nextEntities = foundPullEntities;
+            }
+        }
 
         // while loop failsafe
         let iterationsRemaining = 1e3;
 
+        let firstPass = true;
         while (iterationsRemaining--) {
 
             let cellBlocked = false;
@@ -182,15 +197,18 @@ export class ActionProcessor {
             let entitiesToMove: Entity[] = [];
 
             for (const nextEntity of nextEntities) {
-                if (nextEntity === startEntity) {
+                if (firstPass || nextEntity === startEntity) {
                     entitiesToMove.push(nextEntity);
                     checkAgain = true;
-                    break;
+                    if (nextEntity === startEntity) {
+                        pullCheck = false;
+                    }
+                    continue;
                 }
                 if (!this._entityIsSolid(nextEntity)) {
                     continue;
                 }
-                if (!this._entityIsPushable(nextEntity)) {
+                if (!this._entityIsPushable(nextEntity, pullCheck)) {
                     cellBlocked = true;
                     break;
                 }
@@ -207,23 +225,9 @@ export class ActionProcessor {
                 break;
             }
 
-            let startX = nextX;
-            let startY = nextY;
+            let [startX, startY] = nextPoint;
 
-            switch (direction) {
-                case Facing.left:
-                    nextX--;
-                    break;
-                case Facing.right:
-                    nextX++;
-                    break;
-                case Facing.up:
-                    nextY--;
-                    break;
-                case Facing.down:
-                    nextY++;
-                    break;
-            }
+            this._movePoint(nextPoint, direction);
 
             for (const entity of entitiesToMove) {
                 actions.push(new Action(this.step, {
@@ -234,17 +238,19 @@ export class ActionProcessor {
                     entityId: entity.id,
                     startX: startX,
                     startY: startY,
-                    endX: nextX,
-                    endY: nextY
+                    endX: nextPoint[0],
+                    endY: nextPoint[1]
                 }));
             }
 
-            const nextCell = this.controller.getGridCell(nextX, nextY);
+            const nextCell = this.controller.getGridCell(nextPoint[0], nextPoint[1]);
             if (!nextCell) {
                 pathBlocked = true;
                 break;
             }
             nextEntities = nextCell;
+
+            firstPass = false;
         }
 
         if (pathBlocked) {
@@ -255,16 +261,38 @@ export class ActionProcessor {
     }
 
 
-    public _entityIsSolid(entity: Entity): boolean {
-        /** @todo add pull */
-        const entityTags = this.controller.entityToTags.getSet(entity);
-        return entityTags.has(wordStop) || entityTags.has(wordPush);
+    public _movePoint(point: [x: number, y: number], direction: Facing, oppositeDirection: boolean = false): void {
+        switch (direction) {
+            case Facing.left:
+                oppositeDirection ? point[0]++ : point[0]--;
+                break;
+            case Facing.right:
+                oppositeDirection ? point[0]-- : point[0]++;
+                break;
+            case Facing.up:
+                oppositeDirection ? point[1]++ : point[1]--;
+                break;
+            case Facing.down:
+                oppositeDirection ? point[1]-- : point[1]++;
+                break;
+        }
     }
 
 
-    public _entityIsPushable(entity: Entity): boolean {
+    public _entityIsSolid(entity: Entity): boolean {
+        /** @todo add pull */
         const entityTags = this.controller.entityToTags.getSet(entity);
-        return entityTags.has(wordPush);
+        return entityTags.has(wordStop) || entityTags.has(wordPush) || entityTags.has(wordPull);
+    }
+
+
+    public _entityIsPushable(entity: Entity, pullCheck: boolean): boolean {
+        const entityTags = this.controller.entityToTags.getSet(entity);
+        if (pullCheck) {
+            return entityTags.has(wordPush) || entityTags.has(wordPull);
+        } else {
+            return entityTags.has(wordPush);
+        }
     }
 
 
@@ -312,3 +340,4 @@ export class ActionProcessor {
 const wordYou = Word.findWordFromText("you");
 const wordStop = Word.findWordFromText("stop");
 const wordPush = Word.findWordFromText("push");
+const wordPull = Word.findWordFromText("pull");

@@ -11,8 +11,8 @@ _W_B______W___i
 _W____wis_W__r__tp
 _W________W____
 _WWWWWWWWWW__R
-_F
-______rip
+_F__a
+___fi[__rip
 `;
 
 export const levelDebug = () => new Level({

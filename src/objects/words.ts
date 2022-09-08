@@ -68,6 +68,13 @@ export const words = {
 		}
 	}),
 
+	pull: new Word("pull", {
+		texture: textures.words.pull,
+		behavior: {
+            tag: true
+		}
+	}),
+
     not: new Word("not", {
 		texture: textures.words.not,
 		behavior: {
@@ -76,7 +83,7 @@ export const words = {
 	}),
 
     and: new Word("and", {
-		texture: texturePlaceholder,
+		texture: textures.words.and,
 		behavior: {
             and: true
 		}

@@ -29,7 +29,7 @@ export function getInteractionFromKeyboard(event: AppEventInterface.Keyboard): I
         case "z":
             interactionType = {type: "undo"};
             break;
-        case "r":
+        case "t":
             interactionType = {type: "restart"};
             break;
     }

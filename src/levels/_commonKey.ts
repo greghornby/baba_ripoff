@@ -8,6 +8,7 @@ export const _commonKey = {
     R: constructs.rock,
     B: constructs.baba,
     F: constructs.flag,
+    a: words.and,
     n: words.not,
     b: words.baba,
     i: words.is,
@@ -16,6 +17,7 @@ export const _commonKey = {
     r: words.rock,
     s: words.stop,
     p: words.push,
+    "[": words.pull,
     f: words.flag,
     v: words.win,
     t: words.text
