@@ -1,6 +1,7 @@
 import * as pixijs from "pixi.js";
 import _missing from "../images/missing.png"
 import objects_baba from "../images/objects/baba.png"
+import objects_brick from "../images/objects/brick.png"
 import objects_flag from "../images/objects/flag.png"
 import objects_rock from "../images/objects/rock.png"
 import objects_stone from "../images/objects/stone.png"
@@ -8,6 +9,7 @@ import objects_wall from "../images/objects/wall.png"
 import objects_wall2 from "../images/objects/wall2.png"
 import words_and from "../images/words/and.png"
 import words_baba from "../images/words/baba.png"
+import words_defeat from "../images/words/defeat.png"
 import words_flag from "../images/words/flag.png"
 import words_is from "../images/words/is.png"
 import words_not from "../images/words/not.png"
@@ -24,6 +26,7 @@ export const textures = {
     "missing": pixijs.Texture.from(_missing),
     "objects": {
         "baba": pixijs.Texture.from(objects_baba),
+        "brick": pixijs.Texture.from(objects_brick),
         "flag": pixijs.Texture.from(objects_flag),
         "rock": pixijs.Texture.from(objects_rock),
         "stone": pixijs.Texture.from(objects_stone),
@@ -33,6 +36,7 @@ export const textures = {
     "words": {
         "and": pixijs.Texture.from(words_and),
         "baba": pixijs.Texture.from(words_baba),
+        "defeat": pixijs.Texture.from(words_defeat),
         "flag": pixijs.Texture.from(words_flag),
         "is": pixijs.Texture.from(words_is),
         "not": pixijs.Texture.from(words_not),

@@ -138,7 +138,7 @@ export class EntityPixi {
     setTextFilter(active: boolean): void {
         this.textFilter.reset();
         if (!active) {
-            this.textFilter.brightness(0.5, false);
+            this.textFilter.brightness(0.6, false);
         }
     }
 

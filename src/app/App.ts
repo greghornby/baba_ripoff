@@ -18,6 +18,7 @@ export class App {
 
         this.pixiApp = new pixi.Application({
             resizeTo: containerElement,
+            backgroundColor: 0x012101
         });
 
         this.events = new AppEventSystem();

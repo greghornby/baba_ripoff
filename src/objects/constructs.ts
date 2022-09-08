@@ -16,10 +16,10 @@ export const constructs = {
     }),
 
     wall: new Construct({
-        texture: textures.objects.wall2,
+        texture: textures.objects.brick,
         associatedWord: () => Word.findWordFromText("wall"),
         category: categories.wall,
-        color: colors.darkBlue
+        color: 0x1c3773
     }),
 
     rock: new Construct({

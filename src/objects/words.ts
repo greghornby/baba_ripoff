@@ -49,6 +49,15 @@ export const words = {
 
 	win: new Word("win", {
 		texture: textures.words.win,
+		color: 0xe6d705,
+		behavior: {
+            tag: true
+		}
+	}),
+
+	defeat: new Word("defeat", {
+		texture: textures.words.defeat,
+		color: 0x610303,
 		behavior: {
             tag: true
 		}
@@ -56,6 +65,7 @@ export const words = {
 
 	stop: new Word("stop", {
 		texture: textures.words.stop,
+		color: 0xbf1f41,
 		behavior: {
             tag: true
 		}
@@ -63,6 +73,7 @@ export const words = {
 
 	push: new Word("push", {
 		texture: textures.words.push,
+		color: 0x1850ab,
 		behavior: {
             tag: true
 		}
@@ -70,6 +81,7 @@ export const words = {
 
 	pull: new Word("pull", {
 		texture: textures.words.pull,
+		color: 0xa1e600,
 		behavior: {
             tag: true
 		}
