@@ -4,9 +4,10 @@ import { LevelController } from "../../main/LevelController.js";
 import { IRule, Rule } from "../../main/Rule.js";
 import { INounSelector, NounSelector, Word } from "../../main/Word.js";
 import { arrayRemove } from "../arrayRemove.js";
+import { mapVerbToString, verbEquals } from "../rules/verbEquals.js";
 import { setAddMultiple } from "../setAddMultiple.js";
 
-export const setEntityTagsAndMutationsFromRule = (
+export const setEntityTagsAndVerbsFromRule = (
     controller: LevelController,
     rule: Rule
 ) => {
@@ -24,7 +25,7 @@ export const setEntityTagsAndMutationsFromRule = (
     if (complementIsTag) {
         modifyTagsOnSelectedEntities(controller, rule, selectedEntities);
     } else if (complementIsMutation) {
-        modifyMutationsOnSelectedEntities(controller, rule, levelConstructs, selectedEntities);
+        modifyVerbsOnSelectedEntities(controller, rule, levelConstructs, selectedEntities);
     }
 }
 
@@ -76,10 +77,11 @@ const modifyTagsOnSelectedEntities = (controller: LevelController, rule: Rule, e
 }
 
 
-const modifyMutationsOnSelectedEntities = (controller: LevelController, rule: Rule, levelConstructs: Construct[], entities: Entity[]) => {
+const modifyVerbsOnSelectedEntities = (controller: LevelController, rule: Rule, levelConstructs: Construct[], entities: Entity[]) => {
     const complement = rule.rule.complement;
     const complementNot = complement.not;
     const selector = complement.word.behavior.noun!.compliment;
+    const verb = rule.rule.verb.word;
 
     const fixedOutputConstructs =
         (selector instanceof NounSelector.single || selector instanceof NounSelector.compareLevelConstructs)
@@ -95,33 +97,41 @@ const modifyMutationsOnSelectedEntities = (controller: LevelController, rule: Ru
         }
 
         // handle self mutation
-        if (!complementNot) {
-            for (const construct of constructs) {
-                if (entity.construct === construct) {
-                    controller.entityStrictlySelfMutations.add(entity);
-                    controller.entityMutations.delete(entity);
-                    continue;
+        //@todo maybe don't need this check with the rule cancelling system
+        if (verbEquals(verb, "is")) {
+
+            if (!complementNot) {
+                for (const construct of constructs) {
+                    if (entity.construct === construct) {
+                        controller.entityStrictlySelfMutations.add(entity);
+                        controller.entityVerbs.is.delete(entity);
+                        continue;
+                    }
                 }
+            }
+
+            if (controller.entityStrictlySelfMutations.has(entity)) {
+                continue;
             }
         }
 
-        if (controller.entityStrictlySelfMutations.has(entity)) {
-            continue;
-        }
-
-        /** The Set of mutations this entity will undergo. We will manipulate this array with insertions or deletions */
+        /** Add or remove verbs from an entity */
+        const verbProp = mapVerbToString(verb)!;
+        const notVerbMap = controller.entityVerbs[`${verbProp}Not`];
         if (complementNot) {
-            const entityNotMutations = controller.entityNotMutations.get(entity) ?? new Set();
-            controller.entityNotMutations.set(entity, entityNotMutations);
-            setAddMultiple(entityNotMutations, ...constructs);
+            const entityNotVerb = notVerbMap.get(entity) ?? new Set();
+            notVerbMap.set(entity, entityNotVerb);
+            setAddMultiple(entityNotVerb, ...constructs);
         } else {
-            const entityMutations = controller.entityMutations.get(entity) ?? new Set();
-            controller.entityMutations.set(entity, entityMutations);
-            const entityNotMutations = controller.entityNotMutations.get(entity);
+            const key = verbProp;
+            const verbMap = controller.entityVerbs[key];
+            const entityVerb = verbMap.get(entity) ?? new Set();
+            verbMap.set(entity, entityVerb);
+            const entityNotVerb = notVerbMap.get(entity);
             for (const construct of constructs) {
-                //if this mutation is cancelled out by a NOT, add it to the mutations Set
-                if (!entityNotMutations?.has(construct)) {
-                    entityMutations.add(construct);
+                //if this mutation is not cancelled out by a NOT, add it to the mutations Set
+                if (!entityNotVerb?.has(construct)) {
+                    entityVerb.add(construct);
                 }
             }
         }

@@ -369,7 +369,7 @@ export class ActionProcessor {
 
     public doMutations(addStep: boolean): boolean {
         const actions: Action[] = [];
-        for (const mutation of this.controller.entityMutations) {
+        for (const mutation of this.controller.entityVerbs.is) {
             const [entityToChange, constructsToChangeTo] = mutation;
             if (constructsToChangeTo.size === 0) {
                 continue;
@@ -401,7 +401,7 @@ export class ActionProcessor {
                 actions.push(swapInAction);
             }
         }
-        this.controller.entityMutations.clear();
+        this.controller.entityVerbs.is.clear();
         const topOfStack = this.getTopOfStack();
         topOfStack.push(...actions);
         return this.playActionsOnTopOfStack(addStep);
@@ -414,7 +414,7 @@ export class ActionProcessor {
         const entitiesToDestroy: Entity[] = [];
 
         //check for X IS NOT X
-        for (const [entity, notConstructs] of this.controller.entityNotMutations.entries()) {
+        for (const [entity, notConstructs] of this.controller.entityVerbs.isNot.entries()) {
             if (notConstructs.has(entity.construct)) {
                 entitiesToDestroy.push(entity);
             }

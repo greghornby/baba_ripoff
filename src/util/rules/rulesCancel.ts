@@ -7,6 +7,12 @@ export const rulesCancelMap: Record<string, string> = {
     "X IS NOT X": "X IS X", //baba is baba, baba is not baba
     "NOT X IS Y": "Y IS B", //not baba is wall, wall is rock,
     "ALL IS NOT A": "Y IS A", //all is not rock, baba is rock
+
+    "X MAKE NOT A": "X MAKE A",
+    "NOT X MAKE NOT X": "Y MAKE A",
+
+    "X HAS NOT A": "X HAS A",
+    "NOT X HAS NOT X": "Y HAS A",
 };
 
 export function rulesCancel(ruleX: Rule, ruleY: Rule): Rule | undefined {
@@ -46,6 +52,9 @@ export function convertRulesToPattern(ruleX: Rule, ruleY: Rule): [string, string
     const rX = ruleX.rule;
     const rY = ruleY.rule;
 
+    const _xVerb = rX.verb.word._string.toUpperCase();
+    const _yVerb = rY.verb.word._string.toUpperCase();
+
     const _xString = rX.subject.word._string === allString ? "ALL" : "X";
     const _yString = rY.subject.word._string === allString ? "ALL" : "Y";
     const _aString = rX.complement.word._string === allString ? "ALL": "A";
@@ -57,7 +66,7 @@ export function convertRulesToPattern(ruleX: Rule, ruleY: Rule): [string, string
     const B = rY.complement.word === rX.subject.word ? "X": rY.complement.word === rY.subject.word ? Y : rY.complement.word === rX.complement.word ? A : _bString;
 
     return [
-        _xComplex ?? `${rX.subject.not ? "NOT " : ""}${X} IS ${rX.complement.not ? "NOT " : ""}${A}`,
-        _yComplex ?? `${rY.subject.not ? "NOT " : ""}${Y} IS ${rY.complement.not ? "NOT " : ""}${B}`
+        _xComplex ?? `${rX.subject.not ? "NOT " : ""}${X} ${_xVerb} ${rX.complement.not ? "NOT " : ""}${A}`,
+        _yComplex ?? `${rY.subject.not ? "NOT " : ""}${Y} ${_yVerb} ${rY.complement.not ? "NOT " : ""}${B}`
     ];
 }

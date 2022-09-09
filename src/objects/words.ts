@@ -40,6 +40,20 @@ export const words = {
 		}
 	}),
 
+	has: new Word("has", {
+		texture: texturePlaceholder,
+		behavior: {
+            verb: true
+		}
+	}),
+
+	make: new Word("make", {
+		texture: texturePlaceholder,
+		behavior: {
+            verb: true
+		}
+	}),
+
     you: new Word("you", {
 		texture: textures.words.you,
 		color: colors.pink,
