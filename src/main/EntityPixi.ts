@@ -20,7 +20,7 @@ export class EntityPixi {
     public _visible: boolean = true;
     public _invisiblePosition = {x: 0, y: 0};
 
-    constructor(entity: Entity) {
+    constructor(public entity: Entity) {
         this.entityId = entity.id;
         this.controller = entity.controller;
         this.container = new pixi.Container();
@@ -108,7 +108,10 @@ export class EntityPixi {
 
     @pixiUpdate()
     public setFacing(facing: Facing): void {
-
+        if (this.entity.construct.facingTextures) {
+            const texture = this.entity.construct.facingTextures[facing];
+            this.sprite.texture = texture;
+        }
     }
 
 

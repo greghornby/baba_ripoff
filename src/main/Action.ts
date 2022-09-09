@@ -7,7 +7,7 @@ export class Action {
     public debug: any;
     constructor(
         public step: number,
-        public data: MovementAction | DestroyEntityAction | CreateEntityAction | SwapOutEntityAction | SwapInEntityAction,
+        public data: MovementAction | FacingAction | DestroyEntityAction | CreateEntityAction | SwapOutEntityAction | SwapInEntityAction,
         public inputDebug?: any
     ) {
         this.hash = this.calculateHash();
@@ -66,6 +66,14 @@ export interface MovementAction {
     startY: number;
     endX: number;
     endY: number;
+}
+
+
+export interface FacingAction {
+    type: "facing";
+    entityId: number;
+    fromDirection: Facing;
+    toDirection: Facing;
 }
 
 

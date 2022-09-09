@@ -62,6 +62,9 @@ export class ActionProcessor {
                         action.data.endY
                     );
                     break;
+                case "facing":
+                    this.controller.faceEntity(this.controller.entityMap.get(action.data.entityId)!, action.data.toDirection);
+                    break;
                 case "swapout":
                     this.controller.swapOutEntity(action.data.entityId);
                     break;
@@ -111,6 +114,9 @@ export class ActionProcessor {
                         action.data.startX,
                         action.data.startY
                     );
+                    break;
+                case "facing":
+                    this.controller.faceEntity(this.controller.entityMap.get(action.data.entityId)!, action.data.fromDirection);
                     break;
                 case "swapout":
                     this.controller.swapInEntity(
@@ -202,6 +208,13 @@ export class ActionProcessor {
         const nextPoint: [number, number] = [startEntity.x, startEntity.y];
         const originEntityPoint = [...nextPoint];
         let pullCheck = false;
+
+        const originFacingAction = startEntity.facing === direction ? undefined : new Action(this.step, {
+            type: "facing",
+            entityId: startEntity.id,
+            fromDirection: startEntity.facing,
+            toDirection: direction
+        });
 
         let pullCheckIterationsRemaining = 1e3;
         while (pullCheckIterationsRemaining--) {
@@ -303,6 +316,14 @@ export class ActionProcessor {
         }
 
         for (const [entity, startX, startY, endX, endY] of entitiesToMove) {
+            if (entity !== startEntity && entity.facing !== direction) {
+                actions.push(new Action(this.step, {
+                    type: "facing",
+                    entityId: entity.id,
+                    fromDirection: entity.facing,
+                    toDirection: direction
+                }));
+            }
             actions.push(new Action(this.step, {
                 type: "movement",
                 startDirection: entity.facing,
@@ -317,9 +338,15 @@ export class ActionProcessor {
         }
 
         if (pathBlocked) {
+            if (originFacingAction) {
+                return [originFacingAction];
+            }
             return [];
         }
 
+        if (originFacingAction) {
+            actions.unshift(originFacingAction);
+        }
         return actions;
     }
 

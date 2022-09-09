@@ -363,11 +363,15 @@ export class LevelController {
         entity.x = endX;
         entity.y = endY;
         this.addEntityToCell(entity, endX, endY);
-        entity.setFacing(facing);
 
         if (entity.construct instanceof Word) {
             this.tickFlags.rebuildSentences = true;
         }
+    }
+
+
+    public faceEntity(entity: Entity, facing: Facing): void {
+        entity.setFacing(facing);
     }
 
 

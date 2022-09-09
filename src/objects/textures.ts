@@ -1,6 +1,7 @@
 import * as pixijs from "pixi.js";
 import _missing from "../images/missing.png"
 import objects_baba from "../images/objects/baba.png"
+import objects_baba_sprites from "../images/objects/baba_sprites.png"
 import objects_brick from "../images/objects/brick.png"
 import objects_flag from "../images/objects/flag.png"
 import objects_leaf from "../images/objects/leaf.png"
@@ -30,6 +31,7 @@ export const textures = {
     "missing": pixijs.Texture.from(_missing),
     "objects": {
         "baba": pixijs.Texture.from(objects_baba),
+        "baba_sprites": pixijs.Texture.from(objects_baba_sprites),
         "brick": pixijs.Texture.from(objects_brick),
         "flag": pixijs.Texture.from(objects_flag),
         "leaf": pixijs.Texture.from(objects_leaf),

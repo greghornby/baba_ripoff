@@ -9,7 +9,8 @@ const texturePlaceholder = textures.missing;
 export const constructs = {
 
     baba: new Construct({
-        texture: textures.objects.baba,
+        texture: textures.objects.baba_sprites,
+        textureHasDirections: true,
         associatedWord: () => Word.findWordFromText("baba"),
         category: categories.character,
         color: colors.white
