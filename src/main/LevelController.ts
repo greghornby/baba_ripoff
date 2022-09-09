@@ -692,9 +692,18 @@ export class LevelController {
             const _isWin = this.checkYouWin();
         }
 
-        this.animationSytem!.createAnimationsFromActions(this.actionProcessor!.getTopOfStack(), false);
+        const actions = this.actionProcessor!.getTopOfStack();
+
+        if (actions.length > 0) {
+            this.animationSytem!.createAnimationsFromActions(this.actionProcessor!.getTopOfStack(), false);
+        }
 
         this.turnNumber++;
+
+        //undo last Action[] on stack if actually no actions occured
+        if (actions.length === 0) {
+            this.actionProcessor!.doUndo();
+        }
     }
 }
 
