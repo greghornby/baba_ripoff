@@ -39,10 +39,15 @@ export class ActionProcessor {
     }
 
 
-    public playActionsOnTopOfStack(): void {
+    /**
+     * Returns true if new actions were played, otherwise false
+     */
+    public playActionsOnTopOfStack(addStep: boolean): boolean {
         const actions = this.getTopOfStack();
+        let returnValue = false;
 
         for (let index = this.actionIndex; index < actions.length; index++) {
+            returnValue = true;
             const action = actions[index];
             debugPrint.actions(action);
             switch (action.data.type) {
@@ -81,6 +86,12 @@ export class ActionProcessor {
             }
             this.actionIndex = index+1;
         }
+
+        if (addStep) {
+            this.addStep();
+        }
+
+        return returnValue;
     }
 
 
@@ -143,12 +154,12 @@ export class ActionProcessor {
     }
 
 
-    public doMovement(interaction: Interaction): void {
+    public doMovement(interaction: Interaction, addStep: boolean): boolean {
         this.interactions.push(interaction);
         debugPrint.interactions(JSON.stringify(interaction));
 
         if (!(interaction.interaction.type === "move" || interaction.interaction.type === "wait")) {
-            return;
+            return false;
         }
 
         const topOfStack = this.getTopOfStack();
@@ -176,7 +187,7 @@ export class ActionProcessor {
             }
         }
 
-        this.playActionsOnTopOfStack();
+        return this.playActionsOnTopOfStack(addStep);
     }
 
 
@@ -356,7 +367,7 @@ export class ActionProcessor {
     }
 
 
-    public doMutations(): void {
+    public doMutations(addStep: boolean): boolean {
         const actions: Action[] = [];
         for (const mutation of this.controller.entityMutations) {
             const [entityToChange, constructsToChangeTo] = mutation;
@@ -393,11 +404,11 @@ export class ActionProcessor {
         this.controller.entityMutations.clear();
         const topOfStack = this.getTopOfStack();
         topOfStack.push(...actions);
-        this.playActionsOnTopOfStack();
+        return this.playActionsOnTopOfStack(addStep);
     }
 
 
-    public doDestruction(): void {
+    public doDestruction(addStep: boolean): boolean {
 
         const topOfStack = this.getTopOfStack();
         const entitiesToDestroy: Entity[] = [];
@@ -434,11 +445,11 @@ export class ActionProcessor {
             topOfStack.push(action);
         }
 
-        this.playActionsOnTopOfStack();
+        return this.playActionsOnTopOfStack(addStep);
     }
 
 
-    public doCreate(): void {
+    public doCreate(addStep: boolean): boolean {
 
         const topOfStack = this.getTopOfStack();
         const entitiesToCreate: Entity[] = [];
@@ -454,7 +465,7 @@ export class ActionProcessor {
             topOfStack.push(action);
         }
 
-        this.playActionsOnTopOfStack();
+        return this.playActionsOnTopOfStack(addStep);
     }
 }
 

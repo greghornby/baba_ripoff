@@ -478,7 +478,10 @@ export class LevelController {
     }
 
 
-    public parseRules(): void {
+    public parseRules(skipIfThisArgFalse: boolean = true): void {
+        if (skipIfThisArgFalse === false) {
+            return;
+        }
         this._findSentences();
         this._updateLevelRules();
         this.updateActiveTextEntities();
@@ -526,7 +529,7 @@ export class LevelController {
     }
 
 
-    public checkYouAreDead(): void {
+    public checkYouAreDead(): boolean {
         const flags = this.tickFlags;
         const youEntities = this.tagToEntities.get(wordYou);
         if (!youEntities || youEntities.size === 0) {
@@ -534,8 +537,10 @@ export class LevelController {
                 alert("You are dead. Undo or Restart");
                 flags._debugAlertedYouAreDead = true;
             }
+            return true;
         } else {
             flags._debugAlertedYouAreDead = false;
+            return false;
         }
     }
 
@@ -591,8 +596,8 @@ export class LevelController {
         this.actionProcessor = new ActionProcessor(this);
         this.animationSytem = new AnimationSystem(this);
         this._started = true;
-        //set a default interaction to init the level in first tick
-        this.currentInteraction = {interaction: {type: "wait"}};
+
+        this.parseRules();
     }
 
 
@@ -653,27 +658,29 @@ export class LevelController {
             return;
         }
 
+        let _doParse = false;
+        const ADD_STEP = true;
 
-        this.actionProcessor!.doMovement(interaction);
-        this.actionProcessor!.addStep();
+        _doParse = this.actionProcessor!.doMovement(interaction, ADD_STEP);
 
-        this.parseRules();
+        this.parseRules(_doParse)
 
-        this.actionProcessor!.doMutations();
-        this.actionProcessor!.addStep();
+        _doParse = this.actionProcessor!.doMutations(ADD_STEP);
 
-        this.parseRules();
+        this.parseRules(_doParse)
 
-        this.actionProcessor!.doDestruction();
-        this.actionProcessor!.addStep();
+        let _d = this.actionProcessor!.doDestruction(ADD_STEP);
+        let _c = this.actionProcessor!.doCreate(ADD_STEP);
 
-        this.actionProcessor!.doCreate();
-        this.actionProcessor!.addStep();
+        _doParse = _d || _c;
 
-        this.parseRules();
+        this.parseRules(_doParse);
 
-        this.checkYouAreDead();
-        this.checkYouWin();
+        const _isDead = this.checkYouAreDead();
+        if (!_isDead) {
+            const _isWin = this.checkYouWin();
+        }
+
         this.animationSytem!.createAnimationsFromActions(this.actionProcessor!.getTopOfStack(), false);
 
         this.turnNumber++;

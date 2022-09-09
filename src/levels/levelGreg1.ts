@@ -7,10 +7,10 @@ const levelText = `
 _biy____rinf__
 WWWWWWWWWWWWWW
 W_____R____ivW
-W_WW_WWiWWi__W
-W_____WnWWt__W
-W_f_r_WpWWWWWW
-W_____WWW__Ww_
+W_WW_WWWWWi__W
+W________Wt__W
+W_f_r____WWWWW
+W__________Ww_
 W__________Wi_
 W__i__F____Ws_
 W__p____WWWW__

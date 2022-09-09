@@ -16,11 +16,11 @@ function initGame() {
     document.body.appendChild(app.pixiApp.view);
     app.pixiApp.view.focus();
     loadLevel();
-    // if (isMobile()) {
-    //     alert("Swipe to move. Double Tap to undo");
-    // } else {
-    //     alert("WASD/Arrows to move. Z to undo");
-    // }
+    if (isMobile()) {
+        alert("Swipe to move. Double Tap to undo");
+    } else {
+        alert("WASD/Arrows to move. Z to undo");
+    }
 }
 
 function isMobile() {

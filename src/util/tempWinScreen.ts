@@ -45,7 +45,6 @@ async function* fadeIn(container: pixi.Container) {
     container.alpha = 0;
 
     while (container.alpha < 1) {
-        console.log("increasing");
         await new Promise(r => setTimeout(r, 1000/60));
         container.alpha += 0.05;
         yield container.alpha;
