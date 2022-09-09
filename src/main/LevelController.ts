@@ -9,13 +9,14 @@ import { arrayRemove } from "../util/arrayRemove.js";
 import { getInteractionFromDoubleTap } from "../util/controller/getInteractionFromDoubleTap.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
 import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
-import { setEntityTagsAndVerbsFromRule } from "../util/controller/setEntityTagsAndMutationsFromRule.js";
+import { setEntityTagsAndVerbsFromRule } from "../util/controller/setEntityTagsAndVerbsFromRule.js";
 import { visuallyCancelSentences } from "../util/controller/visuallyCancelSentences.js";
 import { generatePairsFromArray } from "../util/generatePairsFromArray.js";
 import { getPaths } from "../util/getPaths.js";
 import { MapOfSets } from "../util/MapOfSets.js";
 import { isNotComplement } from "../util/rules/isNotComplement.js";
 import { rulesCancel } from "../util/rules/rulesCancel.js";
+import { VerbUnion } from "../util/rules/verbEquals.js";
 import { setAddMultiple } from "../util/setAddMultiple.js";
 import { tempWinScreen } from "../util/tempWinScreen.js";
 import { ActionProcessor } from "./ActionProcessor.js";
@@ -67,14 +68,14 @@ export class LevelController {
     public _cancelledWordEntities: Set<Entity> = new Set();
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
-    public entityVerbs: {
-        is: Map<Entity, Set<Construct>>;
-        isNot: Map<Entity, Set<Construct>>;
-        has: Map<Entity, Set<Construct>>;
-        hasNot: Map<Entity, Set<Construct>>;
-        make: Map<Entity, Set<Construct>>;
-        makeNot: Map<Entity, Set<Construct>>;
-    } = {is: new Map(), isNot: new Map(), has: new Map(), hasNot: new Map(), make: new Map(), makeNot: new Map()};
+    public entityVerbs: Record<`${VerbUnion}${""|"Not"}`, Map<Entity, Set<Construct>>> = {
+        is: new Map(),
+        isNot: new Map(),
+        has: new Map(),
+        hasNot: new Map(),
+        make: new Map(),
+        makeNot: new Map()
+    };
     public mutationMap: Map<Entity, {
         sentence: Sentence;
         subjectWord: Word;
@@ -84,7 +85,6 @@ export class LevelController {
         }[];
     }[]> = new Map();
     public entityStrictlySelfMutations: Set<Entity> = new Set();
-    public entityIsItself: Set<Entity> = new Set();
     public activeTextEntities: Set<Entity> = new Set();
 
     public currentInteraction: Interaction | undefined;
