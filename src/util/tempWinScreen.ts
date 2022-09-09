@@ -35,6 +35,7 @@ export const tempWinScreen = async (controller: LevelController) => {
     controller.container.addChild(winGraphic);
 
     for await (const alpha of fadeIn(winGraphic)) {}
+    await wait();
     controller.exit();
     loadLevel();
 };
@@ -49,4 +50,8 @@ async function* fadeIn(container: pixi.Container) {
         container.alpha += 0.05;
         yield container.alpha;
     }
+}
+
+async function wait() {
+    return new Promise(r => setTimeout(r, 2000));
 }
