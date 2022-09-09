@@ -42,6 +42,7 @@ export const words = {
 
     you: new Word("you", {
 		texture: textures.words.you,
+		color: colors.pink,
 		behavior: {
             tag: true
 		}
