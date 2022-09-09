@@ -1,10 +1,11 @@
 import * as pixi from "pixi.js";
 import { level01 } from "../levels/level01.js";
 import { levelDebug } from "../levels/levelDebug.js";
+import { levelGreg1 } from "../levels/levelGreg1.js";
 import { LevelController } from "../main/LevelController.js";
 import { queryParams } from "./queryParams.js";
 
-const levels = [level01, levelDebug];
+const levels = [level01, levelDebug, levelGreg1];
 let levelIndex = queryParams.level  && !isNaN(parseInt(queryParams.level)) ? parseInt(queryParams.level) : 0;
 
 export const loadLevel = () => {

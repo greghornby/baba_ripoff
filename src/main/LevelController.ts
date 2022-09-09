@@ -146,7 +146,7 @@ export class LevelController {
         type TickFlags = typeof this.tickFlags;
         Object.assign<TickFlags, TickFlags>(this.tickFlags, {
             rebuildSentences: true,
-            _debugAlertedYouAreDead: false
+            _debugAlertedYouAreDead: true
         });
         this.ticker.add(() => this.tick());
         this.ticker.start();
@@ -384,7 +384,7 @@ export class LevelController {
     //#region RULES
 
 
-    public findSentences(): void {
+    public _findSentences(): void {
         const directions = ["horizontal", "vertical"] as const;
         type SentenceDirection = typeof directions[number];
         const cellsChecked = new Map<string, Record<SentenceDirection, boolean>>();
@@ -447,7 +447,7 @@ export class LevelController {
     }
 
 
-    public updateLevelRules(): void {
+    public _updateLevelRules(): void {
         this.rules.clear();
         setAddMultiple(this.rules, ...this.defaultRules);
 
@@ -475,6 +475,14 @@ export class LevelController {
         for (const rule of this._cancelledRules) {
             this.rules.delete(rule);
         }
+    }
+
+
+    public parseRules(): void {
+        this._findSentences();
+        this._updateLevelRules();
+        this.updateActiveTextEntities();
+        this.generateEntityTagsAndMutationsFromRules();
     }
 
 
@@ -514,6 +522,35 @@ export class LevelController {
         }
         for (const rule of _2ndPassRules) {
             setEntityTagsAndMutationsFromRule(this, rule);
+        }
+    }
+
+
+    public checkYouAreDead(): void {
+        const flags = this.tickFlags;
+        const youEntities = this.tagToEntities.get(wordYou);
+        if (!youEntities || youEntities.size === 0) {
+            if (!flags._debugAlertedYouAreDead) {
+                alert("You are dead. Undo or Restart");
+                flags._debugAlertedYouAreDead = true;
+            }
+        } else {
+            flags._debugAlertedYouAreDead = false;
+        }
+    }
+
+
+    public checkYouWin(): void {
+        const winEntities = this.tagToEntities.get(wordWin);
+        if (winEntities) {
+            for (const entity of winEntities) {
+                const getEntities = this.getEntitiesAtPosition(entity.x, entity.y);
+                const youEntity = getEntities.find(e => this.entityToTags.get(e)?.has(wordYou));
+                if (youEntity) {
+                    this.levelWon = true;
+                    tempWinScreen(this);
+                }
+            }
         }
     }
 
@@ -591,7 +628,6 @@ export class LevelController {
                 entity.entityPixi.destroy();
                 this.entityMap.delete(entityId);
             }
-
         }
 
         if (this.levelWon) {
@@ -607,82 +643,38 @@ export class LevelController {
             new LevelController(this.level);
         }
 
-        const regenRules = () => {
-            if (!this.tickFlags.rebuildSentences) {
-                return false;
-            }
-            this.tickFlags.rebuildSentences = false;
-            this.findSentences();
-            this.updateLevelRules();
-            this.updateActiveTextEntities();
-            this.generateEntityTagsAndMutationsFromRules();
-            return true;
-        };
-
         // Process the interaction and unset it
         const interaction = this.currentInteraction;
         this.currentInteraction = undefined;
         if (interaction.interaction.type === "undo") {
             const actions = this.actionProcessor!.doUndo();
+            this.parseRules();
             this.animationSytem!.createAnimationsFromActions(actions, true);
-            regenRules();
-            this.generateEntityTagsAndMutationsFromRules();
             return;
         }
+
+
         this.actionProcessor!.doMovement(interaction);
         this.actionProcessor!.addStep();
 
-        const flags = this.tickFlags;
+        this.parseRules();
 
-        const sequence = () => {
-            this.actionProcessor!.doDestruction();
-            this.actionProcessor!.addStep();
+        this.actionProcessor!.doMutations();
+        this.actionProcessor!.addStep();
 
-            this.actionProcessor!.doCreate();
-            this.actionProcessor!.addStep();
+        this.parseRules();
 
-            this.generateEntityTagsAndMutationsFromRules();
-        }
+        this.actionProcessor!.doDestruction();
+        this.actionProcessor!.addStep();
 
-        sequence();
+        this.actionProcessor!.doCreate();
+        this.actionProcessor!.addStep();
 
-        let iterations: number = 0;
-        while (regenRules()) {
-            if (iterations++ >= 20) {
-                console.log("Too many loops");
-                break;
-            }
+        this.parseRules();
 
-            this.actionProcessor!.doMutations();
-            this.actionProcessor!.addStep();
-
-            sequence();
-
-            //check YOU
-            const youEntities = this.tagToEntities.get(wordYou);
-            if (!youEntities || youEntities.size === 0) {
-                if (!flags._debugAlertedYouAreDead) {
-                    // alert("YOU DO NOT EXIST!");
-                    flags._debugAlertedYouAreDead = true;
-                }
-            } else {
-                flags._debugAlertedYouAreDead = false;
-            }
-        }
-
+        this.checkYouAreDead();
+        this.checkYouWin();
         this.animationSytem!.createAnimationsFromActions(this.actionProcessor!.getTopOfStack(), false);
-
-        const winEntities = this.tagToEntities.get(wordWin);
-        if (winEntities) {
-            for (const entity of winEntities) {
-                const getEntities = this.getEntitiesAtPosition(entity.x, entity.y);
-                const youEntity = getEntities.find(e => this.entityToTags.get(e)?.has(wordYou));
-                if (youEntity) {
-                    this.levelWon = true;
-                    tempWinScreen(this);
-                }
-            }
-        }
 
         this.turnNumber++;
     }
