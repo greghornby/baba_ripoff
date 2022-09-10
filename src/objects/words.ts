@@ -102,6 +102,14 @@ export const words = {
 		}
 	}),
 
+	move: new Word("move", {
+		texture: texturePlaceholder,
+		color: colors.white,
+		behavior: {
+            tag: true
+		}
+	}),
+
     not: new Word("not", {
 		texture: textures.words.not,
 		behavior: {

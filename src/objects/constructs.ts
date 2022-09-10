@@ -46,6 +46,7 @@ export const constructs = {
 
     skull: new Construct({
         texture: textures.objects.skull,
+        textureHasDirections: true,
         associatedWord: () => Word.findWordFromText("skull"),
         category: categories.character, //@todo create danger category
         color: 0xa61b03

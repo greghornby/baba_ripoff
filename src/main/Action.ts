@@ -21,11 +21,21 @@ export class Action {
 
 
     public _getNonCircularDataToHash(): Record<string, string | number> {
-        if (this.data.type === "movement") {
-            const {startX, startY, endX, endY} = this.data;
-            return {startX, startY, endX, endY, entityId: this.data.entityId};
-        } else {
-            return {};
+        switch (this.data.type) {
+            case "movement":
+            case "facing":
+                return {...this.data};
+            case "create":
+            case "destroy":
+            case "swapin":
+            case "swapout":
+                return {
+                    type: this.data.type,
+                    entityId: this.data.entityId,
+                    construct: this.data.construct.id,
+                    x: this.data.x,
+                    y: this.data.y,
+                };
         }
     }
 
@@ -60,8 +70,6 @@ export class Action {
 export interface MovementAction {
     type: "movement";
     entityId: number;
-    startDirection: Facing;
-    endDirection: Facing;
     startX: number;
     startY: number;
     endX: number;

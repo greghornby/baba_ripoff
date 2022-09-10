@@ -358,7 +358,7 @@ export class LevelController {
     }
 
 
-    public moveEntity(entity: Entity, facing: Facing, startX: number, startY: number, endX: number, endY: number): void {
+    public moveEntity(entity: Entity, startX: number, startY: number, endX: number, endY: number): void {
         this.removeEntityFromCell(entity);
         entity.x = endX;
         entity.y = endY;
@@ -674,11 +674,11 @@ export class LevelController {
 
         _doParse = this.actionProcessor!.doMovement(interaction, ADD_STEP);
 
-        this.parseRules(_doParse)
+        this.parseRules(_doParse);
 
         _doParse = this.actionProcessor!.doMutations(ADD_STEP);
 
-        this.parseRules(_doParse)
+        this.parseRules(_doParse);
 
         let _d = this.actionProcessor!.doDestruction(ADD_STEP);
         let _c = this.actionProcessor!.doCreate(ADD_STEP);

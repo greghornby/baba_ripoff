@@ -5,6 +5,8 @@ import type { Word } from "./Word.js";
 
 
 export class Construct {
+    static nextId: number = 0;
+    public id: number;
     public texture: pixi.Texture;
     public facingTextures?: Record<Facing, pixi.Texture>;
     public associatedWord: () => Word;
@@ -13,6 +15,8 @@ export class Construct {
     constructor(
         data: ConstructData
     ) {
+        this.id = Construct.nextId;
+        Construct.nextId++;
         this.texture = data.texture;
         this.associatedWord = data.associatedWord;
         this.category = data.category;

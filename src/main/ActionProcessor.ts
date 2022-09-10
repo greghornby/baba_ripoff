@@ -1,5 +1,6 @@
 import { debugPrint } from "../debug/debugPrint.js";
 import { Facing } from "../types/Facing.js";
+import { getOppositeFacing } from "../util/getOppositeFacing.js";
 import { Action } from "./Action.js";
 import { Entity } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
@@ -55,7 +56,6 @@ export class ActionProcessor {
                     this.controller.moveEntity(
                         // action.data.entity,
                         this.controller.entityMap.get(action.data.entityId)!,
-                        action.data.endDirection,
                         action.data.startX,
                         action.data.startY,
                         action.data.endX,
@@ -108,7 +108,6 @@ export class ActionProcessor {
                     this.controller.moveEntity(
                         // action.data.entity,
                         this.controller.entityMap.get(action.data.entityId)!,
-                        action.data.startDirection,
                         action.data.endX,
                         action.data.endY,
                         action.data.startX,
@@ -161,6 +160,9 @@ export class ActionProcessor {
 
 
     public doMovement(interaction: Interaction, addStep: boolean): boolean {
+
+        let returnSomethingMoved: boolean = false;
+
         this.interactions.push(interaction);
         debugPrint.interactions(JSON.stringify(interaction));
 
@@ -179,13 +181,12 @@ export class ActionProcessor {
             }
         }
 
+        //move You entities
         if (interaction.interaction.type === "move") {
             const youEntities = this.controller.tagToEntities.get(wordYou);
-
-            // set all you Entities to the facing position
             if (youEntities) {
                 for (const entity of youEntities) {
-                    const actions = this._attemptToCreateEntityMovementAction(entity, interaction.interaction.direction);
+                    const actions = this._attemptToCreateEntityMovementAction(entity, interaction.interaction.direction, false);
                     for (const action of actions) {
                         addAction(action);
                     }
@@ -193,13 +194,33 @@ export class ActionProcessor {
             }
         }
 
-        return this.playActionsOnTopOfStack(addStep);
+        const youMoved = this.playActionsOnTopOfStack(false);
+        returnSomethingMoved = returnSomethingMoved || youMoved;
+
+        //move Move entities
+        {
+            const moveEntities = this.controller.tagToEntities.get(wordMove);
+            if (moveEntities) {
+                for (const entity of moveEntities) {
+                    const actions = this._attemptToCreateEntityMovementAction(entity, entity.facing, true);
+                    for (const action of actions) {
+                        addAction(action);
+                    }
+                }
+            }
+        }
+
+        const moveMoved = this.playActionsOnTopOfStack(addStep);
+        returnSomethingMoved = returnSomethingMoved || moveMoved;
+
+        return returnSomethingMoved;
     }
 
 
     public _attemptToCreateEntityMovementAction(
         startEntity: Entity,
-        direction: Facing
+        direction: Facing,
+        bounce: boolean
     ): Action[] {
 
         let pathBlocked = false;
@@ -315,6 +336,16 @@ export class ActionProcessor {
             entitiesToMove.unshift(...pullEntitiesToMove);
         }
 
+        if (pathBlocked) {
+            if (bounce) {
+                return this._attemptToCreateEntityMovementAction(startEntity, getOppositeFacing(direction), false);
+            }
+            if (originFacingAction) {
+                return [originFacingAction];
+            }
+            return [];
+        }
+
         for (const [entity, startX, startY, endX, endY] of entitiesToMove) {
             if (entity !== startEntity && entity.facing !== direction) {
                 actions.push(new Action(this.step, {
@@ -326,22 +357,12 @@ export class ActionProcessor {
             }
             actions.push(new Action(this.step, {
                 type: "movement",
-                startDirection: entity.facing,
-                endDirection: direction,
-                // entity: entity,
                 entityId: entity.id,
                 startX: startX,
                 startY: startY,
                 endX: endX,
                 endY: endY
             }));
-        }
-
-        if (pathBlocked) {
-            if (originFacingAction) {
-                return [originFacingAction];
-            }
-            return [];
         }
 
         if (originFacingAction) {
@@ -500,4 +521,5 @@ const wordYou = Word.findWordFromText("you");
 const wordStop = Word.findWordFromText("stop");
 const wordPush = Word.findWordFromText("push");
 const wordPull = Word.findWordFromText("pull");
+const wordMove = Word.findWordFromText("move");
 const wordDefeat = Word.findWordFromText("defeat");
