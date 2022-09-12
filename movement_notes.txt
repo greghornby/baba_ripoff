@@ -1,0 +1,27 @@
+- Queue up all movemement entities (IS YOU + interaction and IS MOVE)
+    - Calculate directional force from each tile, eg. 2 up, 1 right etc.
+
+- Find all entities that will be affected by PUSH or PULL from a moving Entity.
+    - PULL outranks PUSH.
+    - Do recursively to pool together all the PUSH/PULL entities.
+    - Check for highest force from which adjacent side of the Entity, in the order RIGHT, DOWN, UP, LEFT.
+    - Simulated by the code:
+    ```
+        let arr = [];
+        for (let x = 1; x > -2; x--) {
+            for (let y = 1; y > -2; y--) {
+                if (x !== y && (x === 0 || y === 0)) {
+                    arr.push([x,y]);
+                }
+            }
+        }
+    ```
+
+- Resolve function checks if a tile is free to be moved onto.
+    - Resolve all PUSH/PULL tiles by recursively checking if the next tile is resolvable.
+    - If tile contains a STOP entity without PUSH/PULL, resolve to false immediately, even if that STOP entity IS MOVE.
+    - Cache resolved tiles.
+
+- [Todo handle PULL chaining]
+
+- Check all moving Entities, if the tile they can move to is already resolved and cached, allow it. Else do a check.

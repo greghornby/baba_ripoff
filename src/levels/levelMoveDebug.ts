@@ -1,21 +1,31 @@
 import { Level } from "../main/Level.js";
-import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
+import { constructs } from "../objects/constructs.js";
+import { Direction } from "../types/Direction.js";
+import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
 import { _commonKey } from "./_commonKey.js";
 
 
 const levelText = `
-_biy__wis_rip
-_xim__bis_fiv
+_biy__wis_rip_bip
+_xim__bis_fi[_1i,
 _WWWWWWWWWW
-_W________W
-_W_B__R___W
-_W____X___W
-_WF_______W
-_WWWWWWWWWW
+_W___?____W
+_W_?_______
+_W____________R_
+_WF_______W__RRR
+_WWWWWWWWWW___R
 `;
+
+const key = {
+    ..._commonKey,
+    "+": [constructs.baba, constructs.skull]
+};
 
 export const levelMoveDebug = () => new Level({
     width: 20,
     height: 11,
-    startingEntities: makeLevelGridFromString(levelText, _commonKey)
+    startingEntities: makeLevelGridFromString(levelText, key, [
+        ["X", (entity) => entity.setFacing(Direction.right)],
+        ["+", (entity => entity.setFacing(Direction.right))],
+    ])
 });

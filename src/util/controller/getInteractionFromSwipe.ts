@@ -1,7 +1,7 @@
 import { AppEventInterface } from "../../app/AppEventInterface.js";
 import { Interaction } from "../../main/Interaction.js";
 import { LevelController } from "../../main/LevelController.js";
-import { Facing } from "../../types/Facing.js";
+import { Direction } from "../../types/Direction.js";
 
 export function getInteractionFromSwipe(controller: LevelController, event: AppEventInterface.Swipe): Interaction | undefined {
     let interactionType: Interaction["interaction"];
@@ -13,16 +13,16 @@ export function getInteractionFromSwipe(controller: LevelController, event: AppE
 
     switch (event.direction) {
         case "right":
-            interactionType = {type: "move", direction: Facing.right};
+            interactionType = {type: "move", direction: Direction.right};
             break;
         case "left":
-            interactionType = {type: "move", direction: Facing.left};
+            interactionType = {type: "move", direction: Direction.left};
             break;
         case "up":
-            interactionType = {type: "move", direction: Facing.up};
+            interactionType = {type: "move", direction: Direction.up};
             break;
         case "down":
-            interactionType = {type: "move", direction: Facing.down};
+            interactionType = {type: "move", direction: Direction.down};
             break;
     }
 

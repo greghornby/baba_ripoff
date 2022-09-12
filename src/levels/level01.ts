@@ -1,5 +1,5 @@
 import { Level } from "../main/Level.js";
-import { makeLevelGridFromString } from "../util/makeLevelGridFromString.js";
+import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
 import { _commonKey } from "./_commonKey.js";
 
 

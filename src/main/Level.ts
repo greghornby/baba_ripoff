@@ -1,4 +1,5 @@
 import { Construct } from "./Construct.js";
+import type { Entity } from "./Entity.js";
 import { LevelController } from "./LevelController.js";
 
 export class Level {
@@ -34,7 +35,10 @@ export class Level {
 export interface InitLevelData {
     width: number;
     height: number;
-    startingEntities: () => LevelGrid<Construct>;
+    startingEntities: () => {
+        grid: LevelGrid<Construct>;
+        entitySetters: {x: number; y: number, fn: (entity: Entity) => void}[];
+    };
 }
 
 export type Cell<T> = T[];

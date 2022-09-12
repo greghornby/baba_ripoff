@@ -1,5 +1,5 @@
 import * as pixi from "pixi.js";
-import { Facing } from "../types/Facing.js";
+import { Direction } from "../types/Direction.js";
 import { Category } from "./Category.js";
 import type { Word } from "./Word.js";
 
@@ -8,7 +8,7 @@ export class Construct {
     static nextId: number = 0;
     public id: number;
     public texture: pixi.Texture;
-    public facingTextures?: Record<Facing, pixi.Texture>;
+    public facingTextures?: Record<Direction, pixi.Texture>;
     public associatedWord: () => Word;
     public category: Category;
     public defaultColor: number;

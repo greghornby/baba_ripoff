@@ -1,7 +1,7 @@
 import * as pixi from "pixi.js";
-import { _LEVELS } from "../levels/_LEVELS.js";
-import { LevelController } from "../main/LevelController.js";
-import { queryParams } from "./queryParams.js";
+import { _LEVELS } from "../../levels/_LEVELS.js";
+import { LevelController } from "../../main/LevelController.js";
+import { queryParams } from "../data/queryParams.js";
 
 let levelIndex = queryParams.level  && !isNaN(parseInt(queryParams.level)) ? parseInt(queryParams.level) : 0;
 

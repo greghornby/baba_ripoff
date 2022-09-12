@@ -19,6 +19,7 @@ node_modules/
 
 # Build output
 build/
+_build/
 
 # Mac files
 .DS_STORE

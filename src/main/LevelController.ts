@@ -4,21 +4,24 @@ import { AppEventEnum } from "../app/AppEventEnum.js";
 import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { words } from "../objects/words.js";
-import { Facing } from "../types/Facing.js";
-import { arrayRemove } from "../util/arrayRemove.js";
+import { Direction } from "../types/Direction.js";
+import { doMovement } from "../util/controller/doMovement.js";
 import { getInteractionFromDoubleTap } from "../util/controller/getInteractionFromDoubleTap.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
 import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
 import { setEntityTagsAndVerbsFromRule } from "../util/controller/setEntityTagsAndVerbsFromRule.js";
 import { visuallyCancelSentences } from "../util/controller/visuallyCancelSentences.js";
-import { generatePairsFromArray } from "../util/generatePairsFromArray.js";
-import { getPaths } from "../util/getPaths.js";
-import { MapOfSets } from "../util/MapOfSets.js";
+import { arrayRemove } from "../util/data/arrayRemove.js";
+import { EmptyArray } from "../util/data/EmptyArray.js";
+import { EmptySet } from "../util/data/EmptySet.js";
+import { generatePairsFromArray } from "../util/data/generatePairsFromArray.js";
+import { getPaths } from "../util/data/getPaths.js";
+import { MapOfSets } from "../util/data/MapOfSets.js";
+import { setAddMultiple } from "../util/data/setAddMultiple.js";
 import { isNotComplement } from "../util/rules/isNotComplement.js";
 import { rulesCancel } from "../util/rules/rulesCancel.js";
 import { VerbUnion } from "../util/rules/verbEquals.js";
-import { setAddMultiple } from "../util/setAddMultiple.js";
-import { tempWinScreen } from "../util/tempWinScreen.js";
+import { tempWinScreen } from "../util/temp/tempWinScreen.js";
 import { ActionProcessor } from "./ActionProcessor.js";
 import { AnimationSystem } from "./AnimationSystem.js";
 import { Construct } from "./Construct.js";
@@ -33,14 +36,14 @@ export class LevelController {
 
     static instance: LevelController;
 
+    __lastTickPerformance: number | undefined;
+
     levelWon: boolean = false;
 
     //#region Props
-    public actionProcessor: ActionProcessor | undefined;
-    public animationSytem: AnimationSystem | undefined;
+    public actionProcessor: ActionProcessor;
+    public animationSytem: AnimationSystem;
     public turnNumber: number = 0;
-
-    public _started: boolean = false;
 
     public ticker: pixi.Ticker;
     public container: pixi.Container;
@@ -154,8 +157,15 @@ export class LevelController {
             rebuildSentences: true,
             _debugAlertedYouAreDead: true
         });
+
+        this.actionProcessor = new ActionProcessor(this);
+        this.animationSytem = new AnimationSystem(this);
+
+        this.parseRules();
+
         this.ticker.add(() => this.tick());
         this.ticker.start();
+        this.ticker.maxFPS = 30;
     }
 
 
@@ -280,16 +290,18 @@ export class LevelController {
         }
 
         const initConstructGrid = this.level.initData.startingEntities();
-        for (let y = 0; y < initConstructGrid.length; y++) {
-            const row = initConstructGrid[y];
+        for (let y = 0; y < initConstructGrid.grid.length; y++) {
+            const row = initConstructGrid.grid[y];
             for (let x = 0; x < row.length; x++) {
                 const constructs = row[x];
                 for (const construct of constructs) {
-                    this.addEntity({
+                    const entity = this.addEntity({
                         construct: construct,
                         x: x,
                         y: y,
                     });
+                    const setter = initConstructGrid.entitySetters.find(s => s.x === x && s.y === y);
+                    setter?.fn(entity);
                 }
             }
         }
@@ -331,7 +343,7 @@ export class LevelController {
 
 
     public getEntitiesAtPosition(x: number, y: number): Readonly<Cell<Entity>> {
-        return this.getGridCell(x, y) ?? [];
+        return this.getGridCell(x, y) ?? EmptyArray;
     }
 
 
@@ -370,7 +382,7 @@ export class LevelController {
     }
 
 
-    public faceEntity(entity: Entity, facing: Facing): void {
+    public faceEntity(entity: Entity, facing: Direction): void {
         entity.setFacing(facing);
     }
 
@@ -387,6 +399,22 @@ export class LevelController {
             x: x,
             y: y
         }, {restoredId: entityId, visibleOnInit: false});
+    }
+
+
+    public getEntitiesByTag(tag: string | Word): ReadonlySet<Entity> {
+        const word = typeof tag === "string" ? Word.findWordFromText(tag) : tag;
+        const s = this.tagToEntities.get(word);
+        if (s) {
+            return s;
+        } else {
+            return EmptySet;
+        }
+    }
+
+
+    public getEntityTags(entity: Entity): ReadonlySet<Word> {
+        return this.entityToTags.get(entity) ?? EmptySet;
     }
 
 
@@ -603,15 +631,6 @@ export class LevelController {
     //#endregion INTERACTION
 
 
-    start(): void {
-        this.actionProcessor = new ActionProcessor(this);
-        this.animationSytem = new AnimationSystem(this);
-        this._started = true;
-
-        this.parseRules();
-    }
-
-
     public exit(): void {
         const app = App.get();
         globalThis.removeEventListener(AppEventEnum.resize, this.resizeListener);
@@ -622,15 +641,18 @@ export class LevelController {
 
 
     tick(): void {
-        if (!this._started) {
-            this.start();
-        }
 
-        // // debug entities
-        // for (const entity of this.entityMap.values()) {
-        //     entity._debugFacingGraphic();
-        //     entity._debugEntityId();
-        // }
+        const now = performance.now();
+        if (this.__lastTickPerformance) {
+            // console.log("Tick time", now - this.__lastTickPerformance);
+        }
+        this.__lastTickPerformance = now;
+
+        // debug entities
+        for (const entity of this.entityMap.values()) {
+            // entity._debugFacingGraphic();
+            entity.entityPixi._debugEntityId();
+        }
 
         const animation = this.animationSytem!.getAnimation();
         if (animation) {
@@ -663,7 +685,7 @@ export class LevelController {
         const interaction = this.currentInteraction;
         this.currentInteraction = undefined;
         if (interaction.interaction.type === "undo") {
-            const actions = this.actionProcessor!.doUndo();
+            const actions = this.actionProcessor.doUndo();
             this.parseRules();
             this.animationSytem!.createAnimationsFromActions(actions, true);
             return;
@@ -672,16 +694,20 @@ export class LevelController {
         let _doParse = false;
         const ADD_STEP = true;
 
-        _doParse = this.actionProcessor!.doMovement(interaction, ADD_STEP);
+        const t0 = performance.now();
+        // _doParse = this.actionProcessor.doMovement(interaction, ADD_STEP);
+        _doParse = doMovement(interaction);
+        const t1 = performance.now();
+        console.log("Movement performance", t1-t0);
 
         this.parseRules(_doParse);
 
-        _doParse = this.actionProcessor!.doMutations(ADD_STEP);
+        _doParse = this.actionProcessor.doMutations(ADD_STEP);
 
         this.parseRules(_doParse);
 
-        let _d = this.actionProcessor!.doDestruction(ADD_STEP);
-        let _c = this.actionProcessor!.doCreate(ADD_STEP);
+        let _d = this.actionProcessor.doDestruction(ADD_STEP);
+        let _c = this.actionProcessor.doCreate(ADD_STEP);
 
         _doParse = _d || _c;
 
@@ -692,17 +718,17 @@ export class LevelController {
             const _isWin = this.checkYouWin();
         }
 
-        const actions = this.actionProcessor!.getTopOfStack();
+        const actions = this.actionProcessor.getTopOfStack();
 
         if (actions.length > 0) {
-            this.animationSytem!.createAnimationsFromActions(this.actionProcessor!.getTopOfStack(), false);
+            this.animationSytem!.createAnimationsFromActions(this.actionProcessor.getTopOfStack(), false);
         }
 
         this.turnNumber++;
 
         //undo last Action[] on stack if actually no actions occured
         if (actions.length === 0) {
-            this.actionProcessor!.doUndo();
+            this.actionProcessor.doUndo();
         }
     }
 }

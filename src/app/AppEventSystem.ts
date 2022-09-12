@@ -1,4 +1,4 @@
-import { iteratorFromLength } from "../util/iteratorFromLength.js";
+import { iteratorFromLength } from "../util/data/iteratorFromLength.js";
 import { App } from "./App.js";
 import { AppEventEnum } from "./AppEventEnum.js";
 import { AppEventInterface } from "./AppEventInterface.js";

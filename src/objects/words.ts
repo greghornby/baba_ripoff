@@ -1,5 +1,5 @@
 import { NounSelector, Word } from "../main/Word.js";
-import { behaviorNoun } from "../util/behaviorNounAndComplement.js";
+import { behaviorNoun } from "../util/words/behaviorNounAndComplement.js";
 import { colors } from "./colors.js";
 import { constructs } from "./constructs.js";
 import { textures } from "./textures.js";
@@ -103,7 +103,15 @@ export const words = {
 	}),
 
 	move: new Word("move", {
-		texture: texturePlaceholder,
+		texture: textures.words.move,
+		color: colors.white,
+		behavior: {
+            tag: true
+		}
+	}),
+
+	shift: new Word("shift", {
+		texture: textures.words.shift,
 		color: colors.white,
 		behavior: {
             tag: true
@@ -196,6 +204,14 @@ export const words = {
 		color: 0xa61b03,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.skull))
+		}
+	}),
+
+	belt: new Word("belt", {
+		texture: textures.words.belt,
+		color: colors.white,
+		behavior: {
+			noun: behaviorNoun(new NounSelector.single(constructs.belt))
 		}
 	}),
 }

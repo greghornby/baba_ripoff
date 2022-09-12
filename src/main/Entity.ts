@@ -1,5 +1,5 @@
 import * as pixi from "pixi.js";
-import { Facing } from "../types/Facing.js";
+import { Direction } from "../types/Direction.js";
 import { Construct } from "./Construct.js";
 import { EntityPixi } from "./EntityPixi.js";
 import { Level } from "./Level.js";
@@ -15,7 +15,7 @@ export class Entity {
     public color: number;
     public x: number;
     public y: number;
-    public facing: Facing;
+    public facing: Direction;
     public isActiveText?: boolean;
     public isCancelledText?: boolean;
 
@@ -38,7 +38,7 @@ export class Entity {
         this.x = initData.x;
         this.y = initData.y;
         this.color = initData.construct.defaultColor;
-        this.facing = Facing.down;
+        this.facing = Direction.down;
 
         this.entityPixi = new EntityPixi(this);
 
@@ -53,7 +53,7 @@ export class Entity {
     }
 
 
-    public setFacing(facing: Facing) {
+    public setFacing(facing: Direction) {
         this.facing = facing;
         this.entityPixi.setFacing(this.facing);
         this._debug.redrawFacing = true;

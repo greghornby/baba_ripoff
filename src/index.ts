@@ -2,8 +2,8 @@ import { App } from "./app/App.js";
 import { initDebug } from "./debug/debug.js";
 import { exposeGlobals } from "./debug/globals.js";
 import { setDebugFlagsFromQuery } from "./debug/setDebugFlagsFromQuery.js";
-import { initFiles } from "./util/initFiles.js";
-import { loadLevel } from "./util/tempWinScreen.js";
+import { initFiles } from "./util/temp/initFiles.js";
+import { loadLevel } from "./util/temp/tempWinScreen.js";
 initFiles();
 
 function initGame() {

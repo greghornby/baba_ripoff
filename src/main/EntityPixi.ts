@@ -1,6 +1,7 @@
 import * as pixi from "pixi.js";
 import { App } from "../app/App.js";
-import { Facing } from "../types/Facing.js";
+import { debugFlags } from "../debug/debugFlags.js";
+import { Direction } from "../types/Direction.js";
 import { Entity } from "./Entity.js";
 import { LevelController } from "./LevelController.js";
 
@@ -19,6 +20,10 @@ export class EntityPixi {
 
     public _visible: boolean = true;
     public _invisiblePosition = {x: 0, y: 0};
+
+    public _debugContainers: {
+        id?: pixi.Container
+    } = {};
 
     constructor(public entity: Entity) {
         this.entityId = entity.id;
@@ -107,7 +112,7 @@ export class EntityPixi {
 
 
     @pixiUpdate()
-    public setFacing(facing: Facing): void {
+    public setFacing(facing: Direction): void {
         if (this.entity.construct.facingTextures) {
             const texture = this.entity.construct.facingTextures[facing];
             this.sprite.texture = texture;
@@ -163,6 +168,47 @@ export class EntityPixi {
             g.lineTo(half - quarter, half + quarter);
         }
         this.cancelledSprite.visible = cancelled;
+    }
+
+
+    public _removeDebugContainer(key: keyof EntityPixi["_debugContainers"]): void {
+        const debugContainer = this._debugContainers[key];
+        if (!debugContainer) {
+            return;
+        }
+        this.container.removeChild(debugContainer);
+        debugContainer.destroy();
+        this._debugContainers[key] = undefined;
+        this.cache();
+    }
+
+
+    @pixiUpdate({noCache: true})
+    public _debugEntityId(): void {
+        if (!debugFlags.drawEntityIds) {
+            this._removeDebugContainer("id");
+            return;
+        }
+        if (this._debugContainers.id) {
+            return;
+        }
+        const graphics = new pixi.Graphics();
+        this._debugContainers.id = graphics;
+        graphics.zIndex = 102;
+        this.container.addChild(graphics);
+        const text = new pixi.Text(this.entity.id, new pixi.TextStyle({
+            fontFamily : 'Arial',
+            fontSize: 12,
+            fill : 0xffffff,
+            align : 'left'
+        }));
+        const bounds = text.getBounds();
+        const bg = new pixi.Graphics();
+        bg.beginFill(0x000000);
+        bg.drawRect(bounds.x, bounds.y, bounds.width, bounds.height);
+        graphics.addChild(bg);
+        graphics.addChild(text);
+        this.cache();
     }
 }
 

@@ -1,4 +1,4 @@
-const arraysHaveSameItems = <T>(arrA: T[], arrB: T[], optimizeWithSet?: boolean): boolean => {
+export function arraysHaveSameItems<T>(arrA: T[], arrB: T[], optimizeWithSet?: boolean): boolean {
     if (arrA.length !== arrB.length) {
         return false;
     }

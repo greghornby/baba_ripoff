@@ -1,4 +1,4 @@
-import { Facing } from "../types/Facing.js";
+import { Direction } from "../types/Direction.js";
 
 export interface Interaction {
     interaction: InteractionMove | InteractionWait | InteractionUndo | InteractionRestart;
@@ -6,7 +6,7 @@ export interface Interaction {
 
 export interface InteractionMove {
     type: "move";
-    direction: Facing;
+    direction: Direction;
 }
 
 export interface InteractionWait {

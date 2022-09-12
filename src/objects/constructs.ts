@@ -52,4 +52,12 @@ export const constructs = {
         color: 0xa61b03
     }),
 
+    belt: new Construct({
+        texture: textures.objects.belt,
+        textureHasDirections: true,
+        associatedWord: () => Word.findWordFromText("skull"),
+        category: categories.floor,
+        color: 0x999999
+    }),
+
 }

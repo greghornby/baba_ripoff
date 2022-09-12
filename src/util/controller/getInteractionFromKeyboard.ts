@@ -1,6 +1,6 @@
 import { AppEventInterface } from "../../app/AppEventInterface.js";
 import { Interaction } from "../../main/Interaction.js";
-import { Facing } from "../../types/Facing.js";
+import { Direction } from "../../types/Direction.js";
 
 export function getInteractionFromKeyboard(event: AppEventInterface.Keyboard): Interaction | undefined {
     const key = event.key;
@@ -9,19 +9,19 @@ export function getInteractionFromKeyboard(event: AppEventInterface.Keyboard): I
     switch (key) {
         case "w":
         case "ArrowUp":
-            interactionType = {type: "move", direction: Facing.up};
+            interactionType = {type: "move", direction: Direction.up};
             break;
         case "a":
         case "ArrowLeft":
-            interactionType = {type: "move", direction: Facing.left};
+            interactionType = {type: "move", direction: Direction.left};
             break;
         case "d":
         case "ArrowRight":
-            interactionType = {type: "move", direction: Facing.right};
+            interactionType = {type: "move", direction: Direction.right};
             break;
         case "s":
         case "ArrowDown":
-            interactionType = {type: "move", direction: Facing.down};
+            interactionType = {type: "move", direction: Direction.down};
             break;
         case " ":
             interactionType = {type: "wait"};

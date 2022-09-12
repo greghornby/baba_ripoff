@@ -1,5 +1,5 @@
 export const debugFlags = {
     drawFacingArrows: false,
-    drawEntityIds: false,
+    drawEntityIds: true,
 };
 (globalThis as any).debugFlags = debugFlags;

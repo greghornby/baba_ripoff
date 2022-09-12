@@ -3,9 +3,9 @@ import { Entity } from "../../main/Entity.js";
 import { LevelController } from "../../main/LevelController.js";
 import { IRule, Rule } from "../../main/Rule.js";
 import { INounSelector, NounSelector, Word } from "../../main/Word.js";
-import { arrayRemove } from "../arrayRemove.js";
+import { arrayRemove } from "../data/arrayRemove.js";
+import { setAddMultiple } from "../data/setAddMultiple.js";
 import { mapVerbToString, verbEquals } from "../rules/verbEquals.js";
-import { setAddMultiple } from "../setAddMultiple.js";
 
 export const setEntityTagsAndVerbsFromRule = (
     controller: LevelController,

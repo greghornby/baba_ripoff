@@ -1,6 +1,6 @@
 import { debugPrint } from "../debug/debugPrint.js";
-import { Facing } from "../types/Facing.js";
-import { getOppositeFacing } from "../util/getOppositeFacing.js";
+import { Direction } from "../types/Direction.js";
+import { getOppositeDirection } from "../util/actions/getOppositeFacing.js";
 import { Action } from "./Action.js";
 import { Entity } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
@@ -54,7 +54,6 @@ export class ActionProcessor {
             switch (action.data.type) {
                 case "movement":
                     this.controller.moveEntity(
-                        // action.data.entity,
                         this.controller.entityMap.get(action.data.entityId)!,
                         action.data.startX,
                         action.data.startY,
@@ -171,15 +170,15 @@ export class ActionProcessor {
         }
 
         const topOfStack = this.getTopOfStack();
-        const debugActions: Action[] = [];
         const actionsHashSet = new Set<string>();
         const addAction = (action: Action) => {
             if (!actionsHashSet.has(action.hash)) {
                 topOfStack.push(action);
-                debugActions.push(action);
                 actionsHashSet.add(action.hash);
             }
         }
+
+        const tilesAlreadyMoved: TilesAlreadyMovedSet = new Set();
 
         //move You entities
         if (interaction.interaction.type === "move") {
@@ -190,6 +189,7 @@ export class ActionProcessor {
                     for (const action of actions) {
                         addAction(action);
                     }
+                    doDebugActions("YOU", actions);
                 }
             }
         }
@@ -206,9 +206,35 @@ export class ActionProcessor {
                     for (const action of actions) {
                         addAction(action);
                     }
+                    doDebugActions("MOVE", actions);
                 }
             }
         }
+
+        for (const action of topOfStack) {
+            console.log(JSON.stringify(action));
+        }
+
+        //move entities on Shift entities
+        // shift:
+        // {
+        //     const shiftEntities = this.controller.tagToEntities.get(wordMove);
+        //     if (!shiftEntities) {
+        //         break shift;
+        //     }
+        //     const shiftTilesAlreadyProcessed: Set<number> = new Set();
+        //     for (const entity of shiftEntities) {
+        //         // const tileNumber = entity.y * this.controller.level.width + entity.x;
+        //         // if (shiftTilesAlreadyProcessed.has(tileNumber)) {
+        //         //     continue;
+        //         // }
+        //         // shiftTilesAlreadyProcessed.add(tileNumber);
+        //         const actions = this._attemptToCreateEntityMovementAction(entity, entity.facing, true);
+        //         for (const action of actions) {
+        //             addAction(action);
+        //         }
+        //     }
+        // }
 
         const moveMoved = this.playActionsOnTopOfStack(addStep);
         returnSomethingMoved = returnSomethingMoved || moveMoved;
@@ -217,10 +243,16 @@ export class ActionProcessor {
     }
 
 
+    public _getTileFlatNumber(x: number, y: number): number {
+        return y * this.level.width + x;
+    }
+
+
     public _attemptToCreateEntityMovementAction(
         startEntity: Entity,
-        direction: Facing,
-        bounce: boolean
+        direction: Direction,
+        bounce: boolean,
+        tilesAlreadyMoved?: TilesAlreadyMovedSet,
     ): Action[] {
 
         let pathBlocked = false;
@@ -338,7 +370,7 @@ export class ActionProcessor {
 
         if (pathBlocked) {
             if (bounce) {
-                return this._attemptToCreateEntityMovementAction(startEntity, getOppositeFacing(direction), false);
+                return this._attemptToCreateEntityMovementAction(startEntity, getOppositeDirection(direction), false);
             }
             if (originFacingAction) {
                 return [originFacingAction];
@@ -372,18 +404,18 @@ export class ActionProcessor {
     }
 
 
-    public _movePoint(point: [x: number, y: number], direction: Facing, oppositeDirection: boolean = false): void {
+    public _movePoint(point: [x: number, y: number], direction: Direction, oppositeDirection: boolean = false): void {
         switch (direction) {
-            case Facing.left:
+            case Direction.left:
                 oppositeDirection ? point[0]++ : point[0]--;
                 break;
-            case Facing.right:
+            case Direction.right:
                 oppositeDirection ? point[0]-- : point[0]++;
                 break;
-            case Facing.up:
+            case Direction.up:
                 oppositeDirection ? point[1]++ : point[1]--;
                 break;
-            case Facing.down:
+            case Direction.down:
                 oppositeDirection ? point[1]-- : point[1]++;
                 break;
         }
@@ -517,9 +549,20 @@ export class ActionProcessor {
     }
 }
 
+type TilesAlreadyMovedSet = Set<`${number}${Direction}`>;
+
 const wordYou = Word.findWordFromText("you");
 const wordStop = Word.findWordFromText("stop");
 const wordPush = Word.findWordFromText("push");
 const wordPull = Word.findWordFromText("pull");
 const wordMove = Word.findWordFromText("move");
+const wordShift = Word.findWordFromText("shift");
 const wordDefeat = Word.findWordFromText("defeat");
+
+function doDebugActions(title: string, actions: Action[]) {
+    console.log(`ACTIONS: ${title}`);
+    for (const action of actions) {
+        console.log(JSON.stringify(action));
+    }
+    console.log("\n\n");
+}

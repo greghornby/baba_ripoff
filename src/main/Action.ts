@@ -1,5 +1,5 @@
 import objectHash from "object-hash";
-import { Facing } from "../types/Facing.js";
+import { Direction } from "../types/Direction.js";
 import { Construct } from "./Construct.js";
 
 export class Action {
@@ -23,8 +23,11 @@ export class Action {
     public _getNonCircularDataToHash(): Record<string, string | number> {
         switch (this.data.type) {
             case "movement":
-            case "facing":
                 return {...this.data};
+            case "facing":
+                return {
+                    entityId: this.data.entityId
+                };
             case "create":
             case "destroy":
             case "swapin":
@@ -80,8 +83,8 @@ export interface MovementAction {
 export interface FacingAction {
     type: "facing";
     entityId: number;
-    fromDirection: Facing;
-    toDirection: Facing;
+    fromDirection: Direction;
+    toDirection: Direction;
 }
 
 
