@@ -84,7 +84,7 @@ export class MovTileInfo {
         if (!this.pullEntities) {
             return false;
         }
-        this.pullDirection = this._getHighestDirectionOrder("push", this.pullDirection, direction);
+        this.pullDirection = this._getHighestDirectionOrder("pull", this.pullDirection, direction);
         return true;
     }
 
@@ -135,6 +135,7 @@ export type MovMovementTypes = "main" | "push" | "pull" | "shift";
 
 export enum MovMovementDirectionStatus {
     pending,
+    resolving,
     blocked,
     clear
 }

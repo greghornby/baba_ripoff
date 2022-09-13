@@ -18,6 +18,7 @@ export function resolveTile(
     let direction: Direction;
     for (direction in tileInfo.status) {
         if (tileInfo.status[direction] === MovMovementDirectionStatus.pending) {
+            tileInfo.status[direction] = MovMovementDirectionStatus.resolving;
             const clear = searchDirection(tileStore, tileInfo, pointer, direction);
         }
     }
@@ -137,7 +138,7 @@ function lookAhead (
     while (ITER--) {
         pointer.move(direction);
         const tile = tileStore.createInfoAt(pointer);
-        if (tile.status) {
+        if (tile.status && tile.hasPendingStatuses()) {
             searchDirection(tileStore, tile, new MovTilePointer(pointer[0], pointer[1]), direction);
             return;
         }
