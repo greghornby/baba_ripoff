@@ -136,6 +136,7 @@ export class ActionProcessor {
                         x: action.data.x,
                         y: action.data.y
                     }, {restoredId: action.data.entityId, visibleOnInit: true});
+                    this.controller.faceEntity(this.controller.entityMap.get(action.data.entityId)!, action.data.facing);
                     break;
             }
             this.actionIndex = index;
@@ -178,6 +179,7 @@ export class ActionProcessor {
                 type: "swapout",
                 entityId: entityToChange.id,
                 construct: entityToChange.construct,
+                facing: entityToChange.facing,
                 x: entityToChange.x,
                 y: entityToChange.y
             }, debugData);
@@ -191,6 +193,7 @@ export class ActionProcessor {
                     type: "swapin",
                     entityId: this.controller.entityCount++,
                     construct: construct,
+                    facing: entityToChange.facing,
                     x: entityToChange.x,
                     y: entityToChange.y
                 }, debugData);
@@ -269,6 +272,7 @@ export class ActionProcessor {
                 type: "destroy",
                 entityId: entity.id,
                 construct: entity.construct,
+                facing: entity.facing,
                 x: entity.x,
                 y: entity.y
             });
@@ -286,7 +290,7 @@ export class ActionProcessor {
 
         for (const entity of entitiesToCreate) {
             const action = new Action(this.step, {
-                type: "destroy",
+                type: "create",
                 entityId: entity.id,
                 construct: entity.construct,
                 x: entity.x,

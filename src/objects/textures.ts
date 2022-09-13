@@ -4,7 +4,9 @@ import objects_baba from "../images/objects/baba.png"
 import objects_baba_sprites from "../images/objects/baba_sprites.png"
 import objects_belt from "../images/objects/belt.png"
 import objects_brick from "../images/objects/brick.png"
+import objects_door from "../images/objects/door.png"
 import objects_flag from "../images/objects/flag.png"
+import objects_key from "../images/objects/key.png"
 import objects_leaf from "../images/objects/leaf.png"
 import objects_rock from "../images/objects/rock.png"
 import objects_skull from "../images/objects/skull.png"
@@ -15,8 +17,10 @@ import words_and from "../images/words/and.png"
 import words_baba from "../images/words/baba.png"
 import words_belt from "../images/words/belt.png"
 import words_defeat from "../images/words/defeat.png"
+import words_door from "../images/words/door.png"
 import words_flag from "../images/words/flag.png"
 import words_is from "../images/words/is.png"
+import words_key from "../images/words/key.png"
 import words_leaf from "../images/words/leaf.png"
 import words_move from "../images/words/move.png"
 import words_not from "../images/words/not.png"
@@ -40,7 +44,9 @@ export const textures = {
         "baba_sprites": pixijs.Texture.from(objects_baba_sprites),
         "belt": pixijs.Texture.from(objects_belt),
         "brick": pixijs.Texture.from(objects_brick),
+        "door": pixijs.Texture.from(objects_door),
         "flag": pixijs.Texture.from(objects_flag),
+        "key": pixijs.Texture.from(objects_key),
         "leaf": pixijs.Texture.from(objects_leaf),
         "rock": pixijs.Texture.from(objects_rock),
         "skull": pixijs.Texture.from(objects_skull),
@@ -53,8 +59,10 @@ export const textures = {
         "baba": pixijs.Texture.from(words_baba),
         "belt": pixijs.Texture.from(words_belt),
         "defeat": pixijs.Texture.from(words_defeat),
+        "door": pixijs.Texture.from(words_door),
         "flag": pixijs.Texture.from(words_flag),
         "is": pixijs.Texture.from(words_is),
+        "key": pixijs.Texture.from(words_key),
         "leaf": pixijs.Texture.from(words_leaf),
         "move": pixijs.Texture.from(words_move),
         "not": pixijs.Texture.from(words_not),

@@ -6,29 +6,39 @@ import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js
 import { _commonKey } from "./_commonKey.js";
 
 const levelText = `
-_biy_wis_wiS
-_rip_rio_xis
+WbiyWwisW
+WWWWWWWWW
+WkipWdisW      K
+WkioWdiSW
+WWWWWWWWWWWWWWW WWWW
+_       W
+_  F    D   B
+_       W
+_       WWWWWWWWWWWW
 _
-__B__R__W
+_ fiv
 `;
 
 const key = {
     "_": null,
+    " ": null,
     b: words.baba,
     B: constructs.baba,
+    d: words.door,
     w: words.wall,
-    // W: [constructs.wall, constructs.skull],
     W: constructs.wall,
-    r: words.rock,
-    R: constructs.rock,
-    x: words.skull,
-    X: constructs.skull,
+    D: constructs.door,
+    k: words.key,
+    K: constructs.key,
     i: words.is,
     y: words.you,
     s: words.stop,
     S: words.shut,
     o: words.open,
-    p: words.push
+    p: words.push,
+    f: words.flag,
+    F: constructs.flag,
+    v: words.win,
 };
 
 export const levelShutOpen = () => new Level({

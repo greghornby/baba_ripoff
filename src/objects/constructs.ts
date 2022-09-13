@@ -23,6 +23,21 @@ export const constructs = {
         color: 0x1c3773
     }),
 
+    door: new Construct({
+        texture: textures.objects.door,
+        associatedWord: () => Word.findWordFromText("door"),
+        category: categories.wall,
+        color: colors.stop
+    }),
+
+    key: new Construct({
+        texture: textures.objects.key,
+        textureHasDirections: true,
+        associatedWord: () => Word.findWordFromText("key"),
+        category: categories.interactable,
+        color: colors.gold
+    }),
+
     rock: new Construct({
         texture: textures.objects.rock,
         associatedWord: () => Word.findWordFromText("rock"),

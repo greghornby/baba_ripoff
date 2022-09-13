@@ -89,6 +89,7 @@ export interface DestroyEntityAction {
     type: "destroy";
     construct: Construct;
     entityId: number;
+    facing: Direction;
     x: number;
     y: number;
 }
@@ -98,6 +99,7 @@ export interface CreateEntityAction {
     type: "create";
     construct: Construct;
     entityId: number;
+    // facing: Direction;
     x: number;
     y: number;
 }
@@ -107,6 +109,7 @@ export interface SwapOutEntityAction {
     type: "swapout";
     construct: Construct;
     entityId: number;
+    facing: Direction;
     x: number;
     y: number;
 }
@@ -116,6 +119,7 @@ export interface SwapInEntityAction {
     type: "swapin";
     construct: Construct;
     entityId: number;
+    facing: Direction;
     x: number;
     y: number;
 }

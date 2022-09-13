@@ -80,7 +80,7 @@ export const words = {
 
 	stop: new Word("stop", {
 		texture: textures.words.stop,
-		color: 0xbf1f41,
+		color: colors.stop,
 		behavior: {
             tag: true
 		}
@@ -188,6 +188,22 @@ export const words = {
 		color: colors.brightBlue,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.wall))
+		}
+	}),
+
+	key: new Word("key", {
+		texture: textures.words.key,
+		color: colors.gold,
+		behavior: {
+			noun: behaviorNoun(new NounSelector.single(constructs.key))
+		}
+	}),
+
+	door: new Word("door", {
+		texture: textures.words.door,
+		color: colors.stop,
+		behavior: {
+			noun: behaviorNoun(new NounSelector.single(constructs.door))
 		}
 	}),
 
