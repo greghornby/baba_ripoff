@@ -1,9 +1,10 @@
 import { Entity } from "../../main/Entity.js";
 import { LevelController } from "../../main/LevelController.js";
 import { Direction } from "../../types/Direction.js";
+import { EmptyArray } from "../data/EmptyArray.js";
 import { getWordMap } from "../words/getWordMap.js";
 
-const words = getWordMap("pull", "push", "stop");
+const words = getWordMap("pull", "push", "stop", "shift", "open", "shut");
 
 export class MovTileInfo {
 
@@ -20,7 +21,12 @@ export class MovTileInfo {
     shiftDirection?: Direction;
 
     isStopped: boolean = false;
+    allStopsCanBeOpened: boolean = false;
+    hasPushableOpen: boolean = false;
+
     status?: Partial<Record<Direction, MovMovementDirectionStatus>>;
+
+    entities: readonly Entity[];
 
     /** Only defined if it has push entities */
     pullEntities?: Entity[];
@@ -40,10 +46,14 @@ export class MovTileInfo {
         public y: number
     ) {
         if (x < 0 || x >= controller.level.width || y < 0 || y >= controller.level.height) {
+            this.entities = EmptyArray;
             this.outOfBounds = true;
             return;
         }
+
+        let allStopsCanBeOpened = true;
         const entities = controller.getEntitiesAtPosition(x, y);
+        this.entities = entities;
         for (const e of entities) {
             const tags = controller.getEntityTags(e);
             const isPush = tags.has(words.push);
@@ -52,12 +62,20 @@ export class MovTileInfo {
             const isStopWithoutPushOrPull = isStop && !isPush && !isPull;
             if (isPush) {
                 (this.pushEntities ??= []).push(e);
+                if (tags.has(words.open)) {
+                    this.hasPushableOpen = true;
+                }
             }
             if (isPull) {
                 (this.pullEntities ??= []).push(e);
             }
             if (isStopWithoutPushOrPull) {
                 this.isStopped = true;
+            }
+            if (isStop) {
+                if (!tags.has(words.shut)) {
+                    allStopsCanBeOpened = false;
+                }
             }
 
             const mainEntityIndex = allMainMoveEntities.indexOf(e);
@@ -70,6 +88,7 @@ export class MovTileInfo {
                 (this.mainMoveEntityDirections ??= []).push(mainEntityDirection);
             }
         }
+        this.allStopsCanBeOpened = allStopsCanBeOpened;
     }
 
     addPush(direction: Direction): boolean {
@@ -128,6 +147,23 @@ export class MovTileInfo {
         //lowest rank wins (this is probably more efficient than Math.min)
         const bestRank = currentRank < newRank ? currentRank : newRank;
         return ranks[bestRank];
+    }
+
+    toJSON() {
+        const obj: any = {};
+        for (const key in this) {
+            switch(typeof this[key]) {
+                case "string":
+                case "number":
+                case "boolean":
+                case "undefined":
+                    obj[key] = this[key];
+                    break;
+                default:
+                    obj[key] = !this[key]  ? this[key] : "[object]";
+            }
+        }
+        return obj;
     }
 }
 

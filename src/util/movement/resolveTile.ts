@@ -35,8 +35,6 @@ function searchDirection(
     lookAhead(tileStore, startTileInfo, pointer, direction);
     pointer.reset();
 
-    console.log("Checking collisions from", pointer[0], pointer[1]);
-
     const addPush: MovTileInfo[] = [];
     const addPull: MovTileInfo[] = [];
     const addPushFromPull: MovTileInfo[] = [];
@@ -57,9 +55,15 @@ function searchDirection(
                 break loop;
             }
             if (tile.isStopped || (tile.pullEntities && !tile.pullDirection)) {
-                console.log("Main on tile", tile.x, tile.y, "entities", previousTileFromPush.mainMoveEntities?.map(e => e.id), "blocked by", tile.pullEntities?.map(e => e.id), "pullDirection is ", tile.pullDirection);
-                failedForward = true;
-                break loop;
+                if (tile.entities.find(e => e.id === 17)) {
+                    console.log("TILE", JSON.stringify(tile));
+                    console.log("PREVIOUS", JSON.stringify(previousTileFromPush));
+                }
+                const pushingOpenOntoStop = tile.allStopsCanBeOpened && previousTileFromPush.hasPushableOpen;
+                if (!pushingOpenOntoStop) {
+                    failedForward = true;
+                    break loop;
+                }
             }
             if (tile.hasPendingStatuses()) {
                 resolveTile(tileStore, tile);
@@ -119,7 +123,6 @@ function searchDirection(
             t.addPush(direction);
         }
         for (const t of addPull) {
-            console.log("Pulling entities at", t.x, t.y);
             t.addPull(direction);
         }
     }

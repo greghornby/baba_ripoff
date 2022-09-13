@@ -1,10 +1,10 @@
 import { debugPrint } from "../debug/debugPrint.js";
-import { Direction } from "../types/Direction.js";
-import { getOppositeDirection } from "../util/actions/getOppositeFacing.js";
+import { doMovement2 } from "../util/movement/doMovement2.js";
+import { getWordMap } from "../util/words/getWordMap.js";
 import { Action } from "./Action.js";
 import { Entity } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
-import { Cell, Level } from "./Level.js";
+import { Level } from "./Level.js";
 import { LevelController } from "./LevelController.js";
 import { Word } from "./Word.js";
 
@@ -159,291 +159,7 @@ export class ActionProcessor {
 
 
     public doMovement(interaction: Interaction, addStep: boolean): boolean {
-
-        let returnSomethingMoved: boolean = false;
-
-        this.interactions.push(interaction);
-        debugPrint.interactions(JSON.stringify(interaction));
-
-        if (!(interaction.interaction.type === "move" || interaction.interaction.type === "wait")) {
-            return false;
-        }
-
-        const topOfStack = this.getTopOfStack();
-        const actionsHashSet = new Set<string>();
-        const addAction = (action: Action) => {
-            if (!actionsHashSet.has(action.hash)) {
-                topOfStack.push(action);
-                actionsHashSet.add(action.hash);
-            }
-        }
-
-        const tilesAlreadyMoved: TilesAlreadyMovedSet = new Set();
-
-        //move You entities
-        if (interaction.interaction.type === "move") {
-            const youEntities = this.controller.tagToEntities.get(wordYou);
-            if (youEntities) {
-                for (const entity of youEntities) {
-                    const actions = this._attemptToCreateEntityMovementAction(entity, interaction.interaction.direction, false);
-                    for (const action of actions) {
-                        addAction(action);
-                    }
-                    doDebugActions("YOU", actions);
-                }
-            }
-        }
-
-        const youMoved = this.playActionsOnTopOfStack(false);
-        returnSomethingMoved = returnSomethingMoved || youMoved;
-
-        //move Move entities
-        {
-            const moveEntities = this.controller.tagToEntities.get(wordMove);
-            if (moveEntities) {
-                for (const entity of moveEntities) {
-                    const actions = this._attemptToCreateEntityMovementAction(entity, entity.facing, true);
-                    for (const action of actions) {
-                        addAction(action);
-                    }
-                    doDebugActions("MOVE", actions);
-                }
-            }
-        }
-
-        for (const action of topOfStack) {
-            console.log(JSON.stringify(action));
-        }
-
-        //move entities on Shift entities
-        // shift:
-        // {
-        //     const shiftEntities = this.controller.tagToEntities.get(wordMove);
-        //     if (!shiftEntities) {
-        //         break shift;
-        //     }
-        //     const shiftTilesAlreadyProcessed: Set<number> = new Set();
-        //     for (const entity of shiftEntities) {
-        //         // const tileNumber = entity.y * this.controller.level.width + entity.x;
-        //         // if (shiftTilesAlreadyProcessed.has(tileNumber)) {
-        //         //     continue;
-        //         // }
-        //         // shiftTilesAlreadyProcessed.add(tileNumber);
-        //         const actions = this._attemptToCreateEntityMovementAction(entity, entity.facing, true);
-        //         for (const action of actions) {
-        //             addAction(action);
-        //         }
-        //     }
-        // }
-
-        const moveMoved = this.playActionsOnTopOfStack(addStep);
-        returnSomethingMoved = returnSomethingMoved || moveMoved;
-
-        return returnSomethingMoved;
-    }
-
-
-    public _getTileFlatNumber(x: number, y: number): number {
-        return y * this.level.width + x;
-    }
-
-
-    public _attemptToCreateEntityMovementAction(
-        startEntity: Entity,
-        direction: Direction,
-        bounce: boolean,
-        tilesAlreadyMoved?: TilesAlreadyMovedSet,
-    ): Action[] {
-
-        let pathBlocked = false;
-        let actions: Action[] = [];
-        let nextEntities: Readonly<Cell<Entity>> = [startEntity];
-        const nextPoint: [number, number] = [startEntity.x, startEntity.y];
-        const originEntityPoint = [...nextPoint];
-        let pullCheck = false;
-
-        const originFacingAction = startEntity.facing === direction ? undefined : new Action(this.step, {
-            type: "facing",
-            entityId: startEntity.id,
-            fromDirection: startEntity.facing,
-            toDirection: direction
-        });
-
-        let pullCheckIterationsRemaining = 1e3;
-        while (pullCheckIterationsRemaining--) {
-            let _cacheNextPoint = [nextPoint[0], nextPoint[1]];
-            this._movePoint(nextPoint, direction, true);
-            const previousCell = this.controller.getGridCell(nextPoint[0], nextPoint[1]);
-            const foundPullEntities = previousCell?.filter(e => this.controller.entityToTags.get(e)?.has(wordPull));
-            if (!foundPullEntities || foundPullEntities.length === 0) {
-                nextPoint[0] = _cacheNextPoint[0];
-                nextPoint[1] = _cacheNextPoint[1];
-                break;
-            } else {
-                pullCheck = true;
-                nextEntities = foundPullEntities;
-            }
-        }
-
-
-        type ToMove = [entity: Entity, startX: number, startY: number, endX: number, endY: number];
-        let pullBlocked = false;
-        const entitiesToMove: ToMove[] = [];
-        const pullEntitiesToMove: ToMove[] = [];
-
-        // while loop failsafe
-        let iterationsRemaining = 1e3;
-        while (iterationsRemaining--) {
-
-            const isOrigin = nextPoint[0] === originEntityPoint[0] && nextPoint[1] === originEntityPoint[1];
-
-            if (pullCheck && pullBlocked) {
-                continue;
-            }
-
-            let cellBlocked = false;
-            let checkAgain = false;
-
-            const toMove: Entity[] = [];
-
-            for (const nextEntity of nextEntities) {
-                if (nextEntity === startEntity) {
-                    toMove.push(nextEntity);
-                    checkAgain = true;
-                    break;
-                }
-                if (!this._entityIsSolid(nextEntity)) {
-                    continue;
-                }
-                if (!this._entityIsPushable(nextEntity, isOrigin ? false : pullCheck)) {
-                    if (pullCheck) {
-                        pullBlocked = true;
-                        continue;
-                    } else {
-                        cellBlocked = true;
-                        break;
-                    }
-                }
-                toMove.push(nextEntity);
-                checkAgain = true;
-            }
-
-            if (pullCheck && isOrigin) {
-                pullCheck = false;
-            }
-
-            if (cellBlocked) {
-                pathBlocked = true;
-                break;
-            }
-
-            if (!checkAgain) {
-                break;
-            }
-
-            let [startX, startY] = nextPoint;
-
-            this._movePoint(nextPoint, direction);
-
-            //move action
-            for (const entity of toMove) {
-                (pullCheck ? pullEntitiesToMove : entitiesToMove).push([
-                    entity,
-                    startX,
-                    startY,
-                    nextPoint[0],
-                    nextPoint[1]
-                ]);
-            }
-
-            const nextCell = this.controller.getGridCell(nextPoint[0], nextPoint[1]);
-            if (!nextCell) {
-                pathBlocked = true;
-                break;
-            }
-            nextEntities = nextCell;
-        }
-
-        if (!pullBlocked) {
-            entitiesToMove.unshift(...pullEntitiesToMove);
-        }
-
-        if (pathBlocked) {
-            if (bounce) {
-                return this._attemptToCreateEntityMovementAction(startEntity, getOppositeDirection(direction), false);
-            }
-            if (originFacingAction) {
-                return [originFacingAction];
-            }
-            return [];
-        }
-
-        for (const [entity, startX, startY, endX, endY] of entitiesToMove) {
-            if (entity !== startEntity && entity.facing !== direction) {
-                actions.push(new Action(this.step, {
-                    type: "facing",
-                    entityId: entity.id,
-                    fromDirection: entity.facing,
-                    toDirection: direction
-                }));
-            }
-            actions.push(new Action(this.step, {
-                type: "movement",
-                entityId: entity.id,
-                startX: startX,
-                startY: startY,
-                endX: endX,
-                endY: endY
-            }));
-        }
-
-        if (originFacingAction) {
-            actions.unshift(originFacingAction);
-        }
-        return actions;
-    }
-
-
-    public _movePoint(point: [x: number, y: number], direction: Direction, oppositeDirection: boolean = false): void {
-        switch (direction) {
-            case Direction.left:
-                oppositeDirection ? point[0]++ : point[0]--;
-                break;
-            case Direction.right:
-                oppositeDirection ? point[0]-- : point[0]++;
-                break;
-            case Direction.up:
-                oppositeDirection ? point[1]++ : point[1]--;
-                break;
-            case Direction.down:
-                oppositeDirection ? point[1]-- : point[1]++;
-                break;
-        }
-    }
-
-
-    public _entityIsSolid(entity: Entity): boolean {
-        /** @todo add pull */
-        const entityTags = this.controller.entityToTags.get(entity);
-        if (entityTags) {
-            return entityTags.has(wordStop) || entityTags.has(wordPush) || entityTags.has(wordPull);
-        } else {
-            return false;
-        }
-    }
-
-
-    public _entityIsPushable(entity: Entity, pullCheck: boolean): boolean {
-        const entityTags = this.controller.entityToTags.get(entity);
-        if (entityTags) {
-            if (pullCheck) {
-                return entityTags.has(wordPush) || entityTags.has(wordPull);
-            } else {
-                return entityTags.has(wordPush);
-            }
-        } else {
-            return false;
-        }
+        return doMovement2(interaction);
     }
 
 
@@ -500,15 +216,49 @@ export class ActionProcessor {
             }
         }
 
-        //check for YOU AND DEFEAT
-        const youEntities = this.controller.tagToEntities.get(wordYou);
+        //check for YOU and DEFEAT
+        const youEntities = this.controller.tagToEntities.get(words.you);
         if (youEntities) {
             for (const you of youEntities) {
                 const entitiesOnSameCell = this.controller.getEntitiesAtPosition(you.x, you.y);
                 for (const cellEntity of entitiesOnSameCell) {
                     const tags = this.controller.entityToTags.get(cellEntity);
-                    if (tags && tags.has(wordDefeat)) {
+                    if (tags && tags.has(words.defeat)) {
                         entitiesToDestroy.push(you);
+                    }
+                }
+            }
+        }
+
+        //check for SHUT and OPEN
+        const shutEntities = this.controller.tagToEntities.get(words.shut);
+        if (shutEntities) {
+            const processedShutEntity = new Set<Entity>();
+            const allShutEntities: Entity[] = [];
+            const allOpenEntities: Entity[] = [];
+            for (const entity of shutEntities) {
+                if (processedShutEntity.has(entity)) {
+                    continue;
+                }
+                const entitiesOnTile = this.controller.getEntitiesAtPosition(entity.x, entity.y);
+                allShutEntities.length = 0; //empty array
+                allOpenEntities.length = 0; //empty array
+                for (const tileEntity of entitiesOnTile) {
+                    const tags = this.controller.getEntityTags(tileEntity);
+                    if (tags.has(words.shut)) {
+                        allShutEntities.push(tileEntity);
+                    }
+                    if (tags.has(words.open)) {
+                        allOpenEntities.push(tileEntity)
+                    }
+                }
+                for (let i = 0; i < allShutEntities.length; i++) {
+                    const shutEntity = allShutEntities[i];
+                    const openEntity: Entity | undefined = allOpenEntities[i];
+                    processedShutEntity.add(shutEntity);
+                    if (openEntity) {
+                        entitiesToDestroy.push(shutEntity);
+                        entitiesToDestroy.push(openEntity);
                     }
                 }
             }
@@ -549,15 +299,7 @@ export class ActionProcessor {
     }
 }
 
-type TilesAlreadyMovedSet = Set<`${number}${Direction}`>;
-
-const wordYou = Word.findWordFromText("you");
-const wordStop = Word.findWordFromText("stop");
-const wordPush = Word.findWordFromText("push");
-const wordPull = Word.findWordFromText("pull");
-const wordMove = Word.findWordFromText("move");
-const wordShift = Word.findWordFromText("shift");
-const wordDefeat = Word.findWordFromText("defeat");
+const words = getWordMap("you", "defeat", "shut", "open");
 
 function doDebugActions(title: string, actions: Action[]) {
     console.log(`ACTIONS: ${title}`);

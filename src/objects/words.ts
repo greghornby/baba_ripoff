@@ -118,6 +118,22 @@ export const words = {
 		}
 	}),
 
+	open: new Word("open", {
+		texture: textures.words.open,
+		color: colors.white,
+		behavior: {
+            tag: true
+		}
+	}),
+
+	shut: new Word("shut", {
+		texture: textures.words.shut,
+		color: colors.white,
+		behavior: {
+            tag: true
+		}
+	}),
+
     not: new Word("not", {
 		texture: textures.words.not,
 		behavior: {

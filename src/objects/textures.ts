@@ -20,10 +20,12 @@ import words_is from "../images/words/is.png"
 import words_leaf from "../images/words/leaf.png"
 import words_move from "../images/words/move.png"
 import words_not from "../images/words/not.png"
+import words_open from "../images/words/open.png"
 import words_pull from "../images/words/pull.png"
 import words_push from "../images/words/push.png"
 import words_rock from "../images/words/rock.png"
 import words_shift from "../images/words/shift.png"
+import words_shut from "../images/words/shut.png"
 import words_skull from "../images/words/skull.png"
 import words_stop from "../images/words/stop.png"
 import words_text from "../images/words/text.png"
@@ -56,10 +58,12 @@ export const textures = {
         "leaf": pixijs.Texture.from(words_leaf),
         "move": pixijs.Texture.from(words_move),
         "not": pixijs.Texture.from(words_not),
+        "open": pixijs.Texture.from(words_open),
         "pull": pixijs.Texture.from(words_pull),
         "push": pixijs.Texture.from(words_push),
         "rock": pixijs.Texture.from(words_rock),
         "shift": pixijs.Texture.from(words_shift),
+        "shut": pixijs.Texture.from(words_shut),
         "skull": pixijs.Texture.from(words_skull),
         "stop": pixijs.Texture.from(words_stop),
         "text": pixijs.Texture.from(words_text),
