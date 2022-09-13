@@ -11,14 +11,15 @@ _xim__bis_fi[_1i,
 _WWWWWWWWWW
 _W___?____W
 _W_?_______
-_W____________R_
+_W__-R_________R_
 _WF_______W__RRR
 _WWWWWWWWWW___R
 `;
 
 const key = {
     ..._commonKey,
-    "+": [constructs.baba, constructs.skull]
+    "+": [constructs.baba, constructs.skull],
+    "-": [constructs.baba, constructs.flag]
 };
 
 export const levelMoveDebug = () => new Level({

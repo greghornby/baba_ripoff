@@ -23,11 +23,8 @@ export class Action {
     public _getNonCircularDataToHash(): Record<string, string | number> {
         switch (this.data.type) {
             case "movement":
-                return {...this.data};
             case "facing":
-                return {
-                    entityId: this.data.entityId
-                };
+                return {...this.data};
             case "create":
             case "destroy":
             case "swapin":

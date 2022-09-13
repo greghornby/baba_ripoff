@@ -1,0 +1,1 @@
+export type Only<U, T extends U> = Exclude<U, Exclude<U,T>>;

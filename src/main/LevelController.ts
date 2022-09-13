@@ -18,6 +18,7 @@ import { generatePairsFromArray } from "../util/data/generatePairsFromArray.js";
 import { getPaths } from "../util/data/getPaths.js";
 import { MapOfSets } from "../util/data/MapOfSets.js";
 import { setAddMultiple } from "../util/data/setAddMultiple.js";
+import { doMovement2 } from "../util/movement/doMovement2.js";
 import { isNotComplement } from "../util/rules/isNotComplement.js";
 import { rulesCancel } from "../util/rules/rulesCancel.js";
 import { VerbUnion } from "../util/rules/verbEquals.js";
@@ -165,7 +166,7 @@ export class LevelController {
 
         this.ticker.add(() => this.tick());
         this.ticker.start();
-        this.ticker.maxFPS = 30;
+        // this.ticker.maxFPS = 30;
     }
 
 
@@ -696,7 +697,8 @@ export class LevelController {
 
         const t0 = performance.now();
         // _doParse = this.actionProcessor.doMovement(interaction, ADD_STEP);
-        _doParse = doMovement(interaction);
+        // _doParse = doMovement(interaction);
+        _doParse = doMovement2(interaction);
         const t1 = performance.now();
         console.log("Movement performance", t1-t0);
 

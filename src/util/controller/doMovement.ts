@@ -174,6 +174,9 @@ export function doMovement(interaction: Interaction) {
             }
         }
 
+        for (const action of movementActions) {
+            console.log(JSON.stringify(action));
+        }
         topOfStack.push(...movementActions);
 
         const movedBoolean = actionProcessor.playActionsOnTopOfStack(false);
@@ -193,7 +196,7 @@ function resolveTile(
     cache: ResolvedTilesMap,
     fromDirection: Direction,
     youDirection: Direction | undefined,
-    position: TileXY
+    position: Readonly<TileXY>
 ): boolean {
 
     const controller = LevelController.instance;
@@ -279,7 +282,7 @@ function findAllPushPull(
 ): void {
     const controller = LevelController.instance;
     const positionXY: TileXY = [x,y];
-    const deltaXY: TileXY = directionToXY(type === "PUSH" ? direction : getOppositeDirection(direction));
+    const deltaXY: Readonly<TileXY> = directionToXY(type === "PUSH" ? direction : getOppositeDirection(direction));
 
     let iter = 1000;
     while (iter--) {

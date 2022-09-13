@@ -1,12 +1,10 @@
-export function addCoordinates(
-    position: [x: number, y: number],
-    delta: [x: number, y: number],
-    mutate: boolean = true
-): [x: number, y: number] {
+export function addCoordinates(position: T, delta: Readonly<T>, mutate: true): T;
+export function addCoordinates(position: Readonly<T>, delta: Readonly<T>, mutate?: false): Readonly<T>;
+export function addCoordinates(position: T | Readonly<T>, delta: Readonly<T>, mutate: boolean = true): T {
     if (mutate) {
-        position[0] += delta[0];
-        position[1] += delta[1];
-        return position;
+        (position as T)[0] += delta[0];
+        (position as T)[1] += delta[1];
+        return position as T;
     } else {
         return [
             position[0] + delta[0],
@@ -14,6 +12,8 @@ export function addCoordinates(
         ];
     }
 }
+
+type T = [x: number, y: number];
 
 
 export function overwriteCoordinates(

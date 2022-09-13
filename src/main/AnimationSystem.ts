@@ -3,7 +3,7 @@ import { LevelController } from "./LevelController.js";
 
 export class AnimationSystem {
 
-    static ANIMATION_LENGTH: number = Math.ceil(5 * (30/60));
+    static ANIMATION_LENGTH: number = 5;//Math.ceil(5 * (30/60));
     public steps: AnimationStep[] = [];
     animationIterator: Iterator<void> | undefined;
 
