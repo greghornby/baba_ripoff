@@ -70,9 +70,23 @@ export const constructs = {
     belt: new Construct({
         texture: textures.objects.belt,
         textureHasDirections: true,
-        associatedWord: () => Word.findWordFromText("skull"),
+        associatedWord: () => Word.findWordFromText("belt"),
         category: categories.floor,
         color: 0x999999
+    }),
+
+    lava: new Construct({
+        texture: textures.objects.lava,
+        associatedWord: () => Word.findWordFromText("lava"),
+        category: categories.floor,
+        color: colors.lava
+    }),
+
+    water: new Construct({
+        texture: textures.objects.water,
+        associatedWord: () => Word.findWordFromText("water"),
+        category: categories.floor,
+        color: colors.water
     }),
 
 }

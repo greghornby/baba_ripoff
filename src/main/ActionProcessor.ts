@@ -1,4 +1,5 @@
 import { debugPrint } from "../debug/debugPrint.js";
+import { destructiblePairs } from "../util/controller/destructiblePairs.js";
 import { doMovement2 } from "../util/movement/doMovement2.js";
 import { getWordMap } from "../util/words/getWordMap.js";
 import { Action } from "./Action.js";
@@ -219,53 +220,9 @@ export class ActionProcessor {
             }
         }
 
-        //check for YOU and DEFEAT
-        const youEntities = this.controller.tagToEntities.get(words.you);
-        if (youEntities) {
-            for (const you of youEntities) {
-                const entitiesOnSameCell = this.controller.getEntitiesAtPosition(you.x, you.y);
-                for (const cellEntity of entitiesOnSameCell) {
-                    const tags = this.controller.entityToTags.get(cellEntity);
-                    if (tags && tags.has(words.defeat)) {
-                        entitiesToDestroy.push(you);
-                    }
-                }
-            }
-        }
-
-        //check for SHUT and OPEN
-        const shutEntities = this.controller.tagToEntities.get(words.shut);
-        if (shutEntities) {
-            const processedShutEntity = new Set<Entity>();
-            const allShutEntities: Entity[] = [];
-            const allOpenEntities: Entity[] = [];
-            for (const entity of shutEntities) {
-                if (processedShutEntity.has(entity)) {
-                    continue;
-                }
-                const entitiesOnTile = this.controller.getEntitiesAtPosition(entity.x, entity.y);
-                allShutEntities.length = 0; //empty array
-                allOpenEntities.length = 0; //empty array
-                for (const tileEntity of entitiesOnTile) {
-                    const tags = this.controller.getEntityTags(tileEntity);
-                    if (tags.has(words.shut)) {
-                        allShutEntities.push(tileEntity);
-                    }
-                    if (tags.has(words.open)) {
-                        allOpenEntities.push(tileEntity)
-                    }
-                }
-                for (let i = 0; i < allShutEntities.length; i++) {
-                    const shutEntity = allShutEntities[i];
-                    const openEntity: Entity | undefined = allOpenEntities[i];
-                    processedShutEntity.add(shutEntity);
-                    if (openEntity) {
-                        entitiesToDestroy.push(shutEntity);
-                        entitiesToDestroy.push(openEntity);
-                    }
-                }
-            }
-        }
+        entitiesToDestroy.push(
+            ...destructiblePairs()
+        );
 
         for (const entity of entitiesToDestroy) {
             const action = new Action(this.step, {

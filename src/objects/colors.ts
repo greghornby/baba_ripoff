@@ -11,4 +11,9 @@ export const colors = {
     darkGreen: 0x007700,
     textInactive: 0x999999,
     textActive: 0xffffff,
+
+    //objects
+    lava: 0xff5533,
+    water: 0x6699ff,
+    cloud: 0x99bbff
 };

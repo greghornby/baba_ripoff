@@ -6,17 +6,17 @@ import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js
 import { _commonKey } from "./_commonKey.js";
 
 const levelText = `
-WbiyWwisW
-WWWWWWWWW
-WkipWdisW      K
-WkioWdiSW
+biyWwisWqi1WkimWlihW
+WWWWWWWWWWWWWWWWWWWW
+WkipWdisW
+WkioWdiSW     K
 WWWWWWWWWWWWWWW WWWW
-_       W
-_  F    D   B
-_       W
+_       W         LL
+_  F    D   B    RLL
+_       WQQQ      XX
 _       WWWWWWWWWWWW
-_
-_ fiv
+_       Wrimriarip
+_ fiv   Wxihxia
 `;
 
 const key = {
@@ -25,11 +25,15 @@ const key = {
     b: words.baba,
     B: constructs.baba,
     d: words.door,
+    D: constructs.door,
     w: words.wall,
     W: constructs.wall,
-    D: constructs.door,
+    r: words.rock,
+    R: constructs.rock,
     k: words.key,
     K: constructs.key,
+    x: words.skull,
+    X: constructs.skull,
     i: words.is,
     y: words.you,
     s: words.stop,
@@ -39,18 +43,20 @@ const key = {
     f: words.flag,
     F: constructs.flag,
     v: words.win,
+
+    q: words.water,
+    Q: constructs.water,
+    "1": words.sink,
+    l: words.lava,
+    L: constructs.lava,
+    h: words.hot,
+    m: words.melt,
+    a: words.float,
 };
 
-export const levelShutOpen = () => new Level({
+export const levelDestructions = () => new Level({
     width: 20,
     height: 11,
     startingEntities: makeLevelGridFromString(levelText, key, [
-        // ["X", (entity) => entity.setFacing(Direction.down)],
-        // ["X", (entity) => entity.setFacing(Direction.right)],
-        // ["X", (entity) => entity.setFacing(Direction.left)],
-        // ["X", (entity) => entity.setFacing(Direction.up)],
-
-        ["X", (entity) => entity.setFacing(Direction.right)],
-        ["X", (entity) => entity.setFacing(Direction.left)],
     ])
 });
