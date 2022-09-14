@@ -1,4 +1,5 @@
 import { Level } from "../main/Level.js";
+import { words } from "../objects/words.js";
 import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
 import { _commonKey } from "./_commonKey.js";
 
@@ -16,8 +17,13 @@ _F__a
 ___fi[__rip
 `;
 
+const key = {
+    ..._commonKey,
+    "[": words.pull
+}
+
 export const levelDebug = () => new Level({
     width: 20,
     height: 11,
-    startingEntities: makeLevelGridFromString(levelText, _commonKey)
+    startingEntities: makeLevelGridFromString(levelText, key)
 });
