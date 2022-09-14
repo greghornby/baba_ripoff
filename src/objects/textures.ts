@@ -1,4 +1,6 @@
 import * as pixijs from "pixi.js";
+import background_wait_hint from "../images/background/wait_hint.png"
+import background_wait_hint_mobile from "../images/background/wait_hint_mobile.png"
 import _missing from "../images/missing.png"
 import objects_baba from "../images/objects/baba.png"
 import objects_baba_sprites from "../images/objects/baba_sprites.png"
@@ -47,6 +49,10 @@ import words_win from "../images/words/win.png"
 import words_you from "../images/words/you.png"
 
 export const textures = {
+    "background": {
+        "wait_hint": pixijs.Texture.from(background_wait_hint),
+        "wait_hint_mobile": pixijs.Texture.from(background_wait_hint_mobile)
+    },
     "missing": pixijs.Texture.from(_missing),
     "objects": {
         "baba": pixijs.Texture.from(objects_baba),

@@ -2,6 +2,7 @@ import { App } from "./app/App.js";
 import { initDebug } from "./debug/debug.js";
 import { exposeGlobals } from "./debug/globals.js";
 import { setDebugFlagsFromQuery } from "./debug/setDebugFlagsFromQuery.js";
+import { isMobile } from "./util/data/isMobile.js";
 import { initFiles } from "./util/temp/initFiles.js";
 import { loadLevel } from "./util/temp/tempWinScreen.js";
 initFiles();
@@ -23,8 +24,6 @@ function initGame() {
     }
 }
 
-function isMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
+
 
 document.addEventListener("DOMContentLoaded", initGame);

@@ -1,6 +1,7 @@
 import { Construct } from "./Construct.js";
 import type { Entity } from "./Entity.js";
 import { LevelController } from "./LevelController.js";
+import * as pixi from "pixi.js";
 
 export class Level {
 
@@ -35,6 +36,11 @@ export class Level {
 export interface InitLevelData {
     width: number;
     height: number;
+    background?: {
+        texture: pixi.Texture;
+        x: number;
+        y: number;
+    }[];
     startingEntities: () => {
         grid: LevelGrid<Construct>;
         entitySetters: {x: number; y: number, fn: (entity: Entity) => void}[];

@@ -12,7 +12,7 @@ export class AppEventSystem {
     public _domEvents: {[K in keyof WindowEventMap]?: (event: WindowEventMap[K]) => void};
 
     public _touches: Touch[] = [];
-    public _doubleTapFingerCount: number = 0;
+    public _doubleTapPendingTimerId: number | undefined = undefined;
 
     constructor() {
 
@@ -28,15 +28,14 @@ export class AppEventSystem {
             "touchend": event => {
                 if (this._endTouchIsSwipe(event)) {
                     this.emitSwipeEvent(event);
-                    this._doubleTapFingerCount = 0;
-                } else if (!this._doubleTapFingerCount) {
-                    this._doubleTapFingerCount = event.changedTouches.length;
-                    setTimeout(() => {
-                        this._doubleTapFingerCount = 0;
+                } else if (!this._doubleTapPendingTimerId) {
+                    this._doubleTapPendingTimerId = (setTimeout as Window["setTimeout"])(() => {
+                        this._doubleTapPendingTimerId = undefined;
+                        this.emitSingleTap(event);
                     }, 300);
-                } else if (event.changedTouches.length !== this._doubleTapFingerCount) {
-                    this._doubleTapFingerCount = 0;
                 } else {
+                    clearTimeout(this._doubleTapPendingTimerId);
+                    this._doubleTapPendingTimerId = undefined;
                     this.emitDoubleTap(event);
                 }
                 for (let i = 0; i < event.changedTouches.length; i++) {
@@ -64,6 +63,7 @@ export class AppEventSystem {
         return listeners;
     }
 
+    addListener<T extends EventCallback<AppEventInterface.SingleTap, TouchEvent>>(eventName: EventEnum["singleTap"], cb: T): Token;
     addListener<T extends EventCallback<AppEventInterface.DoubleTap, TouchEvent>>(eventName: EventEnum["doubleTap"], cb: T): Token;
     addListener<T extends EventCallback<AppEventInterface.Swipe, TouchEvent>>(eventName: EventEnum["swipe"], cb: T): Token;
     addListener<T extends EventCallback<AppEventInterface.Keyboard, KeyboardEvent>>(eventName: EventEnum["keyboard"], cb: T): Token;
@@ -118,18 +118,22 @@ export class AppEventSystem {
         this.emitEvent(AppEventEnum.swipe, simpleEvent, originalEvent);
     }
 
+    emitSingleTap(originalEvent: TouchEvent) {
+        const touch = originalEvent.changedTouches[0];
+        const simpleEvent: AppEventInterface.SingleTap = {
+            tap: {x: touch.pageX, y: touch.pageY}
+        };
+        this.emitEvent(AppEventEnum.singleTap, simpleEvent, originalEvent);
+    }
+
     emitDoubleTap(originalEvent: TouchEvent) {
+        const endTouch = originalEvent.changedTouches[0];
+        const startTouch = this._getStartTouch(endTouch);
         const simpleEvent: AppEventInterface.DoubleTap = {
-            fingerCount: originalEvent.changedTouches.length,
-            fingers: [...iteratorFromLength(originalEvent.changedTouches)].map(endTouch => {
-                const startTouch = this._getStartTouch(endTouch);
-                return {
-                    taps: [
-                        {x: startTouch.pageX, y: startTouch.pageY},
-                        {x: endTouch.pageX, y: endTouch.pageY}
-                    ]
-                };
-            })
+            taps: [
+                {x: startTouch.pageX, y: startTouch.pageY},
+                {x: endTouch.pageX, y: endTouch.pageY}
+            ]
         };
         this.emitEvent(AppEventEnum.doubleTap, simpleEvent, originalEvent);
     }

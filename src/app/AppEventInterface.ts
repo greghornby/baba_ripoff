@@ -10,10 +10,11 @@ export namespace AppEventInterface {
         adjacentDistance: number;
     }
 
+    export interface SingleTap {
+        tap: {x: number; y: number};
+    }
+
     export interface DoubleTap {
-        fingerCount: number;
-        fingers: {
-            taps: [{x: number; y: number}, {x: number; y: number}]
-        }[]
+        taps: [{x: number; y: number}, {x: number; y: number}];
     }
 }

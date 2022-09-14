@@ -1,7 +1,9 @@
 import { Level } from "../main/Level.js";
 import { constructs } from "../objects/constructs.js";
+import { textures } from "../objects/textures.js";
 import { words } from "../objects/words.js";
 import { Direction } from "../types/Direction.js";
+import { isMobile } from "../util/data/isMobile.js";
 import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
 import { _commonKey } from "./_commonKey.js";
 
@@ -37,5 +39,10 @@ export const levelGreg2 = () => new Level({
     height: 15,
     startingEntities: makeLevelGridFromString(levelText, key, [
         ["X", e => e.setFacing(Direction.down)]
-    ])
+    ]),
+    background: [{
+        y: 7,
+        x: 16,
+        texture: isMobile() ? textures.background.wait_hint_mobile : textures.background.wait_hint
+    }]
 });

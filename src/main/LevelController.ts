@@ -5,8 +5,6 @@ import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { words } from "../objects/words.js";
 import { Direction } from "../types/Direction.js";
-import { doMovement } from "../util/controller/doMovement.js";
-import { getInteractionFromDoubleTap } from "../util/controller/getInteractionFromDoubleTap.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
 import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
 import { setEntityTagsAndVerbsFromRule } from "../util/controller/setEntityTagsAndVerbsFromRule.js";
@@ -94,6 +92,7 @@ export class LevelController {
     public currentInteraction: Interaction | undefined;
     public _keyboardListener: {};
     public _swipeListener: {};
+    public _singleTapListener: {};
     public _doubleTapListener: {};
 
     public tickFlags: {
@@ -128,6 +127,16 @@ export class LevelController {
         this.container.sortableChildren = true;
         pixiApp.stage.addChild(this.container);
 
+        if (this.level.initData.background) {
+            for (const bg of this.level.initData.background) {
+                const sprite = pixi.Sprite.from(bg.texture);
+                sprite.x = bg.x * this.level.TILE_SIZE;
+                sprite.y = bg.y * this.level.TILE_SIZE;
+                sprite.zIndex = Number.MIN_SAFE_INTEGER + 1;
+                this.container.addChild(sprite);
+            }
+        }
+
         this.defaultRules = [
             new Rule({
                 subject: Rule.word(words.text),
@@ -150,6 +159,7 @@ export class LevelController {
         //setup listeners
         this._keyboardListener = app.events.addListener("keyboard", event => event.type === "down" ? this.keyboardInteraction(event) : undefined);
         this._swipeListener = app.events.addListener("swipe", event => this.swipeInteraction(event));
+        this._singleTapListener = app.events.addListener("singleTap", event => this.singleTapInteraction(event));
         this._doubleTapListener = app.events.addListener("doubleTap", event => this.doubleTapInteraction(event));
 
         //add the main `tick` function and start the ticker again
@@ -620,14 +630,20 @@ export class LevelController {
         return true;
     }
 
-    public doubleTapInteraction(event: AppEventInterface.DoubleTap): boolean | void {
-        const interaction = getInteractionFromDoubleTap(event);
-        if (interaction) {
-            if (!this.currentInteraction) {
-                this.currentInteraction = interaction;
-            }
-            return true;
+    public singleTapInteraction(event: AppEventInterface.SingleTap): boolean | void {
+        const interaction: Interaction = {interaction: {type: "wait"}};
+        if (!this.currentInteraction) {
+            this.currentInteraction = interaction;
         }
+        return true;
+    }
+
+    public doubleTapInteraction(event: AppEventInterface.DoubleTap): boolean | void {
+        const interaction: Interaction = {interaction: {type: "undo"}};
+        if (!this.currentInteraction) {
+            this.currentInteraction = interaction;
+        }
+        return true;
     }
     //#endregion INTERACTION
 
@@ -700,7 +716,7 @@ export class LevelController {
         // _doParse = doMovement(interaction);
         _doParse = doMovement2(interaction);
         const t1 = performance.now();
-        console.log("Movement performance", t1-t0);
+        // console.log("Movement performance", t1-t0);
 
         this.parseRules(_doParse);
 
