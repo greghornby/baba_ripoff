@@ -83,7 +83,8 @@ export const constructs = {
     }),
 
     water: new Construct({
-        texture: textures.objects.water,
+        texture: textures.objects.water_animated,
+        animatedTexture: true,
         associatedWord: () => Word.findWordFromText("water"),
         category: categories.floor,
         color: colors.water

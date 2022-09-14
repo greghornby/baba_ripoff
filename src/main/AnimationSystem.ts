@@ -1,9 +1,12 @@
 import { Action } from "./Action.js";
+import { Constants } from "./Constants.js";
 import { LevelController } from "./LevelController.js";
+
 
 export class AnimationSystem {
 
-    static ANIMATION_LENGTH: number = 5;//Math.ceil(5 * (30/60));
+    static ANIMATION_LENGTH_MAGIC_NUMBER = 5;
+    static ANIMATION_SPEED: number = Math.ceil(AnimationSystem.ANIMATION_LENGTH_MAGIC_NUMBER * (Constants.FRAMERATE/Constants.PIXI_DEFAULT_FRAMERATE));
     public steps: AnimationStep[] = [];
     animationIterator: Iterator<void> | undefined;
 
@@ -85,8 +88,8 @@ export class AnimationSystem {
 
 
     public *_makeAnimationIterator(step: AnimationStep): Generator<void> {
-        for (let f = 0; f < AnimationSystem.ANIMATION_LENGTH; f++) {
-            const isLastFrame = f === AnimationSystem.ANIMATION_LENGTH - 1;
+        for (let f = 0; f < AnimationSystem.ANIMATION_SPEED; f++) {
+            const isLastFrame = f === AnimationSystem.ANIMATION_SPEED - 1;
 
             if (step.movement) {
                 for (const [entityId, {sx, sy, ex, ey}] of step.movement) {
@@ -95,8 +98,8 @@ export class AnimationSystem {
                         console.warn(`Entity not found for id ${entityId}`);
                         continue;
                     }
-                    const dx = (ex - sx) / AnimationSystem.ANIMATION_LENGTH;
-                    const dy = (ey - sy) / AnimationSystem.ANIMATION_LENGTH;
+                    const dx = (ex - sx) / AnimationSystem.ANIMATION_SPEED;
+                    const dy = (ey - sy) / AnimationSystem.ANIMATION_SPEED;
                     const x = isLastFrame ? ex : (sx + (f+1)*dx);
                     const y = isLastFrame ? ey : (sy + (f+1)*dy);
                     entity.entityPixi.setPosition(x, y);
@@ -119,7 +122,7 @@ export class AnimationSystem {
                 if (!entityIds) {
                     continue;
                 }
-                const dy = 1 / AnimationSystem.ANIMATION_LENGTH;
+                const dy = 1 / AnimationSystem.ANIMATION_SPEED;
                 const startValue = isSwapIn ? 0 : 1;
                 const endValue = isSwapIn ? 1 : 0;
                 const direction = isSwapIn ? 1 : -1;

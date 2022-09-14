@@ -35,7 +35,11 @@ export class LevelController {
 
     static instance: LevelController;
 
-    __lastTickPerformance: number | undefined;
+    static load(level: Level) {
+        new LevelController(level);
+    }
+
+    lastTickTime: number | undefined;
 
     levelWon: boolean = false;
 
@@ -660,13 +664,13 @@ export class LevelController {
     tick(): void {
 
         const now = performance.now();
-        if (this.__lastTickPerformance) {
-            // console.log("Tick time", now - this.__lastTickPerformance);
-        }
-        this.__lastTickPerformance = now;
+        const deltaTime = this.lastTickTime ? now - this.lastTickTime : 0;
+        // console.log("Delta Time", deltaTime);
+        this.lastTickTime = now;
 
         // debug entities
         for (const entity of this.entityMap.values()) {
+            entity.entityPixi.play(deltaTime);
             // entity._debugFacingGraphic();
             entity.entityPixi._debugEntityId();
         }

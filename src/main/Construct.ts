@@ -1,6 +1,8 @@
 import * as pixi from "pixi.js";
 import { Direction } from "../types/Direction.js";
 import { Category } from "./Category.js";
+import { Constants } from "./Constants.js";
+import { Level } from "./Level.js";
 import type { Word } from "./Word.js";
 
 
@@ -9,11 +11,12 @@ export class Construct {
     public id: number;
     public texture: pixi.Texture;
     public facingTextures?: Record<Direction, pixi.Texture>;
+    public spriteSheet?: pixi.Spritesheet;
     public associatedWord: () => Word;
     public category: Category;
     public defaultColor: number;
     constructor(
-        data: ConstructData
+        public data: ConstructData
     ) {
         this.id = Construct.nextId;
         Construct.nextId++;
@@ -47,6 +50,35 @@ export class Construct {
         }
     }
 
+    async parseSpriteSheet() {
+        if (!this.data.animatedTexture) {
+            return;
+        }
+        const sheetData: pixi.ISpritesheetData = {
+            frames: {},
+            animations: {jiggle: []},
+            meta: {
+                scale: "1"
+            }
+        };
+        const count = this.texture.baseTexture.width / Constants.TILE_SIZE;
+        for (let i = 0; i < count; i++) {
+            const _i = ""+i;
+            sheetData.frames[_i] = {
+                frame: {
+                    x: i * Constants.TILE_SIZE,
+                    y: 0,
+                    w: Constants.TILE_SIZE,
+                    h: Constants.TILE_SIZE
+                }
+            };
+            sheetData.animations!.jiggle.push(_i);
+        }
+        const sheet = new pixi.Spritesheet(this.texture, sheetData);
+        await sheet.parse();
+        this.spriteSheet = sheet;
+    }
+
     toJSON() {
         return {};
     }
@@ -55,6 +87,7 @@ export class Construct {
 export interface ConstructData {
     texture: pixi.Texture;
     textureHasDirections?: boolean;
+    animatedTexture?: boolean;
     category: Category;
     color: number;
     associatedWord: () => Word;

@@ -12,7 +12,7 @@ export const loadLevel = () => {
     const level = _LEVELS[levelIndex];
     if (level) {
         levelIndex++;
-        level().load();
+        LevelController.load(level());
     }
 }
 

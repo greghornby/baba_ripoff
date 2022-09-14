@@ -17,6 +17,8 @@ import objects_stone from "../images/objects/stone.png"
 import objects_wall from "../images/objects/wall.png"
 import objects_wall2 from "../images/objects/wall2.png"
 import objects_water from "../images/objects/water.png"
+import objects_water2 from "../images/objects/water2.png"
+import objects_water_animated from "../images/objects/water_animated.png"
 import words_all from "../images/words/all.png"
 import words_and from "../images/words/and.png"
 import words_baba from "../images/words/baba.png"
@@ -69,7 +71,9 @@ export const textures = {
         "stone": pixijs.Texture.from(objects_stone),
         "wall": pixijs.Texture.from(objects_wall),
         "wall2": pixijs.Texture.from(objects_wall2),
-        "water": pixijs.Texture.from(objects_water)
+        "water": pixijs.Texture.from(objects_water),
+        "water2": pixijs.Texture.from(objects_water2),
+        "water_animated": pixijs.Texture.from(objects_water_animated)
     },
     "words": {
         "all": pixijs.Texture.from(words_all),

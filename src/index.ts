@@ -5,9 +5,9 @@ import { setDebugFlagsFromQuery } from "./debug/setDebugFlagsFromQuery.js";
 import { isMobile } from "./util/data/isMobile.js";
 import { initFiles } from "./util/temp/initFiles.js";
 import { loadLevel } from "./util/temp/tempWinScreen.js";
-initFiles();
 
-function initGame() {
+async function initGame() {
+    await initFiles();
     setDebugFlagsFromQuery();
     initDebug();
     exposeGlobals();

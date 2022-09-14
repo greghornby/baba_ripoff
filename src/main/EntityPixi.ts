@@ -1,11 +1,15 @@
 import * as pixi from "pixi.js";
+import { AnimatedSprite } from "pixi.js";
 import { App } from "../app/App.js";
 import { debugFlags } from "../debug/debugFlags.js";
 import { Direction } from "../types/Direction.js";
+import { Constants } from "./Constants.js";
 import { Entity } from "./Entity.js";
 import { LevelController } from "./LevelController.js";
 
 export class EntityPixi {
+
+    static frameUpdateDelta = 1000 * 7/60;
 
     public entityId: number;
     public controller: LevelController;
@@ -17,6 +21,7 @@ export class EntityPixi {
     public cancelledSprite: pixi.Graphics | undefined;
     public filterColor: ColorMatrixFilter;
     public textFilter: ColorMatrixFilter;
+    public animationDelta: number = 0;
 
     public _visible: boolean = true;
     public _invisiblePosition = {x: 0, y: 0};
@@ -32,7 +37,11 @@ export class EntityPixi {
         this.container.sortableChildren = true;
         this.container.zIndex = entity.construct.category.zIndex;
         this.container.transform.pivot.set(this.controller.level.TILE_SIZE/2, this.controller.level.TILE_SIZE/2);
-        this.sprite = new pixi.Sprite(entity.construct.texture);
+        if (entity.construct.spriteSheet) {
+            this.sprite = new pixi.AnimatedSprite(entity.construct.spriteSheet.animations.jiggle, false);
+        } else {
+            this.sprite = new pixi.Sprite(entity.construct.texture);
+        }
         this.container.addChild(this.sprite);
         this.filterColor = new pixi.filters.ColorMatrixFilter();
         this.textFilter = new pixi.filters.ColorMatrixFilter();
@@ -51,10 +60,10 @@ export class EntityPixi {
     @pixiUpdate()
     public cache(): void {
         if (this.cacheEnabled) {
-            this.container.cacheAsBitmap = false;
-            this.container.cacheAsBitmap = true;
+            this.sprite.cacheAsBitmap = false;
+            this.sprite.cacheAsBitmap = true;
         } else {
-            this.container.cacheAsBitmap = false;
+            this.sprite.cacheAsBitmap = false;
         }
     }
 
@@ -67,6 +76,23 @@ export class EntityPixi {
         this.sprite.destroy();
         this.cancelledSprite?.destroy();
         this.removeContainerFromController();
+    }
+
+
+    @pixiUpdate({noCache: true})
+    public play(deltaTime: number): void {
+        if (this.sprite instanceof AnimatedSprite) {
+            this.animationDelta += deltaTime;
+            if (this.animationDelta > EntityPixi.frameUpdateDelta) {
+                this.animationDelta = this.animationDelta % EntityPixi.frameUpdateDelta;
+                let frame = this.sprite.currentFrame + 1;
+                if (frame >= this.sprite.totalFrames) {
+                    frame = 0;
+                }
+                this.sprite.gotoAndStop(frame);
+                this.cache();
+            }
+        }
     }
 
 
@@ -151,7 +177,7 @@ export class EntityPixi {
     }
 
 
-    @pixiUpdate()
+    @pixiUpdate({noCache: true})
     setWordCancelled(cancelled: boolean): void {
         if (!this.cancelledSprite) {
             this.cancelledSprite = new pixi.Graphics();
@@ -224,8 +250,10 @@ function pixiUpdate(options: {noCache?: boolean} = {}) {
             }
             const value = method.apply(this, args);
             if (!options.noCache) {
-                this.container.cacheAsBitmap = false;
-                this.container.cacheAsBitmap = true;
+                // this.container.cacheAsBitmap = false;
+                // this.container.cacheAsBitmap = true;
+                this.sprite.cacheAsBitmap = false;
+                this.sprite.cacheAsBitmap = true;
             }
             return value;
         };

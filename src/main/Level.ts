@@ -1,13 +1,11 @@
-import { Construct } from "./Construct.js";
+import type { Construct } from "./Construct.js";
 import type { Entity } from "./Entity.js";
-import { LevelController } from "./LevelController.js";
 import * as pixi from "pixi.js";
+import { Constants } from "./Constants.js";
 
 export class Level {
 
-    public controller: LevelController | undefined;
-
-    public TILE_SIZE: number = 50;
+    public TILE_SIZE: number = Constants.TILE_SIZE;
 
     public width: number;
     public pixelWidth: number;
@@ -19,16 +17,6 @@ export class Level {
         this.pixelWidth = this.width * this.TILE_SIZE;
         this.height = initData.height;
         this.pixelHeight = this.height * this.TILE_SIZE;
-    }
-
-
-    public load() {
-        this.controller = new LevelController(this);
-    }
-
-
-    public exit() {
-        this.controller?.exit();
     }
 }
 
