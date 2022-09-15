@@ -8,7 +8,7 @@ export default {
 
     //you related
     you: new Word("you", {
-		texture: textures.words.you,
+		texture: textures.words.you_anim,
 		color: colors.pink,
 		behavior: {
             tag: true
@@ -16,7 +16,7 @@ export default {
 	}),
 
     win: new Word("win", {
-		texture: textures.words.win,
+		texture: textures.words.win_anim,
 		color: 0xe6d705,
 		behavior: {
             tag: true
@@ -33,7 +33,7 @@ export default {
 
     //movement related
     stop: new Word("stop", {
-		texture: textures.words.stop,
+		texture: textures.words.stop_anim,
 		color: colors.stop,
 		behavior: {
             tag: true

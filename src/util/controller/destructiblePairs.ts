@@ -5,7 +5,7 @@ import { words } from "../../objects/words.js";
 import { iterableFind } from "../data/iterableFind.js";
 
 export function destructiblePairs(): Entity[] {
-    const controller = LevelController.instance;
+    const controller = LevelController.instance!;
     const marked: Entity[] = [];
     for (const pair of PAIRS) {
         const entitiesToDesroyFromTrap = processTrap(controller, pair);

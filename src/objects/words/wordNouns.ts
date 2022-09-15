@@ -9,7 +9,7 @@ const texturePlaceholder = textures.missing;
 export default {
 
     baba: new Word("baba", {
-		texture: textures.words.baba,
+		texture: textures.words.baba_anim,
 		color: colors.pink,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.baba))
@@ -18,7 +18,7 @@ export default {
 
 
     wall: new Word("wall", {
-		texture: textures.words.wall,
+		texture: textures.words.wall_anim,
 		color: colors.brightBlue,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.wall))
@@ -42,7 +42,7 @@ export default {
 	}),
 
 	rock: new Word("rock", {
-		texture: textures.words.rock,
+		texture: textures.words.rock_anim,
 		color: colors.brightBrown,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.rock))
@@ -50,7 +50,7 @@ export default {
 	}),
 
 	flag: new Word("flag", {
-		texture: textures.words.flag,
+		texture: textures.words.flag_anim,
 		color: colors.gold,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.flag))

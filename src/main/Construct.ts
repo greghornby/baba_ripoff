@@ -3,7 +3,7 @@ import { Direction } from "../types/Direction.js";
 import { Category } from "./Category.js";
 import { Constants } from "./Constants.js";
 import { Level } from "./Level.js";
-import type { Word } from "./Word.js";
+import { Word } from "./Word.js";
 
 
 export class Construct {
@@ -51,6 +51,9 @@ export class Construct {
     }
 
     async parseSpriteSheet() {
+        if (this instanceof Word && this.texture.baseTexture.width > Constants.TILE_SIZE) {
+            this.data.animatedTexture = true;
+        }
         if (!this.data.animatedTexture) {
             return;
         }

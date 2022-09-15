@@ -1,5 +1,6 @@
 import { categories } from "../objects/categories.js";
 import { colors } from "../objects/colors.js";
+import { Constants } from "./Constants.js";
 import { Construct, ConstructData } from "./Construct.js";
 import { Entity } from "./Entity.js";
 

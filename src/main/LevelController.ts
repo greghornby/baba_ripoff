@@ -230,7 +230,7 @@ export class LevelController {
         this.gridGraphic = new pixi.Graphics();
         this.gridGraphic.zIndex = Number.MIN_SAFE_INTEGER;
         this.container.addChild(this.gridGraphic);
-        this.gridGraphic.lineStyle(3, 0x999999, 1);
+        this.gridGraphic.lineStyle(3, 0x999999, 0.35);
         for (let x = 0; x <= this.level.width; x++) {
             this.gridGraphic.moveTo(x * this.level.TILE_SIZE, 0);
             this.gridGraphic.lineTo(x * this.level.TILE_SIZE, this.level.pixelHeight);

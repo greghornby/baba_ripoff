@@ -7,7 +7,7 @@ const texturePlaceholder = textures.missing;
 export default {
 
     is: new Word("is", {
-		texture: textures.words.is,
+		texture: textures.words.is_anim,
 		behavior: {
             verb: true
 		}
