@@ -32,7 +32,7 @@ const imagesTree = walkDirectory(
     (file, keys) => {
         const simpleFileName = file.replace(/\.png$/, "");
         const importName = `${keys.join("_")}_${simpleFileName}`;
-        const importStatement = `import ${importName} from "../images/${keys.join("/")}${keys.length > 0 ? "/" : ""}${file}"`;
+        const importStatement = `import ${importName} from "../images/${keys.join("/")}${keys.length > 0 ? "/" : ""}${file}";`;
         imports.push(importStatement);
         return [simpleFileName, `$$makeTextureFromBase64(${importName})$$`];
     }
@@ -51,6 +51,7 @@ function makeTextureFromBase64(data: string) {
 fileContent += `export const textures = ` + JSON.stringify(imagesTree, null, 4).replace(/\"\$\$/g, "").replace(/\$\$\"/g, "");
 fileContent += `
 export async function loadTextures() {
+    pixijs.utils.clearTextureCache();
     const loader = new pixijs.Loader();
     for (const data of allData) {
         loader.add(data);

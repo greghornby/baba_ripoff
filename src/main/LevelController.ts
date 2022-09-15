@@ -1,11 +1,10 @@
 import * as pixi from "pixi.js";
 import { App } from "../app/App.js";
-import { AppEventEnum } from "../app/AppEventEnum.js";
 import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { categories } from "../objects/categories.js";
 import { words } from "../objects/words.js";
-import { WinPassiveAnimation, win_anim } from "../passive_animations/win_anim.js";
+import { WinPassiveAnimation } from "../passive_animations/win_anim.js";
 import { Direction } from "../types/Direction.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
 import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
@@ -757,9 +756,9 @@ export class LevelController {
         const now = performance.now();
         const deltaTime = this.lastTickTime ? now - this.lastTickTime : 0;
         // console.log("Delta Time", deltaTime);
-        if (deltaTime >= 20) {
-            console.log("Delta time high", deltaTime);
-        }
+        // if (deltaTime >= 20) {
+        //     console.log("Delta time high", deltaTime);
+        // }
         this.lastTickTime = now;
 
         //do passive animation loop

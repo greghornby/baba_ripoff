@@ -7,7 +7,11 @@ import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
 import { Constants } from "./Constants.js";
 import { Entity } from "./Entity.js";
 import { LevelController } from "./LevelController.js";
+import { Word } from "./Word.js";
 
+const ERASE_METHODS_ON_DESTROYED: string[] = [];
+(globalThis as any).ERASE_METHODS_ON_DESTROYED = ERASE_METHODS_ON_DESTROYED;
+const emptyFn = function(...args: any): any {}
 export class EntityPixi {
 
     static frameUpdateDelta = 1000 * 12/60;
@@ -21,9 +25,11 @@ export class EntityPixi {
     public sprite: pixi.Sprite;
     public cancelledSprite: pixi.Graphics;
     public debugContainer: pixi.Container;
-    public filterColor: ColorMatrixFilter;
-    public textFilter: ColorMatrixFilter;
+
     public animationDelta: number = 0;
+
+    public tint: number = 0xffffff;
+    public tintDarkened: number = 0xffffff;
 
     public _visible: boolean = true;
     public _invisiblePosition = {x: 0, y: 0};
@@ -60,12 +66,6 @@ export class EntityPixi {
         this.debugContainer = new pixi.Container();
 
         this.container.addChild(this.sprite, this.cancelledSprite, this.debugContainer);
-        this.filterColor = new pixi.filters.ColorMatrixFilter();
-        this.textFilter = new pixi.filters.ColorMatrixFilter();
-        this.sprite.filters = [
-            this.filterColor,
-            this.textFilter
-        ];
         this.setColor(entity.color ?? entity.construct.defaultColor);
         this.setFacing(entity.facing);
         this.setPosition(entity.x, entity.y);
@@ -74,27 +74,28 @@ export class EntityPixi {
     }
 
 
-    @pixiUpdate()
+    @skipOnDestroyed()
     public cache(): void {
-        if (this.cacheEnabled) {
-            this.sprite.cacheAsBitmap = false;
-            this.sprite.cacheAsBitmap = true;
-        } else {
-            this.sprite.cacheAsBitmap = false;
-        }
+        // if (this.cacheEnabled) {
+        //     this.sprite.cacheAsBitmap = false;
+        //     this.sprite.cacheAsBitmap = true;
+        // } else {
+        //     this.sprite.cacheAsBitmap = false;
+        // }
     }
 
 
+    @skipOnDestroyed()
     public destroy(): void {
-        if (this.destroyed) {
-            return;
-        }
         this.removeContainerFromController();
         destroyAllChildren(this.container);
+        for (const methodName of ERASE_METHODS_ON_DESTROYED) {
+            (this as any)[methodName] = emptyFn;
+        }
     }
 
 
-    @pixiUpdate({noCache: true})
+    @skipOnDestroyed()
     public play(deltaTime: number): void {
         if (this.sprite instanceof AnimatedSprite) {
             this.animationDelta += deltaTime;
@@ -111,30 +112,35 @@ export class EntityPixi {
     }
 
 
+    @skipOnDestroyed()
     public addContainerToController(): void {
-        if (this.destroyed) {
-            return;
-        }
         this.controller.containers.categories[this.entity.construct.category.name].addChild(this.container);
     }
 
 
+    @skipOnDestroyed()
     public removeContainerFromController(): void {
-        if (this.destroyed) {
-            return;
-        }
         this.container.parent.removeChild(this.container);
     }
 
 
-    @pixiUpdate()
+    @skipOnDestroyed()
     public setColor(color: number) {
-        this.filterColor.reset();
-        this.filterColor.tint(color);
+        this.tint = color;
+        this.sprite.tint = this.tint;
+        if (this.entity.construct instanceof Word) {
+            const m = Constants.INACTIVE_TEXT_DARKEN_MULT;
+            const r = ((color & 0xff0000) >> 16) * m;
+            const g = ((color & 0x00ff00) >> 8) * m;
+            const b = (color & 0x0000ff) * m;
+            const darkenedTint = (r << 16 | g << 8 | b);
+            this.tintDarkened = darkenedTint;
+        }
+        this.cache();
     }
 
 
-    @pixiUpdate({noCache: true})
+    @skipOnDestroyed()
     public setVisible(visible: boolean) {
         this._visible = visible;
         if (!visible) {
@@ -152,16 +158,17 @@ export class EntityPixi {
     }
 
 
-    @pixiUpdate()
+    @skipOnDestroyed()
     public setFacing(facing: Direction): void {
         if (this.entity.construct.facingTextures) {
             const texture = this.entity.construct.facingTextures[facing];
             this.sprite.texture = texture;
         }
+        this.cache();
     }
 
 
-    @pixiUpdate({noCache: true})
+    @skipOnDestroyed()
     setPosition(x?: number, y?: number): void {
         const m = this.controller.level.TILE_SIZE;
         const _x = (x !== undefined ? x*m : this.container.transform.position.x) + this.controller.level.TILE_SIZE / 2;
@@ -174,7 +181,7 @@ export class EntityPixi {
     }
 
 
-    @pixiUpdate({noCache: true})
+    @skipOnDestroyed()
     setScale(x?: number, y?: number): void {
         this.container.transform.scale.set(
             x ?? this.container.transform.scale.x,
@@ -183,21 +190,20 @@ export class EntityPixi {
     }
 
 
-    @pixiUpdate()
+    @skipOnDestroyed()
     setTextFilter(active: boolean): void {
-        this.textFilter.reset();
-        if (!active) {
-            this.textFilter.brightness(0.6, false);
-        }
+        this.sprite.tint = active ? this.tint : this.tintDarkened;
+        this.cache();
     }
 
 
-    @pixiUpdate({noCache: true})
+    @skipOnDestroyed()
     setWordCancelled(cancelled: boolean): void {
         this.cancelledSprite.visible = cancelled;
     }
 
 
+    @skipOnDestroyed()
     public _removeDebugContainer(key: keyof EntityPixi["_debugContainers"]): void {
         const debugContainer = this._debugContainers[key];
         if (!debugContainer) {
@@ -210,7 +216,7 @@ export class EntityPixi {
     }
 
 
-    @pixiUpdate({noCache: true})
+    @skipOnDestroyed()
     public _debugEntityId(): void {
         if (!debugFlags.drawEntityIds) {
             this._removeDebugContainer("id");
@@ -239,25 +245,8 @@ export class EntityPixi {
 }
 
 
-
-type Method = (...args: any[]) => void | undefined;
-function pixiUpdate(options: {noCache?: boolean} = {}) {
-    return function <T extends Method>(target: any, key: string, descriptor: TypedPropertyDescriptor<T>) {
-        const method = descriptor.value as unknown as Method;
-        descriptor.value = <any>function(this: EntityPixi, ...args: any[]) {
-            if (this.destroyed) {
-                return;
-            }
-            const value = method.apply(this, args);
-            if (!options.noCache) {
-                // this.container.cacheAsBitmap = false;
-                // this.container.cacheAsBitmap = true;
-                this.sprite.cacheAsBitmap = false;
-                this.sprite.cacheAsBitmap = true;
-            }
-            return value;
-        };
+function skipOnDestroyed() {
+    return function (target: any, key: string) {
+        ERASE_METHODS_ON_DESTROYED.push(key);
     }
 }
-
-type ColorMatrixFilter = InstanceType<typeof pixi.filters["ColorMatrixFilter"]>;
