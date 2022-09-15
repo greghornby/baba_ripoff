@@ -28,8 +28,7 @@ export const tempWinScreen = async (controller: LevelController) => {
     winGraphic.scale.set(scale, scale);
     const center = controller._getCenter("level");
     winGraphic.transform.position.set(center[0], center[1]);
-    winGraphic.zIndex = Infinity;
-    controller.container.addChild(winGraphic);
+    controller.containers.splash.addChild(winGraphic);
 
     for await (const alpha of fadeIn(winGraphic)) {}
     await wait();

@@ -30,7 +30,7 @@ export const win_anim: PassiveAnimationFunction = function*(passive) {
     const parallel: [typeof sprites, typeof trajectories] = [sprites, trajectories];
 
     const markedForRemoval: pixi.AnimatedSprite[] = [];
-
+    const passiveContainer = passive.container;
     main:
     while (true) {
         yield;
@@ -54,7 +54,7 @@ export const win_anim: PassiveAnimationFunction = function*(passive) {
         }
         if (markedForRemoval.length) {
             for (const sprite of markedForRemoval) {
-                passive.container.removeChild(sprite);
+                passiveContainer.removeChild(sprite);
                 sprite.destroy();
             }
             arrayRemoveParallel(parallel, ...markedForRemoval);
@@ -81,6 +81,6 @@ export const win_anim: PassiveAnimationFunction = function*(passive) {
         direction[1] *= speed;
         sprites.push(newSprite);
         trajectories.push(direction);
-        passive.container.addChild(newSprite);
+        passiveContainer.addChild(newSprite);
     }
 }

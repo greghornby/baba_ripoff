@@ -3,6 +3,7 @@ import { AnimatedSprite } from "pixi.js";
 import { App } from "../app/App.js";
 import { debugFlags } from "../debug/debugFlags.js";
 import { Direction } from "../types/Direction.js";
+import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
 import { Constants } from "./Constants.js";
 import { Entity } from "./Entity.js";
 import { LevelController } from "./LevelController.js";
@@ -18,7 +19,8 @@ export class EntityPixi {
 
     public container: pixi.Container;
     public sprite: pixi.Sprite;
-    public cancelledSprite: pixi.Graphics | undefined;
+    public cancelledSprite: pixi.Graphics;
+    public debugContainer: pixi.Container;
     public filterColor: ColorMatrixFilter;
     public textFilter: ColorMatrixFilter;
     public animationDelta: number = 0;
@@ -34,15 +36,30 @@ export class EntityPixi {
         this.entityId = entity.id;
         this.controller = entity.controller;
         this.container = new pixi.Container();
-        this.container.sortableChildren = true;
-        this.container.zIndex = entity.construct.category.zIndex;
         this.container.transform.pivot.set(this.controller.level.TILE_SIZE/2, this.controller.level.TILE_SIZE/2);
+
         if (entity.construct.spriteSheet) {
             this.sprite = new pixi.AnimatedSprite(entity.construct.spriteSheet.animations.jiggle, false);
         } else {
             this.sprite = new pixi.Sprite(entity.construct.texture);
         }
-        this.container.addChild(this.sprite);
+
+        {
+            this.cancelledSprite = new pixi.Graphics();
+            const half = this.controller.level.TILE_SIZE/2;
+            const quarter = half/2;
+
+            const g = this.cancelledSprite;
+            g.lineStyle(5, 0xff0000);
+            g.moveTo(half - quarter, half - quarter);
+            g.lineTo(half + quarter, half + quarter);
+            g.moveTo(half + quarter, half - quarter);
+            g.lineTo(half - quarter, half + quarter);
+            this.cancelledSprite.visible = false;
+        }
+        this.debugContainer = new pixi.Container();
+
+        this.container.addChild(this.sprite, this.cancelledSprite, this.debugContainer);
         this.filterColor = new pixi.filters.ColorMatrixFilter();
         this.textFilter = new pixi.filters.ColorMatrixFilter();
         this.sprite.filters = [
@@ -72,10 +89,8 @@ export class EntityPixi {
         if (this.destroyed) {
             return;
         }
-        this.container.destroy();
-        this.sprite.destroy();
-        this.cancelledSprite?.destroy();
         this.removeContainerFromController();
+        destroyAllChildren(this.container);
     }
 
 
@@ -100,7 +115,7 @@ export class EntityPixi {
         if (this.destroyed) {
             return;
         }
-        this.controller.container.addChild(this.container);
+        this.controller.containers.categories[this.entity.construct.category.name].addChild(this.container);
     }
 
 
@@ -108,7 +123,7 @@ export class EntityPixi {
         if (this.destroyed) {
             return;
         }
-        this.controller.container.removeChild(this.container);
+        this.container.parent.removeChild(this.container);
     }
 
 
@@ -179,20 +194,6 @@ export class EntityPixi {
 
     @pixiUpdate({noCache: true})
     setWordCancelled(cancelled: boolean): void {
-        if (!this.cancelledSprite) {
-            this.cancelledSprite = new pixi.Graphics();
-            this.cancelledSprite.zIndex = 100;
-            this.container.addChild(this.cancelledSprite);
-            const half = this.controller.level.TILE_SIZE/2;
-            const quarter = half/2;
-
-            const g = this.cancelledSprite;
-            g.lineStyle(5, 0xff0000);
-            g.moveTo(half - quarter, half - quarter);
-            g.lineTo(half + quarter, half + quarter);
-            g.moveTo(half + quarter, half - quarter);
-            g.lineTo(half - quarter, half + quarter);
-        }
         this.cancelledSprite.visible = cancelled;
     }
 
@@ -202,7 +203,7 @@ export class EntityPixi {
         if (!debugContainer) {
             return;
         }
-        this.container.removeChild(debugContainer);
+        debugContainer.parent.removeChild(debugContainer);
         debugContainer.destroy();
         this._debugContainers[key] = undefined;
         this.cache();
@@ -220,8 +221,7 @@ export class EntityPixi {
         }
         const graphics = new pixi.Graphics();
         this._debugContainers.id = graphics;
-        graphics.zIndex = 102;
-        this.container.addChild(graphics);
+        this.debugContainer.addChild(graphics);
         const text = new pixi.Text(this.entity.id, new pixi.TextStyle({
             fontFamily : 'Arial',
             fontSize: 12,

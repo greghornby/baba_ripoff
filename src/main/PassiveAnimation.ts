@@ -31,7 +31,7 @@ export abstract class PassiveAnimation<M extends any = any> {
         this.container = new pixi.Container();
         this.container.x = this.containerX;
         this.container.y = this.containerY;
-        this.controller.container.addChild(this.container);
+        this.controller.containers.particles.addChild(this.container);
     }
 
     play(deltaTime: number) {

@@ -3,6 +3,7 @@ import { App } from "../app/App.js";
 import { AppEventEnum } from "../app/AppEventEnum.js";
 import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
+import { categories } from "../objects/categories.js";
 import { words } from "../objects/words.js";
 import { WinPassiveAnimation, win_anim } from "../passive_animations/win_anim.js";
 import { Direction } from "../types/Direction.js";
@@ -25,6 +26,7 @@ import { VerbUnion } from "../util/rules/verbEquals.js";
 import { tempWinScreen } from "../util/temp/tempWinScreen.js";
 import { ActionProcessor } from "./ActionProcessor.js";
 import { AnimationSystem } from "./AnimationSystem.js";
+import { Category } from "./Category.js";
 import { Constants } from "./Constants.js";
 import { Construct } from "./Construct.js";
 import { Entity, EntityInitData } from "./Entity.js";
@@ -79,7 +81,14 @@ export class LevelController {
 
     public ticker: pixi.Ticker;
     public container: pixi.Container;
-    public gridGraphic: pixi.Graphics | undefined;
+    public containers: {
+        grid: pixi.Graphics;
+        background: pixi.Container;
+        categories: Record<string, pixi.Container>;
+        particles: pixi.Container;
+        splash: pixi.Container,
+        pause: pixi.Container,
+    };
 
     public entityCount: number = 0;
     /** Stores all Entities current present in the level */
@@ -156,7 +165,27 @@ export class LevelController {
 
         //create container
         this.container = new pixi.Container();
-        this.container.sortableChildren = true;
+        this.containers = {
+            grid: new pixi.Graphics(),
+            background: new pixi.Container(),
+            particles: new pixi.Container(),
+            categories: Object.fromEntries(
+                Object.values(categories).map<[string, pixi.Container]>(c => [c.name, new pixi.Container])
+            ),
+            splash: new pixi.Container(),
+            pause: new pixi.Container()
+        };
+        const containerOrder: pixi.DisplayObject[] = [
+            this.containers.grid,
+            this.containers.background,
+            ...Object.entries(this.containers.categories)
+                .sort(([categoryNameA], [categoryNameB]) => Category.store[categoryNameA].priority - Category.store[categoryNameB].priority)
+                .map(([,container]) => container),
+            this.containers.particles,
+            this.containers.splash,
+            this.containers.pause
+        ];
+        this.container.addChild(...containerOrder);
         pixiApp.stage.addChild(this.container);
 
         if (this.level.initData.background) {
@@ -164,8 +193,7 @@ export class LevelController {
                 const sprite = pixi.Sprite.from(bg.texture);
                 sprite.x = bg.x * this.level.TILE_SIZE;
                 sprite.y = bg.y * this.level.TILE_SIZE;
-                sprite.zIndex = Number.MIN_SAFE_INTEGER + 1;
-                this.container.addChild(sprite);
+                this.containers.background.addChild(sprite);
             }
         }
 
@@ -240,19 +268,17 @@ export class LevelController {
 
 
     public _drawGrid(): void {
-        this.gridGraphic = new pixi.Graphics();
-        this.gridGraphic.zIndex = Number.MIN_SAFE_INTEGER;
-        this.container.addChild(this.gridGraphic);
-        this.gridGraphic.lineStyle(3, 0x999999, 0.35);
+        const gridGraphic = this.containers.grid;
+        gridGraphic.lineStyle(3, 0x999999, 0.35);
         for (let x = 0; x <= this.level.width; x++) {
-            this.gridGraphic.moveTo(x * this.level.TILE_SIZE, 0);
-            this.gridGraphic.lineTo(x * this.level.TILE_SIZE, this.level.pixelHeight);
+            gridGraphic.moveTo(x * this.level.TILE_SIZE, 0);
+            gridGraphic.lineTo(x * this.level.TILE_SIZE, this.level.pixelHeight);
         }
         for (let y = 0; y <= this.level.height; y++) {
-            this.gridGraphic.moveTo(0, y * this.level.TILE_SIZE);
-            this.gridGraphic.lineTo(this.level.pixelWidth, y * this.level.TILE_SIZE);
+            gridGraphic.moveTo(0, y * this.level.TILE_SIZE);
+            gridGraphic.lineTo(this.level.pixelWidth, y * this.level.TILE_SIZE);
         }
-        this.gridGraphic.cacheAsBitmap = true;
+        gridGraphic.cacheAsBitmap = true;
     }
 
 
