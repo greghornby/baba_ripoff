@@ -1,26 +1,24 @@
-import { Action } from "../../main/Action.js";
-import { ActionProcessor } from "../../main/ActionProcessor.js";
-import { Entity } from "../../main/Entity.js";
-import { Interaction } from "../../main/Interaction.js";
-import { LevelController } from "../../main/LevelController.js";
-import { Direction } from "../../types/Direction.js";
-import { addCoordinates } from "../actions/addCoordinates.js";
-import { directionToXY } from "../actions/directionToXY.js";
-import { getOppositeDirection } from "../actions/getOppositeFacing.js";
-import { getWordMap } from "../words/getWordMap.js";
+import { Action } from "../../../Action.js";
+import { ActionProcessor } from "../../../ActionProcessor.js";
+import { Entity } from "../../../Entity.js";
+import { Interaction } from "../../../Interaction.js";
+import { Direction } from "../../../../types/Direction.js";
+import { addCoordinates } from "../../../../util/movement/addCoordinates.js";
+import { getWordMap } from "../../../../util/words/getWordMap.js";
 import { MovMovementDirectionStatus, MovTileInfo } from "./MovTileInfo.js";
 import { MovTileStore } from "./MovTileStore.js";
 import { resolveTile } from "./resolveTile.js";
+import { getOppositeDirection } from "../../../../util/movement/getOppositeFacing.js";
+import { directionToXY } from "../../../../util/movement/directionToXY.js";
 
 const words = getWordMap("you", "move", "pull", "push", "stop");
 
-export function doMovement2(interaction: Interaction): boolean {
+export function doMovement(this: ActionProcessor, interaction: Interaction, addStep: boolean): boolean {
 
     let somethingMoved = false;
 
-    const controller = LevelController.instance;
-    const actionProcessor = controller.actionProcessor;
-    const topOfStack = controller.actionProcessor.getTopOfStack();
+    const controller = this.controller;
+    const topOfStack = this.getTopOfStack();
 
     const youDirection: Direction | undefined = interaction.interaction.type === "move" ? interaction.interaction.direction : undefined;
 
@@ -80,7 +78,7 @@ export function doMovement2(interaction: Interaction): boolean {
                     mustDoReboundStep = true;
                     for (const e of tile.mainMoveEntities!) {
                         if (e.facing === direction as Direction) {
-                            topOfStack.push(new Action(actionProcessor.step, {
+                            topOfStack.push(new Action(this.step, {
                                 type: "facing",
                                 entityId: e.id,
                                 fromDirection: e.facing,
@@ -91,7 +89,7 @@ export function doMovement2(interaction: Interaction): boolean {
                 }
             }
             if (mustDoReboundStep) {
-                actionProcessor.playActionsOnTopOfStack(false);
+                this.playActionsOnTopOfStack(false);
                 continue mainLoop;
             }
         }
@@ -108,11 +106,11 @@ export function doMovement2(interaction: Interaction): boolean {
                 for (let i = 0; i < len; i++) {
                     const entity = tile.mainMoveEntities[i];
                     const direction = tile.mainMoveEntityDirections![i];
-                    addFacingAction(actionProcessor, movementActions, entity, direction);
+                    addFacingAction(this, movementActions, entity, direction);
                     if (tile.status![direction] === MovMovementDirectionStatus.clear) {
                         const endPos = addCoordinates(startPos, directionToXY(direction), false);
                         expendedEntities.add(entity);
-                        addMovementAction(actionProcessor, movementActions, entity, startPos, endPos);
+                        addMovementAction(this, movementActions, entity, startPos, endPos);
                     }
                 }
             }
@@ -130,8 +128,8 @@ export function doMovement2(interaction: Interaction): boolean {
                         continue;
                     }
                     expendedEntities.add(entity);
-                    addFacingAction(actionProcessor, movementActions, entity, direction);
-                    addMovementAction(actionProcessor, movementActions, entity, startPos, endPos);
+                    addFacingAction(this, movementActions, entity, direction);
+                    addMovementAction(this, movementActions, entity, startPos, endPos);
                 }
             }
 
@@ -148,8 +146,8 @@ export function doMovement2(interaction: Interaction): boolean {
                         continue;
                     }
                     expendedEntities.add(entity);
-                    addFacingAction(actionProcessor, movementActions, entity, direction);
-                    addMovementAction(actionProcessor, movementActions, entity, startPos, endPos);
+                    addFacingAction(this, movementActions, entity, direction);
+                    addMovementAction(this, movementActions, entity, startPos, endPos);
                 }
             }
         }
@@ -159,12 +157,12 @@ export function doMovement2(interaction: Interaction): boolean {
         }
         topOfStack.push(...movementActions);
 
-        const movedBoolean = actionProcessor.playActionsOnTopOfStack(false);
+        const movedBoolean = this.playActionsOnTopOfStack(false);
         somethingMoved = somethingMoved || movedBoolean;
     }
 
-    if (somethingMoved) {
-        controller.actionProcessor.addStep();
+    if (somethingMoved && addStep) {
+        this.addStep();
     }
 
     return somethingMoved;

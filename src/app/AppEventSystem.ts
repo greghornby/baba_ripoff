@@ -10,11 +10,14 @@ export class AppEventSystem {
     public tokenToEvent: WeakMap<Token, [eventName: string, eventFunc: Function]> = new WeakMap();
 
     public _domEvents: {[K in keyof WindowEventMap]?: (event: WindowEventMap[K]) => void};
+    public resizeObserver: ResizeObserver;
 
     public _touches: Touch[] = [];
     public _doubleTapPendingTimerId: number | undefined = undefined;
 
     constructor() {
+
+        const app = App.get();
 
         this._domEvents = {
             "keydown": event => this.emitKeyboardEvent(event, "down"),
@@ -51,6 +54,11 @@ export class AppEventSystem {
         for (const eventName of Object.keys(this._domEvents)) {
             globalThis.addEventListener(eventName, (this._domEvents as any)[eventName]);
         }
+
+        this.resizeObserver = new ResizeObserver(
+            () => this.emitResize()
+        );
+        this.resizeObserver.observe(app.containerElement);
     }
 
 
@@ -67,6 +75,7 @@ export class AppEventSystem {
     addListener<T extends EventCallback<AppEventInterface.DoubleTap, TouchEvent>>(eventName: EventEnum["doubleTap"], cb: T): Token;
     addListener<T extends EventCallback<AppEventInterface.Swipe, TouchEvent>>(eventName: EventEnum["swipe"], cb: T): Token;
     addListener<T extends EventCallback<AppEventInterface.Keyboard, KeyboardEvent>>(eventName: EventEnum["keyboard"], cb: T): Token;
+    addListener<T extends EventCallback<undefined, undefined>>(eventName: EventEnum["resize"], cb: T): Token;
     addListener(eventName: EventName, cb: EventCallback<any, any>): Token {
         const wrapped: EventCallback<any, Event> = function(event, originalEvent) {
             const app = App.get();
@@ -138,6 +147,10 @@ export class AppEventSystem {
         this.emitEvent(AppEventEnum.doubleTap, simpleEvent, originalEvent);
     }
 
+    emitResize() {
+        this.emitEvent(AppEventEnum.resize, undefined, undefined);
+    }
+
 
 
     _endTouchIsSwipe(event: TouchEvent): boolean {
@@ -192,4 +205,4 @@ export class AppEventSystem {
 type Token = {};
 type EventEnum = (typeof AppEventEnum);
 type EventName = (EventEnum)[keyof EventEnum];
-type EventCallback<T = any, E extends Event = Event> = (event: T, originalEvent: E) => boolean | undefined | void;
+type EventCallback<T = any, E extends Event | undefined = Event> = (event: T, originalEvent: E) => boolean | undefined | void;

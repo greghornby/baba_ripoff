@@ -1,8 +1,8 @@
-import { Entity } from "../../main/Entity.js";
-import { LevelController } from "../../main/LevelController.js";
-import { Direction } from "../../types/Direction.js";
-import { EmptyArray } from "../data/EmptyArray.js";
-import { getWordMap } from "../words/getWordMap.js";
+import { Entity } from "../../../Entity.js";
+import { LevelController } from "../../../LevelController.js";
+import { Direction } from "../../../../types/Direction.js";
+import { EmptyArray } from "../../../../util/data/EmptyArray.js";
+import { getWordMap } from "../../../../util/words/getWordMap.js";
 
 const words = getWordMap("pull", "push", "stop", "shift", "open", "shut");
 

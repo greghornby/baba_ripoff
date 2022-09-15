@@ -1,5 +1,5 @@
-import { Direction } from "../../types/Direction.js";
-import { getOppositeDirection } from "../actions/getOppositeFacing.js";
+import { Direction } from "../../../../types/Direction.js";
+import { getOppositeDirection } from "../../../../util/movement/getOppositeFacing.js";
 import { MovMovementDirectionStatus, MovTileInfo } from "./MovTileInfo.js";
 import { MovTilePointer } from "./MovTilePointer.js";
 import { MovTileStore } from "./MovTileStore.js";

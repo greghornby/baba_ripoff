@@ -16,7 +16,7 @@ import { generatePairsFromArray } from "../util/data/generatePairsFromArray.js";
 import { getPaths } from "../util/data/getPaths.js";
 import { MapOfSets } from "../util/data/MapOfSets.js";
 import { setAddMultiple } from "../util/data/setAddMultiple.js";
-import { doMovement2 } from "../util/movement/doMovement2.js";
+import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
 import { isNotComplement } from "../util/rules/isNotComplement.js";
 import { rulesCancel } from "../util/rules/rulesCancel.js";
 import { VerbUnion } from "../util/rules/verbEquals.js";
@@ -33,7 +33,24 @@ import { Word } from "./Word.js";
 
 export class LevelController {
 
-    static instance: LevelController;
+    static instance: LevelController | undefined;
+
+    public static _keyboardListener: {};
+    public static _swipeListener: {};
+    public static _singleTapListener: {};
+    public static _doubleTapListener: {};
+    public static _resizeListener: {};
+
+    public static staticInitted = false;
+    public static initStatic() {
+        LevelController.staticInitted = true;
+        const app = App.get();
+        this._keyboardListener = app.events.addListener("keyboard", event => this.instance && event.type === "down" ? this.instance.keyboardInteraction(event) : undefined);
+        this._swipeListener = app.events.addListener("swipe", event => this.instance ? this.instance.swipeInteraction(event) : undefined);
+        this._singleTapListener = app.events.addListener("singleTap", event => this.instance ? this.instance.singleTapInteraction(event) : undefined);
+        this._doubleTapListener = app.events.addListener("doubleTap", event => this.instance ? this.instance.doubleTapInteraction(event) : undefined);
+        this._resizeListener = app.events.addListener("resize", () => this.instance ? this.instance._fitContainerToScreen() : undefined);
+    }
 
     static load(level: Level) {
         new LevelController(level);
@@ -50,7 +67,6 @@ export class LevelController {
 
     public ticker: pixi.Ticker;
     public container: pixi.Container;
-    public resizeListener: EventListener;
     public gridGraphic: pixi.Graphics | undefined;
 
     public entityCount: number = 0;
@@ -94,10 +110,6 @@ export class LevelController {
     public activeTextEntities: Set<Entity> = new Set();
 
     public currentInteraction: Interaction | undefined;
-    public _keyboardListener: {};
-    public _swipeListener: {};
-    public _singleTapListener: {};
-    public _doubleTapListener: {};
 
     public tickFlags: {
         rebuildSentences?: boolean;
@@ -111,6 +123,10 @@ export class LevelController {
     ) {
 
         LevelController.instance = this;
+
+        if (!LevelController.staticInitted) {
+            LevelController.initStatic();
+        }
 
         (globalThis as any)["controller"] = this;
 
@@ -157,14 +173,7 @@ export class LevelController {
 
         //setup resize listener
         this._fitContainerToScreen();
-        this.resizeListener = () => this._fitContainerToScreen();
-        globalThis.addEventListener(AppEventEnum.resize, this.resizeListener);
 
-        //setup listeners
-        this._keyboardListener = app.events.addListener("keyboard", event => event.type === "down" ? this.keyboardInteraction(event) : undefined);
-        this._swipeListener = app.events.addListener("swipe", event => this.swipeInteraction(event));
-        this._singleTapListener = app.events.addListener("singleTap", event => this.singleTapInteraction(event));
-        this._doubleTapListener = app.events.addListener("doubleTap", event => this.doubleTapInteraction(event));
 
         //add the main `tick` function and start the ticker again
         type TickFlags = typeof this.tickFlags;
@@ -653,11 +662,8 @@ export class LevelController {
 
 
     public exit(): void {
-        const app = App.get();
-        globalThis.removeEventListener(AppEventEnum.resize, this.resizeListener);
-        app.events.removeListener(this._keyboardListener);
-        app.events.removeListener(this._swipeListener);
-        app.events.removeListener(this._doubleTapListener);
+        this.ticker.destroy();
+        destroyAllChildren(this.container);
     }
 
 
@@ -715,11 +721,7 @@ export class LevelController {
         let _doParse = false;
         const ADD_STEP = true;
 
-        const t0 = performance.now();
-        // _doParse = this.actionProcessor.doMovement(interaction, ADD_STEP);
-        // _doParse = doMovement(interaction);
-        _doParse = doMovement2(interaction);
-        const t1 = performance.now();
+        _doParse = this.actionProcessor.doMovement(interaction, ADD_STEP);
         // console.log("Movement performance", t1-t0);
 
         this.parseRules(_doParse);

@@ -1,6 +1,6 @@
 import { debugPrint } from "../debug/debugPrint.js";
 import { destructiblePairs } from "../util/controller/destructiblePairs.js";
-import { doMovement2 } from "../util/movement/doMovement2.js";
+import { doMovement } from "./ext/ActionProcessor/doMovement/doMovement.js";
 import { getWordMap } from "../util/words/getWordMap.js";
 import { Action } from "./Action.js";
 import { Entity } from "./Entity.js";
@@ -161,7 +161,7 @@ export class ActionProcessor {
 
 
     public doMovement(interaction: Interaction, addStep: boolean): boolean {
-        return doMovement2(interaction);
+        return doMovement.call(this, interaction, addStep);
     }
 
 

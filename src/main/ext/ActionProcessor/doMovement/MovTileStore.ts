@@ -1,6 +1,6 @@
-import { Entity } from "../../main/Entity.js";
-import { LevelController } from "../../main/LevelController.js";
-import { Direction } from "../../types/Direction.js";
+import { Entity } from "../../../Entity.js";
+import { LevelController } from "../../../LevelController.js";
+import { Direction } from "../../../../types/Direction.js";
 import { MovTileInfo } from "./MovTileInfo.js";
 import { MovTilePointerTuple } from "./MovTilePointer.js";
 

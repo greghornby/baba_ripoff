@@ -10,10 +10,9 @@ export class App {
     }
 
     public pixiApp: pixi.Application;
-    public resizeObserver: ResizeObserver;
     public events: AppEventSystem;
 
-    constructor(containerElement: HTMLElement) {
+    constructor(public containerElement: HTMLElement) {
         App._singleton = this;
 
         this.pixiApp = new pixi.Application({
@@ -28,10 +27,5 @@ export class App {
         const styleElement = document.createElement("style");
         styleElement.innerHTML = `.game:focus {outline: none;}`;
         document.head.appendChild(styleElement);
-
-        this.resizeObserver = new ResizeObserver(
-            () => globalThis.dispatchEvent(new Event(AppEventEnum.resize))
-        );
-        this.resizeObserver.observe(containerElement);
     }
 }

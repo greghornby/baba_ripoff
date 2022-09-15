@@ -1,4 +1,4 @@
-import { Direction } from "../../types/Direction.js";
+import { Direction } from "../../../../types/Direction.js";
 
 export class MovTilePointer implements MovTilePointerTuple {
 

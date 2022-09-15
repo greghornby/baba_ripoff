@@ -21,8 +21,6 @@ export class Entity {
 
     public entityPixi: EntityPixi;
 
-    // public _animation: EntityAnimation | undefined;
-
     public _debug: {
         idGraphic?: pixi.Graphics;
         redrawFacing?: boolean;
