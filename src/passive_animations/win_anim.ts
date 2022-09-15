@@ -1,10 +1,23 @@
-import { PassiveAnimationFunction } from "../main/PassiveAnimation.js";
 import * as pixi from "pixi.js";
-import { arrayRemove } from "../util/data/arrayRemove.js";
+import { LevelController } from "../main/LevelController.js";
+import { PassiveAnimation, PassiveAnimationData, PassiveAnimationFunction } from "../main/PassiveAnimation.js";
+import { colors } from "../objects/colors.js";
+import { textures } from "../objects/textures.js";
 import { arrayRemoveParallel } from "../util/data/arrayRemoveParallel.js";
 import { mapTextureToSheet } from "../util/pixi/mapTextureToSheet.js";
-import { textures } from "../objects/textures.js";
-import { colors } from "../objects/colors.js";
+
+
+export class WinPassiveAnimation extends PassiveAnimation<{x: number; y: number}> {
+    framerate = 5;
+    constructor(
+        public controller: LevelController,
+        public data: PassiveAnimationData,
+        public meta: {x: number; y: number},
+    ) {
+        super(controller, data, meta, win_anim);
+    }
+}
+
 
 const MAX_SPRITES = 3;
 const directions: [number, number][] = [
@@ -40,6 +53,10 @@ export const win_anim: PassiveAnimationFunction = function*(passive) {
             }
         }
         if (markedForRemoval.length) {
+            for (const sprite of markedForRemoval) {
+                passive.container.removeChild(sprite);
+                sprite.destroy();
+            }
             arrayRemoveParallel(parallel, ...markedForRemoval);
         }
         if (sprites.length >= MAX_SPRITES) {

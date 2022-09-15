@@ -2,7 +2,7 @@ import * as pixi from "pixi.js";
 import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
 import { LevelController } from "./LevelController.js";
 
-export class PassiveAnimation<M extends any = any> {
+export abstract class PassiveAnimation<M extends any = any> {
 
     public _destroyed: boolean = false;
 
@@ -11,33 +11,35 @@ export class PassiveAnimation<M extends any = any> {
     public containerX: number;
     public containerY: number;
 
-    public framerate: number;
+    public abstract framerate: number;
 
-    public _timeConsideredAFrame: number;
+    public _timeConsideredAFrame: number | undefined;
     public _deltaTime: number = 0;
 
-    public animationGenerator: PassiveAnimationFunction;
     public animationIterator?: Iterator<void, void, void>;
     public framesPassed: number = 0;
 
-    constructor(public controller: LevelController, public data: PassiveAnimationData, public meta: M) {
+    constructor(
+        public controller: LevelController,
+        public data: PassiveAnimationData,
+        public meta: M,
+        public animationGenerator: PassiveAnimationFunction
+    ) {
         this.containerX = data.x;
         this.containerY = data.y;
-        this.framerate = data.framerate;
 
         this.container = new pixi.Container();
         this.container.x = this.containerX;
         this.container.y = this.containerY;
         this.controller.container.addChild(this.container);
-
-        this.animationGenerator = data.animation;
-
-        this._timeConsideredAFrame = 1000 / this.framerate;
     }
 
     play(deltaTime: number) {
         if (this._destroyed) {
             return;
+        }
+        if (!this._timeConsideredAFrame) {
+            this._timeConsideredAFrame = 1000 / this.framerate;
         }
         if (!this.animationIterator) {
             this.animationIterator = this.animationGenerator(this);
@@ -62,8 +64,6 @@ export class PassiveAnimation<M extends any = any> {
 export interface PassiveAnimationData {
     x: number;
     y: number;
-    framerate: number;
-    animation: PassiveAnimationFunction;
 }
 
 export type PassiveAnimationFunction = (passive: PassiveAnimation) => Generator<void, void, void>;

@@ -4,7 +4,7 @@ import { AppEventEnum } from "../app/AppEventEnum.js";
 import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { words } from "../objects/words.js";
-import { win_anim } from "../passive_animations/win_anim.js";
+import { WinPassiveAnimation, win_anim } from "../passive_animations/win_anim.js";
 import { Direction } from "../types/Direction.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
 import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
@@ -660,12 +660,10 @@ export class LevelController {
                     continue;
                 }
                 type WinAnimation = LevelController["passiveAnimations"]["win"][number];
-                const newAnimation: WinAnimation  = new PassiveAnimation(this, {
+                const newAnimation: WinAnimation  = new WinPassiveAnimation(this, {
                     x: entity.x * Constants.TILE_SIZE,
                     y: entity.y * Constants.TILE_SIZE,
-                    framerate: 5,
-                    animation: win_anim
-                }, entity);
+                }, {x: entity.x, y: entity.y});
                 toAdd.push(newAnimation);
             }
         }
@@ -733,6 +731,9 @@ export class LevelController {
         const now = performance.now();
         const deltaTime = this.lastTickTime ? now - this.lastTickTime : 0;
         // console.log("Delta Time", deltaTime);
+        if (deltaTime >= 20) {
+            console.log("Delta time high", deltaTime);
+        }
         this.lastTickTime = now;
 
         //do passive animation loop
