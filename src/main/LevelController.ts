@@ -4,6 +4,7 @@ import { AppEventEnum } from "../app/AppEventEnum.js";
 import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { words } from "../objects/words.js";
+import { win_anim } from "../passive_animations/win_anim.js";
 import { Direction } from "../types/Direction.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
 import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
@@ -14,6 +15,7 @@ import { EmptyArray } from "../util/data/EmptyArray.js";
 import { EmptySet } from "../util/data/EmptySet.js";
 import { generatePairsFromArray } from "../util/data/generatePairsFromArray.js";
 import { getPaths } from "../util/data/getPaths.js";
+import { iterableFind } from "../util/data/iterableFind.js";
 import { MapOfSets } from "../util/data/MapOfSets.js";
 import { setAddMultiple } from "../util/data/setAddMultiple.js";
 import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
@@ -23,10 +25,12 @@ import { VerbUnion } from "../util/rules/verbEquals.js";
 import { tempWinScreen } from "../util/temp/tempWinScreen.js";
 import { ActionProcessor } from "./ActionProcessor.js";
 import { AnimationSystem } from "./AnimationSystem.js";
+import { Constants } from "./Constants.js";
 import { Construct } from "./Construct.js";
 import { Entity, EntityInitData } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
 import { Cell, Level, LevelGrid, LevelRow } from "./Level.js";
+import { PassiveAnimation } from "./PassiveAnimation.js";
 import { Rule } from "./Rule.js";
 import { Sentence } from "./Sentence.js";
 import { Word } from "./Word.js";
@@ -64,6 +68,14 @@ export class LevelController {
     public actionProcessor: ActionProcessor;
     public animationSytem: AnimationSystem;
     public turnNumber: number = 0;
+
+    public passiveAnimations: {
+        _list: PassiveAnimation[];
+        win: PassiveAnimation<{x: number; y: number}>[];
+    } = {
+        _list: [],
+        win: []
+    };
 
     public ticker: pixi.Ticker;
     public container: pixi.Container;
@@ -186,6 +198,7 @@ export class LevelController {
         this.animationSytem = new AnimationSystem(this);
 
         this.parseRules();
+        this.checkWinAnimation();
 
         this.ticker.add(() => this.tick());
         this.ticker.start();
@@ -610,15 +623,63 @@ export class LevelController {
 
     public checkYouWin(): void {
         const winEntities = this.tagToEntities.get(wordWin);
+        if (!winEntities) {
+            return;
+        }
+        for (const entity of winEntities) {
+            const getEntities = this.getEntitiesAtPosition(entity.x, entity.y);
+            const youEntity = getEntities.find(e => this.entityToTags.get(e)?.has(wordYou));
+            if (youEntity) {
+                this.levelWon = true;
+                tempWinScreen(this);
+            }
+        }
+    }
+
+    public checkWinAnimation() {
+        const winEntities = this.tagToEntities.get(wordWin);
+        const toRemove: PassiveAnimation[] = [];
+        const toAdd: PassiveAnimation[] = [];
+        for (const anim of this.passiveAnimations.win) {
+            if (!winEntities) {
+                toRemove.push(anim);
+                continue;
+            }
+            const tileStillWin = iterableFind(winEntities, e => e.x === anim.meta.x && e.y === anim.meta.y);
+            if (!tileStillWin) {
+                toRemove.push(anim);
+            } else {
+            }
+        }
         if (winEntities) {
             for (const entity of winEntities) {
-                const getEntities = this.getEntitiesAtPosition(entity.x, entity.y);
-                const youEntity = getEntities.find(e => this.entityToTags.get(e)?.has(wordYou));
-                if (youEntity) {
-                    this.levelWon = true;
-                    tempWinScreen(this);
+                //animations
+                const existingAnimation = this.passiveAnimations.win
+                    .find(anim => anim.meta.x === entity.x && anim.meta.y === entity.y);
+                if (existingAnimation) {
+                    continue;
                 }
+                type WinAnimation = LevelController["passiveAnimations"]["win"][number];
+                const newAnimation: WinAnimation  = new PassiveAnimation(this, {
+                    x: entity.x * Constants.TILE_SIZE,
+                    y: entity.y * Constants.TILE_SIZE,
+                    framerate: 5,
+                    animation: win_anim
+                }, entity);
+                toAdd.push(newAnimation);
             }
+        }
+
+        if (toRemove.length) {
+            for (const anim of toRemove) {
+                anim.destroy();
+            }
+            arrayRemove(this.passiveAnimations._list, ...toRemove);
+            arrayRemove(this.passiveAnimations.win, ...toRemove);
+        }
+        if (toAdd.length) {
+            this.passiveAnimations._list.push(...toAdd);
+            this.passiveAnimations.win.push(...toAdd);
         }
     }
 
@@ -674,7 +735,20 @@ export class LevelController {
         // console.log("Delta Time", deltaTime);
         this.lastTickTime = now;
 
-        // debug entities
+        //do passive animation loop
+        let animsToRemove: PassiveAnimation[] | undefined;
+        for (const anim of this.passiveAnimations._list) {
+            if (anim._destroyed) {
+                (animsToRemove = animsToRemove ?? []).push(anim);
+            } else {
+                anim.play(deltaTime);
+            }
+        }
+        if (animsToRemove) {
+            arrayRemove(this.passiveAnimations._list, ...animsToRemove);
+        }
+
+        // do entity loop
         for (const entity of this.entityMap.values()) {
             entity.entityPixi.play(deltaTime);
             // entity._debugFacingGraphic();
@@ -741,6 +815,9 @@ export class LevelController {
         if (!_isDead) {
             const _isWin = this.checkYouWin();
         }
+
+        //check for animations to add/remove
+        this.checkWinAnimation();
 
         const actions = this.actionProcessor.getTopOfStack();
 

@@ -6,6 +6,7 @@ export const colors = {
     stop: 0xbf1f41,
     pink: 0xff2299,
     gold: 0xffcc00,
+    paleGold: 0xccdd55,
     lightBrown: 0x993311,
     brightBrown: 0xbb5500,
     darkGreen: 0x007700,

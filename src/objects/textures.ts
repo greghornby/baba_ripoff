@@ -1,4 +1,5 @@
 import * as pixijs from "pixi.js";
+import animations_WinParticle from "../images/animations/WinParticle.png"
 import background_wait_hint from "../images/background/wait_hint.png"
 import background_wait_hint_mobile from "../images/background/wait_hint_mobile.png"
 import _missing from "../images/missing.png"
@@ -61,6 +62,9 @@ import words_you from "../images/words/you.png"
 import words_you_anim from "../images/words/you_anim.png"
 
 export const textures = {
+    "animations": {
+        "WinParticle": pixijs.Texture.from(animations_WinParticle)
+    },
     "background": {
         "wait_hint": pixijs.Texture.from(background_wait_hint),
         "wait_hint_mobile": pixijs.Texture.from(background_wait_hint_mobile)
