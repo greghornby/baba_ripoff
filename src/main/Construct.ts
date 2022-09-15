@@ -2,8 +2,7 @@ import * as pixi from "pixi.js";
 import { Direction } from "../types/Direction.js";
 import { Category } from "./Category.js";
 import { Constants } from "./Constants.js";
-import { Level } from "./Level.js";
-import { Word } from "./Word.js";
+import type { Word } from "./Word.js";
 
 
 export class Construct {
@@ -51,9 +50,6 @@ export class Construct {
     }
 
     async parseSpriteSheet() {
-        if (this instanceof Word && this.texture.baseTexture.width > Constants.TILE_SIZE) {
-            this.data.animatedTexture = true;
-        }
         if (!this.data.animatedTexture) {
             return;
         }
@@ -66,7 +62,7 @@ export class Construct {
         };
         const count = this.texture.baseTexture.width / Constants.TILE_SIZE;
         for (let i = 0; i < count; i++) {
-            const _i = ""+i;
+            const _i = `construct:${this.id}:${i}`;
             sheetData.frames[_i] = {
                 frame: {
                     x: i * Constants.TILE_SIZE,

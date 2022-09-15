@@ -7,7 +7,6 @@ import { mapTextureToSheet } from "../pixi/mapTextureToSheet.js";
 
 export async function initFiles () {
     await setTimeout(res => res, 0);
-    console.log("Loaded", Object.keys(words).length, "words");
     for (const c of Object.values(constructs)) {
         await c.parseSpriteSheet();
     }

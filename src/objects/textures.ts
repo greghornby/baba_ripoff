@@ -61,74 +61,91 @@ import words_win_anim from "../images/words/win_anim.png"
 import words_you from "../images/words/you.png"
 import words_you_anim from "../images/words/you_anim.png"
 
+
+const allData: string[] = [];
+function makeTextureFromBase64(data: string) {
+    const texture = pixijs.Texture.from(data);
+    allData.push(data);
+    return texture;
+}
+
 export const textures = {
     "animations": {
-        "WinParticle": pixijs.Texture.from(animations_WinParticle)
+        "WinParticle": makeTextureFromBase64(animations_WinParticle)
     },
     "background": {
-        "wait_hint": pixijs.Texture.from(background_wait_hint),
-        "wait_hint_mobile": pixijs.Texture.from(background_wait_hint_mobile)
+        "wait_hint": makeTextureFromBase64(background_wait_hint),
+        "wait_hint_mobile": makeTextureFromBase64(background_wait_hint_mobile)
     },
-    "missing": pixijs.Texture.from(_missing),
+    "missing": makeTextureFromBase64(_missing),
     "objects": {
-        "baba": pixijs.Texture.from(objects_baba),
-        "baba_sprites": pixijs.Texture.from(objects_baba_sprites),
-        "belt": pixijs.Texture.from(objects_belt),
-        "brick": pixijs.Texture.from(objects_brick),
-        "door": pixijs.Texture.from(objects_door),
-        "flag": pixijs.Texture.from(objects_flag),
-        "key": pixijs.Texture.from(objects_key),
-        "lava": pixijs.Texture.from(objects_lava),
-        "leaf": pixijs.Texture.from(objects_leaf),
-        "rock": pixijs.Texture.from(objects_rock),
-        "skull": pixijs.Texture.from(objects_skull),
-        "stone": pixijs.Texture.from(objects_stone),
-        "wall": pixijs.Texture.from(objects_wall),
-        "wall2": pixijs.Texture.from(objects_wall2),
-        "water": pixijs.Texture.from(objects_water),
-        "water2": pixijs.Texture.from(objects_water2),
-        "water_animated": pixijs.Texture.from(objects_water_animated)
+        "baba": makeTextureFromBase64(objects_baba),
+        "baba_sprites": makeTextureFromBase64(objects_baba_sprites),
+        "belt": makeTextureFromBase64(objects_belt),
+        "brick": makeTextureFromBase64(objects_brick),
+        "door": makeTextureFromBase64(objects_door),
+        "flag": makeTextureFromBase64(objects_flag),
+        "key": makeTextureFromBase64(objects_key),
+        "lava": makeTextureFromBase64(objects_lava),
+        "leaf": makeTextureFromBase64(objects_leaf),
+        "rock": makeTextureFromBase64(objects_rock),
+        "skull": makeTextureFromBase64(objects_skull),
+        "stone": makeTextureFromBase64(objects_stone),
+        "wall": makeTextureFromBase64(objects_wall),
+        "wall2": makeTextureFromBase64(objects_wall2),
+        "water": makeTextureFromBase64(objects_water),
+        "water2": makeTextureFromBase64(objects_water2),
+        "water_animated": makeTextureFromBase64(objects_water_animated)
     },
     "words": {
-        "all": pixijs.Texture.from(words_all),
-        "and": pixijs.Texture.from(words_and),
-        "baba": pixijs.Texture.from(words_baba),
-        "baba_anim": pixijs.Texture.from(words_baba_anim),
-        "belt": pixijs.Texture.from(words_belt),
-        "defeat": pixijs.Texture.from(words_defeat),
-        "door": pixijs.Texture.from(words_door),
-        "flag": pixijs.Texture.from(words_flag),
-        "flag_anim": pixijs.Texture.from(words_flag_anim),
-        "float": pixijs.Texture.from(words_float),
-        "hot": pixijs.Texture.from(words_hot),
-        "is": pixijs.Texture.from(words_is),
-        "is_anim": pixijs.Texture.from(words_is_anim),
-        "key": pixijs.Texture.from(words_key),
-        "lava": pixijs.Texture.from(words_lava),
-        "leaf": pixijs.Texture.from(words_leaf),
-        "melt": pixijs.Texture.from(words_melt),
-        "move": pixijs.Texture.from(words_move),
-        "not": pixijs.Texture.from(words_not),
-        "open": pixijs.Texture.from(words_open),
-        "pull": pixijs.Texture.from(words_pull),
-        "push": pixijs.Texture.from(words_push),
-        "rock": pixijs.Texture.from(words_rock),
-        "rock2": pixijs.Texture.from(words_rock2),
-        "rock3": pixijs.Texture.from(words_rock3),
-        "rock_anim": pixijs.Texture.from(words_rock_anim),
-        "shift": pixijs.Texture.from(words_shift),
-        "shut": pixijs.Texture.from(words_shut),
-        "sink": pixijs.Texture.from(words_sink),
-        "skull": pixijs.Texture.from(words_skull),
-        "stop": pixijs.Texture.from(words_stop),
-        "stop_anim": pixijs.Texture.from(words_stop_anim),
-        "text": pixijs.Texture.from(words_text),
-        "wall": pixijs.Texture.from(words_wall),
-        "wall_anim": pixijs.Texture.from(words_wall_anim),
-        "water": pixijs.Texture.from(words_water),
-        "win": pixijs.Texture.from(words_win),
-        "win_anim": pixijs.Texture.from(words_win_anim),
-        "you": pixijs.Texture.from(words_you),
-        "you_anim": pixijs.Texture.from(words_you_anim)
+        "all": makeTextureFromBase64(words_all),
+        "and": makeTextureFromBase64(words_and),
+        "baba": makeTextureFromBase64(words_baba),
+        "baba_anim": makeTextureFromBase64(words_baba_anim),
+        "belt": makeTextureFromBase64(words_belt),
+        "defeat": makeTextureFromBase64(words_defeat),
+        "door": makeTextureFromBase64(words_door),
+        "flag": makeTextureFromBase64(words_flag),
+        "flag_anim": makeTextureFromBase64(words_flag_anim),
+        "float": makeTextureFromBase64(words_float),
+        "hot": makeTextureFromBase64(words_hot),
+        "is": makeTextureFromBase64(words_is),
+        "is_anim": makeTextureFromBase64(words_is_anim),
+        "key": makeTextureFromBase64(words_key),
+        "lava": makeTextureFromBase64(words_lava),
+        "leaf": makeTextureFromBase64(words_leaf),
+        "melt": makeTextureFromBase64(words_melt),
+        "move": makeTextureFromBase64(words_move),
+        "not": makeTextureFromBase64(words_not),
+        "open": makeTextureFromBase64(words_open),
+        "pull": makeTextureFromBase64(words_pull),
+        "push": makeTextureFromBase64(words_push),
+        "rock": makeTextureFromBase64(words_rock),
+        "rock2": makeTextureFromBase64(words_rock2),
+        "rock3": makeTextureFromBase64(words_rock3),
+        "rock_anim": makeTextureFromBase64(words_rock_anim),
+        "shift": makeTextureFromBase64(words_shift),
+        "shut": makeTextureFromBase64(words_shut),
+        "sink": makeTextureFromBase64(words_sink),
+        "skull": makeTextureFromBase64(words_skull),
+        "stop": makeTextureFromBase64(words_stop),
+        "stop_anim": makeTextureFromBase64(words_stop_anim),
+        "text": makeTextureFromBase64(words_text),
+        "wall": makeTextureFromBase64(words_wall),
+        "wall_anim": makeTextureFromBase64(words_wall_anim),
+        "water": makeTextureFromBase64(words_water),
+        "win": makeTextureFromBase64(words_win),
+        "win_anim": makeTextureFromBase64(words_win_anim),
+        "you": makeTextureFromBase64(words_you),
+        "you_anim": makeTextureFromBase64(words_you_anim)
     }
+}
+export async function loadTextures() {
+    const loader = new pixijs.Loader();
+    for (const data of allData) {
+        loader.add(data);
+    }
+    return new Promise(res => {
+        loader.load(res);
+    });
 }

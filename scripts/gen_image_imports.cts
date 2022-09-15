@@ -34,10 +34,30 @@ const imagesTree = walkDirectory(
         const importName = `${keys.join("_")}_${simpleFileName}`;
         const importStatement = `import ${importName} from "../images/${keys.join("/")}${keys.length > 0 ? "/" : ""}${file}"`;
         imports.push(importStatement);
-        return [simpleFileName, `$$pixijs.Texture.from(${importName})$$`];
+        return [simpleFileName, `$$makeTextureFromBase64(${importName})$$`];
     }
 );
 
 let fileContent = imports.join("\n") + "\n\n";
+fileContent += `
+const allData: string[] = [];
+function makeTextureFromBase64(data: string) {
+    const texture = pixijs.Texture.from(data);
+    allData.push(data);
+    return texture;
+}
+
+`;
 fileContent += `export const textures = ` + JSON.stringify(imagesTree, null, 4).replace(/\"\$\$/g, "").replace(/\$\$\"/g, "");
+fileContent += `
+export async function loadTextures() {
+    const loader = new pixijs.Loader();
+    for (const data of allData) {
+        loader.add(data);
+    }
+    return new Promise(res => {
+        loader.load(res);
+    });
+}
+`
 fs.writeFileSync(path.join(__dirname, "../src/objects/textures.ts"), fileContent);

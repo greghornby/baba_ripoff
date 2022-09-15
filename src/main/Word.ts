@@ -43,6 +43,11 @@ export class Word extends Construct {
             behavior: this.behavior
         };
     }
+
+    async parseSpriteSheet() {
+        this.data.animatedTexture = true;
+        super.parseSpriteSheet();
+    }
 }
 
 export interface WordBehavior {
