@@ -9,7 +9,7 @@ import { LevelController } from "./LevelController.js";
 
 export class EntityPixi {
 
-    static frameUpdateDelta = 1000 * 7/60;
+    static frameUpdateDelta = 1000 * 12/60;
 
     public entityId: number;
     public controller: LevelController;
