@@ -93,7 +93,7 @@ function tryCreateSpriteAtTile(tile: Cell<Entity>, timeElapsed: number): pixi.An
     if (fetchNextSpawnTime && timeElapsed < fetchNextSpawnTime) {
         return;
     }
-    const nextTime = (fetchNextSpawnTime ?? timeElapsed) + (Math.random() * 600 + 400); //in the next 0.5 to 1.5 seconds
+    const nextTime = timeElapsed + (Math.random() * 600 + 400); //in the next 0.5 to 1.5 seconds
     TileSpriteNextSpawnTime.set(tile, nextTime);
     //hasn't been set before now, so set it and return
     if (!fetchNextSpawnTime) {

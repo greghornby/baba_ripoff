@@ -1,5 +1,7 @@
 import * as pixijs from "pixi.js";
 import animations_WinParticle from "../images/animations/WinParticle.png";
+import background_move_hint_desktop from "../images/background/move_hint_desktop.png";
+import background_move_hint_mobile from "../images/background/move_hint_mobile.png";
 import background_wait_hint from "../images/background/wait_hint.png";
 import background_wait_hint_mobile from "../images/background/wait_hint_mobile.png";
 import _missing from "../images/missing.png";
@@ -84,6 +86,8 @@ export const textures = {
         "WinParticle": makeTextureFromBase64(animations_WinParticle)
     },
     "background": {
+        "move_hint_desktop": makeTextureFromBase64(background_move_hint_desktop),
+        "move_hint_mobile": makeTextureFromBase64(background_move_hint_mobile),
         "wait_hint": makeTextureFromBase64(background_wait_hint),
         "wait_hint_mobile": makeTextureFromBase64(background_wait_hint_mobile)
     },
