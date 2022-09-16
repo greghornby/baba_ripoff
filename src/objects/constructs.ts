@@ -37,7 +37,7 @@ export const constructs = {
     }),
 
     rock: new Construct({
-        texture: textures.objects.rock,
+        texture: textures.objects.rock_anim,
         associatedWord: () => Word.findWordFromText("rock"),
         category: categories.interactable,
         color: colors.lightBrown

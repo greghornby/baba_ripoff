@@ -57,7 +57,7 @@ export default {
 	}),
 
 	move: new Word("move", {
-		texture: textures.words.move,
+		texture: textures.words.move_anim,
 		color: colors.white,
 		behavior: {
             tag: true
@@ -106,7 +106,7 @@ export default {
 	}),
 
     sink: new Word("sink", {
-		texture: textures.words.sink,
+		texture: textures.words.sink_anim,
 		color: colors.water,
 		behavior: {
             tag: true

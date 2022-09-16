@@ -14,6 +14,7 @@ import objects_key from "../images/objects/key.png";
 import objects_lava from "../images/objects/lava.png";
 import objects_leaf from "../images/objects/leaf.png";
 import objects_rock from "../images/objects/rock.png";
+import objects_rock_anim from "../images/objects/rock_anim.png";
 import objects_skull from "../images/objects/skull.png";
 import objects_skull_anim from "../images/objects/skull_anim.png";
 import objects_wall_anim from "../images/objects/wall_anim.png";
@@ -38,6 +39,7 @@ import words_lava from "../images/words/lava.png";
 import words_leaf from "../images/words/leaf.png";
 import words_melt from "../images/words/melt.png";
 import words_move from "../images/words/move.png";
+import words_move_anim from "../images/words/move_anim.png";
 import words_not from "../images/words/not.png";
 import words_not_anim from "../images/words/not_anim.png";
 import words_open from "../images/words/open.png";
@@ -52,6 +54,7 @@ import words_rock_anim from "../images/words/rock_anim.png";
 import words_shift from "../images/words/shift.png";
 import words_shut from "../images/words/shut.png";
 import words_sink from "../images/words/sink.png";
+import words_sink_anim from "../images/words/sink_anim.png";
 import words_skull from "../images/words/skull.png";
 import words_skull_anim from "../images/words/skull_anim.png";
 import words_stop from "../images/words/stop.png";
@@ -61,6 +64,7 @@ import words_text_anim from "../images/words/text_anim.png";
 import words_wall from "../images/words/wall.png";
 import words_wall_anim from "../images/words/wall_anim.png";
 import words_water from "../images/words/water.png";
+import words_water_anim from "../images/words/water_anim.png";
 import words_win from "../images/words/win.png";
 import words_win_anim from "../images/words/win_anim.png";
 import words_you from "../images/words/you.png";
@@ -95,6 +99,7 @@ export const textures = {
         "lava": makeTextureFromBase64(objects_lava),
         "leaf": makeTextureFromBase64(objects_leaf),
         "rock": makeTextureFromBase64(objects_rock),
+        "rock_anim": makeTextureFromBase64(objects_rock_anim),
         "skull": makeTextureFromBase64(objects_skull),
         "skull_anim": makeTextureFromBase64(objects_skull_anim),
         "wall_anim": makeTextureFromBase64(objects_wall_anim),
@@ -121,6 +126,7 @@ export const textures = {
         "leaf": makeTextureFromBase64(words_leaf),
         "melt": makeTextureFromBase64(words_melt),
         "move": makeTextureFromBase64(words_move),
+        "move_anim": makeTextureFromBase64(words_move_anim),
         "not": makeTextureFromBase64(words_not),
         "not_anim": makeTextureFromBase64(words_not_anim),
         "open": makeTextureFromBase64(words_open),
@@ -135,6 +141,7 @@ export const textures = {
         "shift": makeTextureFromBase64(words_shift),
         "shut": makeTextureFromBase64(words_shut),
         "sink": makeTextureFromBase64(words_sink),
+        "sink_anim": makeTextureFromBase64(words_sink_anim),
         "skull": makeTextureFromBase64(words_skull),
         "skull_anim": makeTextureFromBase64(words_skull_anim),
         "stop": makeTextureFromBase64(words_stop),
@@ -144,6 +151,7 @@ export const textures = {
         "wall": makeTextureFromBase64(words_wall),
         "wall_anim": makeTextureFromBase64(words_wall_anim),
         "water": makeTextureFromBase64(words_water),
+        "water_anim": makeTextureFromBase64(words_water_anim),
         "win": makeTextureFromBase64(words_win),
         "win_anim": makeTextureFromBase64(words_win_anim),
         "you": makeTextureFromBase64(words_you),

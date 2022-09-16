@@ -90,7 +90,7 @@ export default {
 	}),
 
 	water: new Word("water", {
-		texture: textures.words.water,
+		texture: textures.words.water_anim,
 		color: colors.water,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.water))
