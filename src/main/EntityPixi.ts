@@ -11,7 +11,9 @@ import { Word } from "./Word.js";
 
 const ERASE_METHODS_ON_DESTROYED: string[] = [];
 (globalThis as any).ERASE_METHODS_ON_DESTROYED = ERASE_METHODS_ON_DESTROYED;
-const emptyFn = function(...args: any): any {}
+const emptyFn = function(this: EntityPixi, ...args: any): any {
+    console.warn("Skipping function because EntityPixi is destroyed", this);
+}
 export class EntityPixi {
 
     static frameUpdateDelta = 1000 * 12/60;

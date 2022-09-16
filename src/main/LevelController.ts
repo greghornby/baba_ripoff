@@ -4,7 +4,6 @@ import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { categories } from "../objects/categories.js";
 import { words } from "../objects/words.js";
-import { WinPassiveAnimation } from "../passive_animations/win_anim.js";
 import { Direction } from "../types/Direction.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
 import { getInteractionFromSwipe } from "../util/controller/getInteractionFromSwipe.js";
@@ -15,7 +14,6 @@ import { EmptyArray } from "../util/data/EmptyArray.js";
 import { EmptySet } from "../util/data/EmptySet.js";
 import { generatePairsFromArray } from "../util/data/generatePairsFromArray.js";
 import { getPaths } from "../util/data/getPaths.js";
-import { iterableFind } from "../util/data/iterableFind.js";
 import { MapOfSets } from "../util/data/MapOfSets.js";
 import { setAddMultiple } from "../util/data/setAddMultiple.js";
 import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
@@ -26,12 +24,11 @@ import { tempWinScreen } from "../util/temp/tempWinScreen.js";
 import { ActionProcessor } from "./ActionProcessor.js";
 import { AnimationSystem } from "./AnimationSystem.js";
 import { Category } from "./Category.js";
-import { Constants } from "./Constants.js";
 import { Construct } from "./Construct.js";
+import { winParticlesAnimation } from "./coroutines/winParticlesAnimation.js";
 import { Entity, EntityInitData } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
 import { Cell, Level, LevelGrid, LevelRow } from "./Level.js";
-import { PassiveAnimation } from "./PassiveAnimation.js";
 import { Rule } from "./Rule.js";
 import { Sentence } from "./Sentence.js";
 import { Word } from "./Word.js";
@@ -61,7 +58,10 @@ export class LevelController {
         new LevelController(level);
     }
 
-    lastTickTime: number | undefined;
+    timeLastTick: number | undefined;
+    timeStarted: number = performance.now();
+    timeElapsed: number = 0;
+    ticksElapsed: number = 0;
 
     levelWon: boolean = false;
 
@@ -69,14 +69,6 @@ export class LevelController {
     public actionProcessor: ActionProcessor;
     public animationSytem: AnimationSystem;
     public turnNumber: number = 0;
-
-    public passiveAnimations: {
-        _list: PassiveAnimation[];
-        win: PassiveAnimation<{x: number; y: number}>[];
-    } = {
-        _list: [],
-        win: []
-    };
 
     public ticker: pixi.Ticker;
     public container: pixi.Container;
@@ -135,6 +127,8 @@ export class LevelController {
         rebuildSentences?: boolean;
         _debugAlertedYouAreDead?: boolean;
     } = {};
+
+    public coroutines: Set<Iterator<any, any, any>> = new Set();
 
     //#endregion Props
 
@@ -225,7 +219,8 @@ export class LevelController {
         this.animationSytem = new AnimationSystem(this);
 
         this.parseRules();
-        this.checkWinAnimation();
+
+        this.coroutines.add(winParticlesAnimation(this));
 
         this.ticker.add(() => this.tick());
         this.ticker.start();
@@ -661,51 +656,6 @@ export class LevelController {
         }
     }
 
-    public checkWinAnimation() {
-        const winEntities = this.tagToEntities.get(wordWin);
-        const toRemove: PassiveAnimation[] = [];
-        const toAdd: PassiveAnimation[] = [];
-        for (const anim of this.passiveAnimations.win) {
-            if (!winEntities) {
-                toRemove.push(anim);
-                continue;
-            }
-            const tileStillWin = iterableFind(winEntities, e => e.x === anim.meta.x && e.y === anim.meta.y);
-            if (!tileStillWin) {
-                toRemove.push(anim);
-            } else {
-            }
-        }
-        if (winEntities) {
-            for (const entity of winEntities) {
-                //animations
-                const existingAnimation = this.passiveAnimations.win
-                    .find(anim => anim.meta.x === entity.x && anim.meta.y === entity.y);
-                if (existingAnimation) {
-                    continue;
-                }
-                type WinAnimation = LevelController["passiveAnimations"]["win"][number];
-                const newAnimation: WinAnimation  = new WinPassiveAnimation(this, {
-                    x: entity.x * Constants.TILE_SIZE,
-                    y: entity.y * Constants.TILE_SIZE,
-                }, {x: entity.x, y: entity.y});
-                toAdd.push(newAnimation);
-            }
-        }
-
-        if (toRemove.length) {
-            for (const anim of toRemove) {
-                anim.destroy();
-            }
-            arrayRemove(this.passiveAnimations._list, ...toRemove);
-            arrayRemove(this.passiveAnimations.win, ...toRemove);
-        }
-        if (toAdd.length) {
-            this.passiveAnimations._list.push(...toAdd);
-            this.passiveAnimations.win.push(...toAdd);
-        }
-    }
-
 
     //#endregion RULES
 
@@ -753,26 +703,25 @@ export class LevelController {
 
     tick(): void {
 
+        this.ticksElapsed++;
         const now = performance.now();
-        const deltaTime = this.lastTickTime ? now - this.lastTickTime : 0;
+        this.timeElapsed = now - this.timeStarted;
+        const deltaTime = this.timeLastTick ? now - this.timeLastTick : 0;
+        this.timeLastTick = now;
         // console.log("Delta Time", deltaTime);
         // if (deltaTime >= 20) {
         //     console.log("Delta time high", deltaTime);
         // }
-        this.lastTickTime = now;
 
-        //do passive animation loop
-        let animsToRemove: PassiveAnimation[] | undefined;
-        for (const anim of this.passiveAnimations._list) {
-            if (anim._destroyed) {
-                (animsToRemove = animsToRemove ?? []).push(anim);
-            } else {
-                anim.play(deltaTime);
+        //do coroutines
+        for (const coroutine of this.coroutines) {
+            const result = coroutine.next();
+            if (result.done) {
+                this.coroutines.delete(coroutine);
             }
         }
-        if (animsToRemove) {
-            arrayRemove(this.passiveAnimations._list, ...animsToRemove);
-        }
+
+
 
         // do entity loop
         for (const entity of this.entityMap.values()) {
@@ -841,9 +790,6 @@ export class LevelController {
         if (!_isDead) {
             const _isWin = this.checkYouWin();
         }
-
-        //check for animations to add/remove
-        this.checkWinAnimation();
 
         const actions = this.actionProcessor.getTopOfStack();
 
