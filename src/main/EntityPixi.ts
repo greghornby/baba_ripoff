@@ -14,7 +14,7 @@ const emptyFn = function(this: EntityPixi, ...args: any): any {
 }
 export class EntityPixi {
 
-    static frameUpdateDelta = 1000 / 7;
+    static frameUpdateDelta = 1000 / 6;
 
     public entityId: number;
     public controller: LevelController;

@@ -5,21 +5,17 @@ import background_wait_hint_mobile from "../images/background/wait_hint_mobile.p
 import _missing from "../images/missing.png";
 import objects_baba from "../images/objects/baba.png";
 import objects_baba_anim from "../images/objects/baba_anim.png";
-import objects_baba_sprites from "../images/objects/baba_sprites.png";
 import objects_belt from "../images/objects/belt.png";
 import objects_brick from "../images/objects/brick.png";
 import objects_door from "../images/objects/door.png";
 import objects_flag from "../images/objects/flag.png";
+import objects_flag_anim from "../images/objects/flag_anim.png";
 import objects_key from "../images/objects/key.png";
 import objects_lava from "../images/objects/lava.png";
 import objects_leaf from "../images/objects/leaf.png";
 import objects_rock from "../images/objects/rock.png";
 import objects_skull from "../images/objects/skull.png";
-import objects_stone from "../images/objects/stone.png";
-import objects_wall from "../images/objects/wall.png";
-import objects_wall2 from "../images/objects/wall2.png";
-import objects_water from "../images/objects/water.png";
-import objects_water2 from "../images/objects/water2.png";
+import objects_skull_anim from "../images/objects/skull_anim.png";
 import objects_water_animated from "../images/objects/water_animated.png";
 import words_all from "../images/words/all.png";
 import words_and from "../images/words/and.png";
@@ -82,21 +78,17 @@ export const textures = {
     "objects": {
         "baba": makeTextureFromBase64(objects_baba),
         "baba_anim": makeTextureFromBase64(objects_baba_anim),
-        "baba_sprites": makeTextureFromBase64(objects_baba_sprites),
         "belt": makeTextureFromBase64(objects_belt),
         "brick": makeTextureFromBase64(objects_brick),
         "door": makeTextureFromBase64(objects_door),
         "flag": makeTextureFromBase64(objects_flag),
+        "flag_anim": makeTextureFromBase64(objects_flag_anim),
         "key": makeTextureFromBase64(objects_key),
         "lava": makeTextureFromBase64(objects_lava),
         "leaf": makeTextureFromBase64(objects_leaf),
         "rock": makeTextureFromBase64(objects_rock),
         "skull": makeTextureFromBase64(objects_skull),
-        "stone": makeTextureFromBase64(objects_stone),
-        "wall": makeTextureFromBase64(objects_wall),
-        "wall2": makeTextureFromBase64(objects_wall2),
-        "water": makeTextureFromBase64(objects_water),
-        "water2": makeTextureFromBase64(objects_water2),
+        "skull_anim": makeTextureFromBase64(objects_skull_anim),
         "water_animated": makeTextureFromBase64(objects_water_animated)
     },
     "words": {

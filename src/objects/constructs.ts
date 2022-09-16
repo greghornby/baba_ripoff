@@ -44,7 +44,7 @@ export const constructs = {
     }),
 
     flag: new Construct({
-        texture: textures.objects.flag,
+        texture: textures.objects.flag_anim,
         associatedWord: () => Word.findWordFromText("flag"),
         category: categories.interactable,
         color: colors.gold
@@ -58,7 +58,7 @@ export const constructs = {
     }),
 
     skull: new Construct({
-        texture: textures.objects.skull,
+        texture: textures.objects.skull_anim,
         associatedWord: () => Word.findWordFromText("skull"),
         category: categories.character, //@todo create danger category
         color: 0xa61b03
