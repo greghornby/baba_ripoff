@@ -9,8 +9,7 @@ const texturePlaceholder = textures.missing;
 export const constructs = {
 
     baba: new Construct({
-        texture: textures.objects.baba_sprites,
-        textureHasDirections: true,
+        texture: textures.objects.baba_anim,
         associatedWord: () => Word.findWordFromText("baba"),
         category: categories.character,
         color: colors.white
@@ -32,7 +31,6 @@ export const constructs = {
 
     key: new Construct({
         texture: textures.objects.key,
-        textureHasDirections: true,
         associatedWord: () => Word.findWordFromText("key"),
         category: categories.interactable,
         color: colors.gold
@@ -61,7 +59,6 @@ export const constructs = {
 
     skull: new Construct({
         texture: textures.objects.skull,
-        textureHasDirections: true,
         associatedWord: () => Word.findWordFromText("skull"),
         category: categories.character, //@todo create danger category
         color: 0xa61b03
@@ -69,7 +66,6 @@ export const constructs = {
 
     belt: new Construct({
         texture: textures.objects.belt,
-        textureHasDirections: true,
         associatedWord: () => Word.findWordFromText("belt"),
         category: categories.floor,
         color: 0x999999
@@ -84,7 +80,6 @@ export const constructs = {
 
     water: new Construct({
         texture: textures.objects.water_animated,
-        animatedTexture: true,
         associatedWord: () => Word.findWordFromText("water"),
         category: categories.floor,
         color: colors.water

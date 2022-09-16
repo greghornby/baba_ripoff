@@ -1,8 +1,6 @@
 import * as pixi from "pixi.js";
-import { AnimatedSprite } from "pixi.js";
 import { App } from "../app/App.js";
 import { debugFlags } from "../debug/debugFlags.js";
-import { Direction } from "../types/Direction.js";
 import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
 import { Constants } from "./Constants.js";
 import { Entity } from "./Entity.js";
@@ -16,7 +14,7 @@ const emptyFn = function(this: EntityPixi, ...args: any): any {
 }
 export class EntityPixi {
 
-    static frameUpdateDelta = 1000 * 12/60;
+    static frameUpdateDelta = 1000 / 7;
 
     public entityId: number;
     public controller: LevelController;
@@ -29,6 +27,7 @@ export class EntityPixi {
     public debugContainer: pixi.Container;
 
     public animationDelta: number = 0;
+    public currentFrame: number = 0;
 
     public tint: number = 0xffffff;
     public tintDarkened: number = 0xffffff;
@@ -46,11 +45,7 @@ export class EntityPixi {
         this.container = new pixi.Container();
         this.container.transform.pivot.set(this.controller.level.TILE_SIZE/2, this.controller.level.TILE_SIZE/2);
 
-        if (entity.construct.spriteSheet) {
-            this.sprite = new pixi.AnimatedSprite(entity.construct.spriteSheet.animations.jiggle, false);
-        } else {
-            this.sprite = new pixi.Sprite(entity.construct.texture);
-        }
+        this.sprite = new pixi.Sprite();
 
         {
             this.cancelledSprite = new pixi.Graphics();
@@ -69,7 +64,7 @@ export class EntityPixi {
 
         this.container.addChild(this.sprite, this.cancelledSprite, this.debugContainer);
         this.setColor(entity.color ?? entity.construct.defaultColor);
-        this.setFacing(entity.facing);
+        this.setFacing();
         this.setPosition(entity.x, entity.y);
         this.cacheEnabled = true;
         this.cache();
@@ -98,18 +93,28 @@ export class EntityPixi {
 
 
     @skipOnDestroyed()
+    public incrementFrame() {
+        this.currentFrame++;
+        if (this.currentFrame === this.entity.construct.totalFrames) {
+            this.currentFrame = 0;
+        }
+    }
+
+
+    @skipOnDestroyed()
+    public updateSprite() {
+        this.sprite.texture = this.entity.construct.textures[this.entity.facing][this.currentFrame];
+    }
+
+
+    @skipOnDestroyed()
     public play(deltaTime: number): void {
-        if (this.sprite instanceof AnimatedSprite) {
-            this.animationDelta += deltaTime;
-            if (this.animationDelta > EntityPixi.frameUpdateDelta) {
-                this.animationDelta = this.animationDelta % EntityPixi.frameUpdateDelta;
-                let frame = this.sprite.currentFrame + 1;
-                if (frame >= this.sprite.totalFrames) {
-                    frame = 0;
-                }
-                this.sprite.gotoAndStop(frame);
-                this.cache();
-            }
+        this.animationDelta += deltaTime;
+        if (this.animationDelta > EntityPixi.frameUpdateDelta) {
+            this.animationDelta = this.animationDelta % EntityPixi.frameUpdateDelta;
+            this.incrementFrame();
+            this.updateSprite();
+            this.cache();
         }
     }
 
@@ -161,11 +166,8 @@ export class EntityPixi {
 
 
     @skipOnDestroyed()
-    public setFacing(facing: Direction): void {
-        if (this.entity.construct.facingTextures) {
-            const texture = this.entity.construct.facingTextures[facing];
-            this.sprite.texture = texture;
-        }
+    public setFacing(): void {
+        this.updateSprite();
         this.cache();
     }
 

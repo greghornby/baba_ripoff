@@ -53,7 +53,7 @@ export class Entity {
 
     public setFacing(facing: Direction) {
         this.facing = facing;
-        this.entityPixi.setFacing(this.facing);
+        this.entityPixi.setFacing();
         this._debug.redrawFacing = true;
     }
 

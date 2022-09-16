@@ -9,8 +9,11 @@ export class Construct {
     static nextId: number = 0;
     public id: number;
     public texture: pixi.Texture;
-    public facingTextures?: Record<Direction, pixi.Texture>;
-    public spriteSheet?: pixi.Spritesheet;
+    public textures: Record<Direction, pixi.Texture[]> = {
+        up: [], down: [], left: [], right: []
+    };
+    public totalFrames: number = 0;
+
     public associatedWord: () => Word;
     public category: Category;
     public defaultColor: number;
@@ -24,58 +27,40 @@ export class Construct {
         this.category = data.category;
         this.defaultColor = data.color;
 
-        if (data.textureHasDirections) {
-            this.facingTextures = {
-                right: new pixi.Texture(
-                    data.texture.baseTexture,
-                    new pixi.Rectangle(0, 0, 50, 50)
-                ),
-                left: new pixi.Texture(
-                    data.texture.baseTexture,
-                    new pixi.Rectangle(0, 0, 50, 50),
-                    undefined,
-                    undefined,
-                    pixi.groupD8.MIRROR_HORIZONTAL
-                ),
-                down: new pixi.Texture(
-                    data.texture.baseTexture,
-                    new pixi.Rectangle(50, 0, 50, 50)
-                ),
-                up: new pixi.Texture(
-                    data.texture.baseTexture,
-                    new pixi.Rectangle(100, 0, 50, 50)
-                )
-            }
-        }
+        this.parseTexture();
     }
 
-    async parseSpriteSheet() {
-        if (!this.data.animatedTexture) {
-            return;
-        }
-        const sheetData: pixi.ISpritesheetData = {
-            frames: {},
-            animations: {jiggle: []},
-            meta: {
-                scale: "1"
-            }
-        };
-        const count = this.texture.baseTexture.width / Constants.TILE_SIZE;
-        for (let i = 0; i < count; i++) {
-            const _i = `construct:${this.id}:${i}`;
-            sheetData.frames[_i] = {
-                frame: {
-                    x: i * Constants.TILE_SIZE,
-                    y: 0,
-                    w: Constants.TILE_SIZE,
-                    h: Constants.TILE_SIZE
+
+    parseTexture() {
+        const tileSize = Constants.TILE_SIZE;
+        const animFramesTotal = Constants.ANIMATED_SPRITE_TOTAL_FRAMES;
+        const directionFramesTotal = Constants.DIRECTIONAL_SPRITE_TOTAL_FRAMES;
+        const textureIsAnimated = this.texture.width === tileSize * animFramesTotal;
+        const textureHasFacing = this.texture.height === tileSize * directionFramesTotal;
+
+        this.totalFrames = textureIsAnimated ? Constants.ANIMATED_SPRITE_TOTAL_FRAMES : 1;
+
+        for (let y = 0; y < (textureHasFacing ? directionFramesTotal : 1); y++) {
+            for (let x = 0; x < (textureIsAnimated ? animFramesTotal : 1); x++) {
+                const rect = new pixi.Rectangle(x * tileSize, y * tileSize, tileSize, tileSize);
+                const texture = new pixi.Texture(this.texture.baseTexture, rect);
+                if (!textureHasFacing) {
+                    for (const direction in this.textures) {
+                        this.textures[direction as Direction].push(texture);
+                    }
+                    continue;
                 }
-            };
-            sheetData.animations!.jiggle.push(_i);
+                if (y === Constants.DIRECTION_FRAMES.right) {
+                    this.textures.right.push(texture);
+                    const leftTexture = new pixi.Texture(this.texture.baseTexture, rect, undefined, undefined, pixi.groupD8.MIRROR_HORIZONTAL);
+                    this.textures.left.push(leftTexture);
+                } else if (y === Constants.DIRECTION_FRAMES.down) {
+                    this.textures.down.push(texture);
+                } else if (y === Constants.DIRECTION_FRAMES.up) {
+                    this.textures.up.push(texture);
+                }
+            }
         }
-        const sheet = new pixi.Spritesheet(this.texture, sheetData);
-        await sheet.parse();
-        this.spriteSheet = sheet;
     }
 
     toJSON() {
@@ -85,8 +70,6 @@ export class Construct {
 
 export interface ConstructData {
     texture: pixi.Texture;
-    textureHasDirections?: boolean;
-    animatedTexture?: boolean;
     category: Category;
     color: number;
     associatedWord: () => Word;

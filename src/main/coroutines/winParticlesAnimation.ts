@@ -6,7 +6,7 @@ import { mapTextureToSheet } from "../../util/pixi/mapTextureToSheet.js";
 import { Constants } from "../Constants.js";
 import type { Entity } from "../Entity.js";
 import type { Cell } from "../Level.js";
-import { LevelController } from "../LevelController.js";
+import type { LevelController } from "../LevelController.js";
 
 
 const frameRate = 5;

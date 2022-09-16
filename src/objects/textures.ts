@@ -4,6 +4,7 @@ import background_wait_hint from "../images/background/wait_hint.png";
 import background_wait_hint_mobile from "../images/background/wait_hint_mobile.png";
 import _missing from "../images/missing.png";
 import objects_baba from "../images/objects/baba.png";
+import objects_baba_anim from "../images/objects/baba_anim.png";
 import objects_baba_sprites from "../images/objects/baba_sprites.png";
 import objects_belt from "../images/objects/belt.png";
 import objects_brick from "../images/objects/brick.png";
@@ -80,6 +81,7 @@ export const textures = {
     "missing": makeTextureFromBase64(_missing),
     "objects": {
         "baba": makeTextureFromBase64(objects_baba),
+        "baba_anim": makeTextureFromBase64(objects_baba_anim),
         "baba_sprites": makeTextureFromBase64(objects_baba_sprites),
         "belt": makeTextureFromBase64(objects_belt),
         "brick": makeTextureFromBase64(objects_brick),

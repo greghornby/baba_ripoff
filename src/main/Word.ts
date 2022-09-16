@@ -1,6 +1,5 @@
 import { categories } from "../objects/categories.js";
 import { colors } from "../objects/colors.js";
-import { Constants } from "./Constants.js";
 import { Construct, ConstructData } from "./Construct.js";
 import { Entity } from "./Entity.js";
 
@@ -42,11 +41,6 @@ export class Word extends Construct {
             word: this._string,
             behavior: this.behavior
         };
-    }
-
-    async parseSpriteSheet() {
-        this.data.animatedTexture = true;
-        super.parseSpriteSheet();
     }
 }
 

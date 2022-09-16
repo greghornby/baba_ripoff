@@ -1,18 +1,13 @@
+import * as pixi from "pixi.js";
+import { Constants } from "../../main/Constants.js";
 import { constructs } from "../../objects/constructs.js";
 import { textures } from "../../objects/textures.js";
 import { words } from "../../objects/words.js";
-import * as pixi from "pixi.js";
-import { Constants } from "../../main/Constants.js";
 import { mapTextureToSheet } from "../pixi/mapTextureToSheet.js";
 
 export async function initFiles () {
     await setTimeout(res => res, 0);
-    for (const c of Object.values(constructs)) {
-        await c.parseSpriteSheet();
-    }
-    for (const c of Object.values(words)) {
-        await c.parseSpriteSheet();
-    }
+    console.log("Loaded", Object.keys(words).length, "words and", Object.keys(constructs), "constructs");
     for (const t of Object.values(textures.animations)) {
         const data: pixi.ISpritesheetData = {
             frames: {},
