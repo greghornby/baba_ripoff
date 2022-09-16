@@ -66,7 +66,7 @@ export default {
 	}),
 
 	skull: new Word("skull", {
-		texture: textures.words.skull,
+		texture: textures.words.skull_anim,
 		color: 0xa61b03,
 		behavior: {
 			noun: behaviorNoun(new NounSelector.single(constructs.skull))

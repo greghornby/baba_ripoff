@@ -24,7 +24,7 @@ export default {
 	}),
 
     defeat: new Word("defeat", {
-		texture: textures.words.defeat,
+		texture: textures.words.defeat_anim,
 		color: 0x610303,
 		behavior: {
             tag: true
@@ -41,7 +41,7 @@ export default {
 	}),
 
     push: new Word("push", {
-		texture: textures.words.push,
+		texture: textures.words.push_anim,
 		color: 0x1850ab,
 		behavior: {
             tag: true
@@ -49,7 +49,7 @@ export default {
 	}),
 
 	pull: new Word("pull", {
-		texture: textures.words.pull,
+		texture: textures.words.pull_anim,
 		color: 0xa1e600,
 		behavior: {
             tag: true

@@ -16,7 +16,7 @@ export const constructs = {
     }),
 
     wall: new Construct({
-        texture: textures.objects.brick,
+        texture: textures.objects.wall_anim,
         associatedWord: () => Word.findWordFromText("wall"),
         category: categories.wall,
         color: 0x1c3773
