@@ -30,7 +30,7 @@ export const constructs = {
     }),
 
     key: new Construct({
-        texture: textures.objects.key,
+        texture: textures.objects.key_anim,
         associatedWord: () => Word.findWordFromText("key"),
         category: categories.interactable,
         color: colors.gold

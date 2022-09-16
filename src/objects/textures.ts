@@ -11,6 +11,7 @@ import objects_door from "../images/objects/door.png";
 import objects_flag from "../images/objects/flag.png";
 import objects_flag_anim from "../images/objects/flag_anim.png";
 import objects_key from "../images/objects/key.png";
+import objects_key_anim from "../images/objects/key_anim.png";
 import objects_lava from "../images/objects/lava.png";
 import objects_leaf from "../images/objects/leaf.png";
 import objects_rock from "../images/objects/rock.png";
@@ -96,6 +97,7 @@ export const textures = {
         "flag": makeTextureFromBase64(objects_flag),
         "flag_anim": makeTextureFromBase64(objects_flag_anim),
         "key": makeTextureFromBase64(objects_key),
+        "key_anim": makeTextureFromBase64(objects_key_anim),
         "lava": makeTextureFromBase64(objects_lava),
         "leaf": makeTextureFromBase64(objects_leaf),
         "rock": makeTextureFromBase64(objects_rock),
