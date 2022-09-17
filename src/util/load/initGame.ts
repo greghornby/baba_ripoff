@@ -17,8 +17,8 @@ export async function initGame() {
     app.pixiApp.view.focus();
     loadLevel();
     if (isMobile()) {
-        alert("Swipe to Move. Tap to Wait. Double Tap to Undo");
+        alert("Swipe to Move. Tap to Wait. Double Tap to Undo. Long Press to Pause.");
     } else {
-        alert("WASD/Arrows to Move. Spacebar to Wait. Z to Undo");
+        alert("WASD/Arrows to Move. Spacebar to Wait. Z to Undo. P to Pause.");
     }
 }
