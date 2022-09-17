@@ -2,6 +2,7 @@ import * as pixi from "pixi.js";
 import { _LEVELS } from "../../levels/_LEVELS.js";
 import { LevelController } from "../../main/LevelController.js";
 import { queryParams } from "../data/queryParams.js";
+import { interactionsToString } from "../replay/interactionsToString.js";
 
 let levelIndex = queryParams.level  && !isNaN(parseInt(queryParams.level)) ? parseInt(queryParams.level) : 0;
 
@@ -32,6 +33,11 @@ export const tempWinScreen = async (controller: LevelController) => {
 
     for await (const alpha of fadeIn(winGraphic)) {}
     await wait();
+    if (controller.level.initData.debugPromptCopyInteractions) {
+        const text = interactionsToString(controller.actionProcessor.interactions);
+        await navigator.clipboard.writeText(text);
+        alert("Solution copied to clipboard. Please DM me");
+    }
     controller.exit();
     loadLevel();
 };

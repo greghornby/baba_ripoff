@@ -35,6 +35,7 @@ const key = {
 }
 
 export const levelGreg2 = () => new Level({
+    debugPromptCopyInteractions: true,
     width: 19,
     height: 15,
     startingEntities: makeLevelGridFromString(levelText, key, [

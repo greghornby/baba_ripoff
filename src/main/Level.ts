@@ -1,7 +1,7 @@
-import type { Construct } from "./Construct.js";
-import type { Entity } from "./Entity.js";
 import * as pixi from "pixi.js";
 import { Constants } from "./Constants.js";
+import type { Construct } from "./Construct.js";
+import type { Entity } from "./Entity.js";
 
 export class Level {
 
@@ -33,6 +33,7 @@ export interface InitLevelData {
         grid: LevelGrid<Construct>;
         entitySetters: {x: number; y: number, fn: (entity: Entity) => void}[];
     };
+    debugPromptCopyInteractions?: boolean;
 }
 
 export type Cell<T> = T[];

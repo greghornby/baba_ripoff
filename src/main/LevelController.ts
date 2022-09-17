@@ -835,6 +835,9 @@ export class LevelController {
         // Process the interaction and unset it
         const interaction = this.currentInteraction;
         this.currentInteraction = undefined;
+        if (interaction.interaction.type === "wait" || interaction.interaction.type === "move") {
+            this.actionProcessor.interactions.push(interaction);
+        }
         if (interaction.interaction.type === "undo") {
             const actions = this.actionProcessor.doUndo();
             this.parseRules();

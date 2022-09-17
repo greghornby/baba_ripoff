@@ -5,6 +5,7 @@ import { LevelController } from "../main/LevelController.js"
 import { Rule } from "../main/Rule.js"
 import { Sentence } from "../main/Sentence.js"
 import { Word } from "../main/Word.js"
+import { replayInteractions } from "../util/replay/replayInteractions.js"
 
 export const exposeGlobals = () => {
     Object.assign(globalThis as any, {
@@ -14,6 +15,7 @@ export const exposeGlobals = () => {
         LevelController,
         Rule,
         Sentence,
-        Word
+        Word,
+        replayInteractions
     });
 }
