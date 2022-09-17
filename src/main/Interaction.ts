@@ -1,7 +1,7 @@
 import { Direction } from "../types/Direction.js";
 
 export interface Interaction {
-    interaction: InteractionMove | InteractionWait | InteractionUndo | InteractionRestart;
+    interaction: InteractionMove | InteractionWait | InteractionUndo | InteractionRestart | InteractionPause;
 }
 
 export interface InteractionMove {
@@ -19,4 +19,8 @@ export interface InteractionUndo {
 
 export interface InteractionRestart {
     type: "restart";
+}
+
+export interface InteractionPause {
+    type: "pause";
 }

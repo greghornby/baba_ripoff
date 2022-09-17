@@ -4,6 +4,7 @@ import background_move_hint_desktop from "../images/background/move_hint_desktop
 import background_move_hint_mobile from "../images/background/move_hint_mobile.png";
 import background_wait_hint from "../images/background/wait_hint.png";
 import background_wait_hint_mobile from "../images/background/wait_hint_mobile.png";
+import menus_pause_menu from "../images/menus/pause_menu.png";
 import _missing from "../images/missing.png";
 import objects_baba from "../images/objects/baba.png";
 import objects_baba_anim from "../images/objects/baba_anim.png";
@@ -90,6 +91,9 @@ export const textures = {
         "move_hint_mobile": makeTextureFromBase64(background_move_hint_mobile),
         "wait_hint": makeTextureFromBase64(background_wait_hint),
         "wait_hint_mobile": makeTextureFromBase64(background_wait_hint_mobile)
+    },
+    "menus": {
+        "pause_menu": makeTextureFromBase64(menus_pause_menu)
     },
     "missing": makeTextureFromBase64(_missing),
     "objects": {

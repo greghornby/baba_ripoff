@@ -32,6 +32,9 @@ export function getInteractionFromKeyboard(event: AppEventInterface.Keyboard): I
         case "t":
             interactionType = {type: "restart"};
             break;
+        case "p":
+            interactionType = {type: "pause"};
+            break;
     }
 
     if (!interactionType) {

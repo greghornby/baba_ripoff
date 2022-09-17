@@ -117,14 +117,13 @@ const modifyVerbsOnSelectedEntities = (controller: LevelController, rule: Rule, 
 
         /** Add or remove verbs from an entity */
         const verbProp = mapVerbToString(verb)!;
+        const verbMap = controller.entityVerbs[verbProp];
         const notVerbMap = controller.entityVerbs[`${verbProp}Not`];
         if (complementNot) {
             const entityNotVerb = notVerbMap.get(entity) ?? new Set();
             notVerbMap.set(entity, entityNotVerb);
             setAddMultiple(entityNotVerb, ...constructs);
         } else {
-            const key = verbProp;
-            const verbMap = controller.entityVerbs[key];
             const entityVerb = verbMap.get(entity) ?? new Set();
             verbMap.set(entity, entityVerb);
             const entityNotVerb = notVerbMap.get(entity);

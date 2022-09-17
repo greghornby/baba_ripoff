@@ -3,5 +3,6 @@ export const AppEventEnum = {
     keyboard: "keyboard",
     swipe: "swipe",
     singleTap: "singleTap",
-    doubleTap: "doubleTap"
+    doubleTap: "doubleTap",
+    longTap: "longTap"
 } as const;

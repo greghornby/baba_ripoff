@@ -1,4 +1,3 @@
-import { iteratorFromLength } from "../util/data/iteratorFromLength.js";
 import { App } from "./App.js";
 import { AppEventEnum } from "./AppEventEnum.js";
 import { AppEventInterface } from "./AppEventInterface.js";
@@ -13,6 +12,8 @@ export class AppEventSystem {
     public resizeObserver: ResizeObserver;
 
     public _touches: Touch[] = [];
+    public _longTouchPendingTimerId: number | undefined = undefined;
+    public _longTouchActive: boolean = false;
     public _doubleTapPendingTimerId: number | undefined = undefined;
 
     constructor() {
@@ -24,11 +25,25 @@ export class AppEventSystem {
             "keyup": event => this.emitKeyboardEvent(event, "up"),
             "keypress": event => this.emitKeyboardEvent(event, "press"),
             "touchstart": event => {
+                event.preventDefault();
                 for (let i = 0; i < event.changedTouches.length; i++) {
                     this._touches.push(event.changedTouches[i]);
                 }
+                this._longTouchPendingTimerId = (setTimeout as Window["setTimeout"])(() => {
+                    this._longTouchPendingTimerId = undefined;
+                    this._longTouchActive = true;
+                    this.emitLongTap(event);
+                }, 1000);
             },
             "touchend": event => {
+                if (this._longTouchActive) {
+                    this._longTouchActive = false;
+                    this._removeTouches(event);
+                    return;
+                }
+                if (this._longTouchPendingTimerId) {
+                    clearTimeout(this._longTouchPendingTimerId);
+                }
                 if (this._endTouchIsSwipe(event)) {
                     this.emitSwipeEvent(event);
                 } else if (!this._doubleTapPendingTimerId) {
@@ -41,13 +56,7 @@ export class AppEventSystem {
                     this._doubleTapPendingTimerId = undefined;
                     this.emitDoubleTap(event);
                 }
-                for (let i = 0; i < event.changedTouches.length; i++) {
-                    const currentTouch = event.changedTouches[i];
-                    const index = this._touches.findIndex(t => t.identifier === currentTouch.identifier);
-                    if (index > -1) {
-                        this._touches.splice(index, 1);
-                    }
-                }
+                this._removeTouches(event);
             }
         };
 
@@ -72,6 +81,7 @@ export class AppEventSystem {
     }
 
     addListener<T extends EventCallback<AppEventInterface.SingleTap, TouchEvent>>(eventName: EventEnum["singleTap"], cb: T): Token;
+    addListener<T extends EventCallback<AppEventInterface.LongTap, TouchEvent>>(eventName: EventEnum["longTap"], cb: T): Token;
     addListener<T extends EventCallback<AppEventInterface.DoubleTap, TouchEvent>>(eventName: EventEnum["doubleTap"], cb: T): Token;
     addListener<T extends EventCallback<AppEventInterface.Swipe, TouchEvent>>(eventName: EventEnum["swipe"], cb: T): Token;
     addListener<T extends EventCallback<AppEventInterface.Keyboard, KeyboardEvent>>(eventName: EventEnum["keyboard"], cb: T): Token;
@@ -135,6 +145,14 @@ export class AppEventSystem {
         this.emitEvent(AppEventEnum.singleTap, simpleEvent, originalEvent);
     }
 
+    emitLongTap(originalEvent: TouchEvent) {
+        const touch = originalEvent.changedTouches[0];
+        const simpleEvent: AppEventInterface.LongTap = {
+            tap: {x: touch.pageX, y: touch.pageY}
+        };
+        this.emitEvent(AppEventEnum.longTap, simpleEvent, originalEvent);
+    }
+
     emitDoubleTap(originalEvent: TouchEvent) {
         const endTouch = originalEvent.changedTouches[0];
         const startTouch = this._getStartTouch(endTouch);
@@ -162,6 +180,16 @@ export class AppEventSystem {
         const diffY = endTouch.pageY - startTouch.pageY;
 
         return !(Math.abs(diffX) < marginOfError && Math.abs(diffY) < marginOfError);
+    }
+
+    _removeTouches(event: TouchEvent) {
+        for (let i = 0; i < event.changedTouches.length; i++) {
+            const currentTouch = event.changedTouches[i];
+            const index = this._touches.findIndex(t => t.identifier === currentTouch.identifier);
+            if (index > -1) {
+                this._touches.splice(index, 1);
+            }
+        }
     }
 
     _getStartTouch(touch: Touch): Touch {

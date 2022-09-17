@@ -3,6 +3,7 @@ import { App } from "../app/App.js";
 import { AppEventInterface } from "../app/AppEventInterface.js";
 import { debugPrint } from "../debug/debugPrint.js";
 import { categories } from "../objects/categories.js";
+import { textures } from "../objects/textures.js";
 import { words } from "../objects/words.js";
 import { Direction } from "../types/Direction.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
@@ -40,6 +41,7 @@ export class LevelController {
     public static _keyboardListener: {};
     public static _swipeListener: {};
     public static _singleTapListener: {};
+    public static _longTapListener: {};
     public static _doubleTapListener: {};
     public static _resizeListener: {};
 
@@ -50,6 +52,7 @@ export class LevelController {
         this._keyboardListener = app.events.addListener("keyboard", event => this.instance && event.type === "down" ? this.instance.keyboardInteraction(event) : undefined);
         this._swipeListener = app.events.addListener("swipe", event => this.instance ? this.instance.swipeInteraction(event) : undefined);
         this._singleTapListener = app.events.addListener("singleTap", event => this.instance ? this.instance.singleTapInteraction(event) : undefined);
+        this._longTapListener = app.events.addListener("longTap", event => this.instance ? this.instance.longTapInteraction(event) : undefined);
         this._doubleTapListener = app.events.addListener("doubleTap", event => this.instance ? this.instance.doubleTapInteraction(event) : undefined);
         this._resizeListener = app.events.addListener("resize", () => this.instance ? this.instance._fitContainerToScreen() : undefined);
     }
@@ -57,6 +60,8 @@ export class LevelController {
     static load(level: Level) {
         new LevelController(level);
     }
+
+    paused: boolean = false;
 
     timeLastTick: number | undefined;
     timeStarted: number = performance.now();
@@ -203,6 +208,7 @@ export class LevelController {
 
         //setup grid graphics object
         this._drawGrid();
+        this._createPauseScreen();
 
         //setup resize listener
         this._fitContainerToScreen();
@@ -273,6 +279,36 @@ export class LevelController {
             gridGraphic.lineTo(this.level.pixelWidth, y * this.level.TILE_SIZE);
         }
         gridGraphic.cacheAsBitmap = true;
+    }
+
+
+    public _createPauseScreen(): void {
+        const pauseContainer = this.containers.pause;
+        const transparentOverlay = new pixi.Graphics();
+        transparentOverlay.beginFill(0x006e8f, 0.5);
+        transparentOverlay.drawRect(0, 0, this.level.pixelWidth, this.level.pixelHeight);
+        const menuSprite = new pixi.Sprite(textures.menus.pause_menu);
+        menuSprite.anchor.set(0.5, 0.5);
+        menuSprite.transform.position.set(this.level.pixelWidth / 2, this.level.pixelHeight / 2);
+
+        const resumeInteractive = new pixi.Sprite();
+        resumeInteractive.hitArea = new pixi.Rectangle(50 - 200, 25 - 125, 300, 50);
+        resumeInteractive.hitArea
+        resumeInteractive.buttonMode = true;
+        resumeInteractive.interactive = true;
+        resumeInteractive.on("pointertap", () => this.togglePause(false));
+
+        const restartInteractive = new pixi.Sprite();
+        restartInteractive.hitArea = new pixi.Rectangle(50 - 200, 100 - 125, 300, 50);
+        restartInteractive.hitArea
+        restartInteractive.buttonMode = true;
+        restartInteractive.interactive = true;
+        restartInteractive.on("pointertap", () => this.restart());
+
+        pauseContainer.addChild(transparentOverlay, menuSprite);
+        menuSprite.addChild(resumeInteractive, restartInteractive);
+
+        pauseContainer.visible = false;
     }
 
 
@@ -685,6 +721,14 @@ export class LevelController {
         return true;
     }
 
+    public longTapInteraction(event: AppEventInterface.LongTap): boolean | void {
+        const interaction: Interaction = {interaction: {type: "pause"}};
+        if (!this.currentInteraction) {
+            this.currentInteraction = interaction;
+        }
+        return true;
+    }
+
     public doubleTapInteraction(event: AppEventInterface.DoubleTap): boolean | void {
         const interaction: Interaction = {interaction: {type: "undo"}};
         if (!this.currentInteraction) {
@@ -701,7 +745,36 @@ export class LevelController {
     }
 
 
+    public restart(): void {
+        this.exit();
+        new LevelController(this.level);
+    }
+
+
+    public togglePause(pause?: boolean): void {
+        if (pause === undefined) {
+            this.paused = !this.paused;
+        } else {
+            this.paused = pause;
+        }
+    }
+
+
     tick(): void {
+
+        if (this.currentInteraction?.interaction.type === "pause") {
+            this.togglePause();
+        }
+
+        if (this.paused) {
+            if (!this.containers.pause.visible) {
+                this.containers.pause.visible = true;
+            }
+        } else {
+            if (this.containers.pause.visible) {
+                this.containers.pause.visible = false;
+            }
+        }
 
         this.ticksElapsed++;
         const now = performance.now();
@@ -713,21 +786,24 @@ export class LevelController {
         //     console.log("Delta time high", deltaTime);
         // }
 
+        // do entity loop
+        for (const entity of this.entityMap.values()) {
+            entity.entityPixi.play(deltaTime);
+            // entity._debugFacingGraphic();
+            entity.entityPixi._debugEntityId();
+        }
+
+        if (this.paused) {
+            this.currentInteraction = undefined;
+            return;
+        }
+
         //do coroutines
         for (const coroutine of this.coroutines) {
             const result = coroutine.next();
             if (result.done) {
                 this.coroutines.delete(coroutine);
             }
-        }
-
-
-
-        // do entity loop
-        for (const entity of this.entityMap.values()) {
-            entity.entityPixi.play(deltaTime);
-            // entity._debugFacingGraphic();
-            entity.entityPixi._debugEntityId();
         }
 
         const animation = this.animationSytem!.getAnimation();
@@ -753,8 +829,7 @@ export class LevelController {
         }
 
         if (this.currentInteraction.interaction.type === "restart") {
-            this.exit();
-            new LevelController(this.level);
+            this.restart();
         }
 
         // Process the interaction and unset it

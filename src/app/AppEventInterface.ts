@@ -17,4 +17,8 @@ export namespace AppEventInterface {
     export interface DoubleTap {
         taps: [{x: number; y: number}, {x: number; y: number}];
     }
+
+    export interface LongTap {
+        tap: {x: number; y: number};
+    }
 }
