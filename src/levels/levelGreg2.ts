@@ -43,6 +43,6 @@ export const levelGreg2 = () => new Level({
     background: [{
         y: 7,
         x: 16,
-        texture: isMobile() ? textures.background.wait_hint_mobile : textures.background.wait_hint
+        texture: isMobile() ? textures.background.wait_hint_mobile : textures.background.wait_hint_desktop
     }]
 });

@@ -2,7 +2,9 @@ import * as pixijs from "pixi.js";
 import animations_WinParticle from "../images/animations/WinParticle.png";
 import background_move_hint_desktop from "../images/background/move_hint_desktop.png";
 import background_move_hint_mobile from "../images/background/move_hint_mobile.png";
-import background_wait_hint from "../images/background/wait_hint.png";
+import background_pause_hint_desktop from "../images/background/pause_hint_desktop.png";
+import background_pause_hint_mobile from "../images/background/pause_hint_mobile.png";
+import background_wait_hint_desktop from "../images/background/wait_hint_desktop.png";
 import background_wait_hint_mobile from "../images/background/wait_hint_mobile.png";
 import menus_pause_menu from "../images/menus/pause_menu.png";
 import _missing from "../images/missing.png";
@@ -89,7 +91,9 @@ export const textures = {
     "background": {
         "move_hint_desktop": makeTextureFromBase64(background_move_hint_desktop),
         "move_hint_mobile": makeTextureFromBase64(background_move_hint_mobile),
-        "wait_hint": makeTextureFromBase64(background_wait_hint),
+        "pause_hint_desktop": makeTextureFromBase64(background_pause_hint_desktop),
+        "pause_hint_mobile": makeTextureFromBase64(background_pause_hint_mobile),
+        "wait_hint_desktop": makeTextureFromBase64(background_wait_hint_desktop),
         "wait_hint_mobile": makeTextureFromBase64(background_wait_hint_mobile)
     },
     "menus": {

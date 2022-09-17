@@ -1,4 +1,6 @@
 import { Level } from "../main/Level.js";
+import { textures } from "../objects/textures.js";
+import { isMobile } from "../util/data/isMobile.js";
 import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
 import { _commonKey } from "./_commonKey.js";
 
@@ -26,5 +28,12 @@ ______WWWWWWWW
 export const level01 = () => new Level({
     width: 18,
     height: 18,
-    startingEntities: makeLevelGridFromString(levelText, _commonKey)
+    startingEntities: makeLevelGridFromString(levelText, _commonKey),
+    background: [
+        {
+            texture: isMobile() ? textures.background.pause_hint_mobile : textures.background.pause_hint_desktop,
+            x: 2,
+            y: 1
+        }
+    ]
 });
