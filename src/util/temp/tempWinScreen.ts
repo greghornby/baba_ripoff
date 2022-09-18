@@ -1,6 +1,6 @@
 import * as pixi from "pixi.js";
 import { LevelController } from "../../main/LevelController.js";
-import { MenuController } from "../../main/MenuController.js";
+import { MenuController } from "../../main/main_menu/MenuController.js";
 import { interactionsToString } from "../replay/interactionsToString.js";
 
 export const tempWinScreen = async (controller: LevelController) => {

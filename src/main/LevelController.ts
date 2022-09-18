@@ -31,7 +31,7 @@ import { winParticlesAnimation } from "./coroutines/winParticlesAnimation.js";
 import { Entity, EntityInitData } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
 import { Cell, Level, LevelGrid, LevelRow } from "./Level.js";
-import { MenuController } from "./MenuController.js";
+import { MenuController } from "./main_menu/MenuController.js";
 import { Rule } from "./Rule.js";
 import { Sentence } from "./Sentence.js";
 import { Word } from "./Word.js";

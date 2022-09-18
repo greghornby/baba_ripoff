@@ -4,7 +4,7 @@ import { exposeGlobals } from "../../debug/globals.js";
 import { setDebugFlagsFromQuery } from "../../debug/setDebugFlagsFromQuery.js";
 import { Level } from "../../main/Level.js";
 import { LevelController } from "../../main/LevelController.js";
-import { MenuController } from "../../main/MenuController.js";
+import { MenuController } from "../../main/main_menu/MenuController.js";
 import { isMobile } from "../data/isMobile.js";
 import { queryParams } from "../data/queryParams.js";
 
