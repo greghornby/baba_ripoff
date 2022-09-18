@@ -69,9 +69,13 @@ const modifyTagsOnSelectedEntities = (controller: LevelController, rule: Rule, e
     }
     for (const entity of entities) {
         if (complementNot) {
+            controller.tagToEntities.removeFromSet(complementWord, entity);
             controller.entityToTags.removeFromSet(entity, complementWord);
+            controller.entityToNotTags.addToSet(entity, complementWord);
         } else {
-            controller.entityToTags.addToSet(entity, complementWord);
+            if (!controller.entityToNotTags.get(entity)?.has(complementWord)) {
+                controller.entityToTags.addToSet(entity, complementWord);
+            }
         }
     }
 }

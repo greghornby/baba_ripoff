@@ -109,6 +109,7 @@ export class LevelController {
     public _cancelledWordEntities: Set<Entity> = new Set();
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
+    public entityToNotTags: MapOfSets<Entity, Word> = new MapOfSets();
     public entityVerbs: Record<`${VerbUnion}${""|"Not"}`, Map<Entity, Set<Construct>>> = {
         is: new Map(),
         isNot: new Map(),
@@ -423,9 +424,6 @@ export class LevelController {
     public removeEntityFromCell(entity: Entity): void;
     public removeEntityFromCell(entity: Entity, x: number, y: number): void;
     public removeEntityFromCell(entity: Entity, x?: number, y?: number): void {
-        // this.entityGrid[y ?? entity.y][x ?? entity.x] =
-        //     this.entityGrid[y ?? entity.y][x ?? entity.x]
-        //     .filter(e => e !== entity);
         arrayRemove(
             this.entityGrid[y ?? entity.y][x ?? entity.x],
             entity
@@ -652,6 +650,7 @@ export class LevelController {
     public generateEntityTagsAndMutationsFromRules(): void {
         this.tagToEntities.clear();
         this.entityToTags.clear();
+        this.entityToNotTags.clear();
         for (const map of Object.values(this.entityVerbs)) {
             map.clear();
         }
