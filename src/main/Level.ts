@@ -12,7 +12,7 @@ export class Level {
     public height: number;
     public pixelHeight: number;
 
-    constructor(public initData: InitLevelData) {
+    constructor(public name: string, public initData: InitLevelData) {
         this.width = initData.width;
         this.pixelWidth = this.width * this.TILE_SIZE;
         this.height = initData.height;

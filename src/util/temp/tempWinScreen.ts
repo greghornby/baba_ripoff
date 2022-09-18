@@ -1,21 +1,7 @@
 import * as pixi from "pixi.js";
-import { _LEVELS } from "../../levels/_LEVELS.js";
 import { LevelController } from "../../main/LevelController.js";
-import { queryParams } from "../data/queryParams.js";
+import { MenuController } from "../../main/MenuController.js";
 import { interactionsToString } from "../replay/interactionsToString.js";
-
-let levelIndex = queryParams.level  && !isNaN(parseInt(queryParams.level)) ? parseInt(queryParams.level) : 0;
-
-export const loadLevel = () => {
-    if (levelIndex >= _LEVELS.length) {
-        levelIndex = 0;
-    }
-    const level = _LEVELS[levelIndex];
-    if (level) {
-        levelIndex++;
-        LevelController.load(level());
-    }
-}
 
 export const tempWinScreen = async (controller: LevelController) => {
     const winGraphic = new pixi.Text("WINNER!!!", new pixi.TextStyle({
@@ -39,7 +25,7 @@ export const tempWinScreen = async (controller: LevelController) => {
         alert("Solution copied to clipboard. Please DM me");
     }
     controller.exit();
-    loadLevel();
+    MenuController.load();
 };
 
 async function* fadeIn(container: pixi.Container) {

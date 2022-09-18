@@ -1,9 +1,9 @@
-import { Level } from "../main/Level.js";
-import { textures } from "../objects/textures.js";
-import { Direction } from "../types/Direction.js";
-import { isMobile } from "../util/data/isMobile.js";
-import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
-import { _commonKey } from "./_commonKey.js";
+import { Level } from "../../../main/Level.js";
+import { textures } from "../../../objects/textures.js";
+import { Direction } from "../../../types/Direction.js";
+import { isMobile } from "../../../util/data/isMobile.js";
+import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
+import { _commonKey } from "../../_commonKey.js";
 
 
 const levelText = `
@@ -22,7 +22,7 @@ __
 __wis     rip
 `;
 
-export const level00 = () => new Level({
+export const lev_tutorial00 = new Level("Welcome", {
     width: 15,
     height: 14,
     startingEntities: makeLevelGridFromString(levelText, _commonKey, [

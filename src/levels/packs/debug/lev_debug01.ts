@@ -1,7 +1,7 @@
-import { Level } from "../main/Level.js";
-import { words } from "../objects/words.js";
-import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
-import { _commonKey } from "./_commonKey.js";
+import { Level } from "../../../main/Level.js";
+import { words } from "../../../objects/words.js";
+import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
+import { _commonKey } from "../../_commonKey.js";
 
 
 const levelText = `
@@ -22,7 +22,7 @@ const key = {
     "[": words.pull
 }
 
-export const levelDebug = () => new Level({
+export const lev_debug01 = new Level("Debug: Playroom", {
     width: 20,
     height: 11,
     startingEntities: makeLevelGridFromString(levelText, key)

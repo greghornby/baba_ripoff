@@ -1,9 +1,7 @@
-import { Level } from "../main/Level.js";
-import { constructs } from "../objects/constructs.js";
-import { words } from "../objects/words.js";
-import { Direction } from "../types/Direction.js";
-import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
-import { _commonKey } from "./_commonKey.js";
+import { Level } from "../../../main/Level.js";
+import { constructs } from "../../../objects/constructs.js";
+import { words } from "../../../objects/words.js";
+import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
 
 const levelText = `
 biyWwisWqi1WkimWlihW
@@ -54,7 +52,7 @@ const key = {
     a: words.float,
 };
 
-export const levelDestructions = () => new Level({
+export const lev_debug02 = new Level("Debug: Removables", {
     width: 20,
     height: 11,
     startingEntities: makeLevelGridFromString(levelText, key, [

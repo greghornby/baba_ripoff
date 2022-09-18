@@ -1,6 +1,6 @@
-import { Level } from "../main/Level.js";
-import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
-import { _commonKey } from "./_commonKey.js";
+import { Level } from "../../../main/Level.js";
+import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
+import { _commonKey } from "../../_commonKey.js";
 
 
 const levelText = `
@@ -19,7 +19,7 @@ W_______W_____
 WWWWWWWWW_____
 `;
 
-export const levelGreg1 = () => new Level({
+export const lev_iM01 = new Level("Where Rock?", {
     width: 14,
     height: 13,
     startingEntities: makeLevelGridFromString(levelText, _commonKey)

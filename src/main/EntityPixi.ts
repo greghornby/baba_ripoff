@@ -1,7 +1,7 @@
 import * as pixi from "pixi.js";
 import { App } from "../app/App.js";
 import { debugFlags } from "../debug/debugFlags.js";
-import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
+import { destroyContainerAndAllChildren } from "../util/pixi/destroyContainerAndAllChildren.js";
 import { Constants } from "./Constants.js";
 import { Entity } from "./Entity.js";
 import { LevelController } from "./LevelController.js";
@@ -85,7 +85,7 @@ export class EntityPixi {
     @skipOnDestroyed()
     public destroy(): void {
         this.removeContainerFromController();
-        destroyAllChildren(this.container);
+        destroyContainerAndAllChildren(this.container);
         for (const methodName of ERASE_METHODS_ON_DESTROYED) {
             (this as any)[methodName] = emptyFn;
         }

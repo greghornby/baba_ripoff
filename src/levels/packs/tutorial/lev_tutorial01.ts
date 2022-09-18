@@ -1,8 +1,8 @@
-import { Level } from "../main/Level.js";
-import { textures } from "../objects/textures.js";
-import { isMobile } from "../util/data/isMobile.js";
-import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
-import { _commonKey } from "./_commonKey.js";
+import { Level } from "../../../main/Level.js";
+import { textures } from "../../../objects/textures.js";
+import { isMobile } from "../../../util/data/isMobile.js";
+import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
+import { _commonKey } from "../../_commonKey.js";
 
 
 const levelText = `
@@ -25,7 +25,7 @@ ______W      W
 ______WWWWWWWW
 `;
 
-export const level01 = () => new Level({
+export const lev_tutorial01 = new Level("Where do you go?", {
     width: 18,
     height: 18,
     startingEntities: makeLevelGridFromString(levelText, _commonKey),

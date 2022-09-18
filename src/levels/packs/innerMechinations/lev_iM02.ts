@@ -1,11 +1,11 @@
-import { Level } from "../main/Level.js";
-import { constructs } from "../objects/constructs.js";
-import { textures } from "../objects/textures.js";
-import { words } from "../objects/words.js";
-import { Direction } from "../types/Direction.js";
-import { isMobile } from "../util/data/isMobile.js";
-import { makeLevelGridFromString } from "../util/temp/makeLevelGridFromString.js";
-import { _commonKey } from "./_commonKey.js";
+import { Level } from "../../../main/Level.js";
+import { constructs } from "../../../objects/constructs.js";
+import { textures } from "../../../objects/textures.js";
+import { words } from "../../../objects/words.js";
+import { Direction } from "../../../types/Direction.js";
+import { isMobile } from "../../../util/data/isMobile.js";
+import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
+import { _commonKey } from "../../_commonKey.js";
 
 
 const levelText = `
@@ -34,7 +34,7 @@ const key = {
     m: words.move
 }
 
-export const levelGreg2 = () => new Level({
+export const lev_iM02 = new Level("Spooky", {
     debugPromptCopyInteractions: true,
     width: 19,
     height: 15,

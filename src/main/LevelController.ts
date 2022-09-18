@@ -17,7 +17,8 @@ import { generatePairsFromArray } from "../util/data/generatePairsFromArray.js";
 import { getPaths } from "../util/data/getPaths.js";
 import { MapOfSets } from "../util/data/MapOfSets.js";
 import { setAddMultiple } from "../util/data/setAddMultiple.js";
-import { destroyAllChildren } from "../util/pixi/destroyAllChildren.js";
+import { destroyContainerAndAllChildren } from "../util/pixi/destroyContainerAndAllChildren.js";
+import { destroyOnlyChildren } from "../util/pixi/destroyOnlyChildren.js";
 import { isNotComplement } from "../util/rules/isNotComplement.js";
 import { rulesCancel } from "../util/rules/rulesCancel.js";
 import { VerbUnion } from "../util/rules/verbEquals.js";
@@ -30,6 +31,7 @@ import { winParticlesAnimation } from "./coroutines/winParticlesAnimation.js";
 import { Entity, EntityInitData } from "./Entity.js";
 import { Interaction } from "./Interaction.js";
 import { Cell, Level, LevelGrid, LevelRow } from "./Level.js";
+import { MenuController } from "./MenuController.js";
 import { Rule } from "./Rule.js";
 import { Sentence } from "./Sentence.js";
 import { Word } from "./Word.js";
@@ -153,9 +155,7 @@ export class LevelController {
         const pixiApp = app.pixiApp;
 
         // remove all children and render empty screen
-        for (const child of pixiApp.stage.children) {
-            pixiApp.stage.removeChild(child);
-        }
+        destroyOnlyChildren(pixiApp.stage);
         pixiApp.render();
 
         //create new ticker
@@ -305,8 +305,18 @@ export class LevelController {
         restartInteractive.interactive = true;
         restartInteractive.on("pointertap", () => this.restart());
 
+        const menuInteractive = new pixi.Sprite();
+        menuInteractive.hitArea = new pixi.Rectangle(50 - 200, 175 - 125, 300, 50);
+        menuInteractive.hitArea
+        menuInteractive.buttonMode = true;
+        menuInteractive.interactive = true;
+        menuInteractive.on("pointertap", () => {
+            this.exit();
+            MenuController.load();
+        });
+
         pauseContainer.addChild(transparentOverlay, menuSprite);
-        menuSprite.addChild(resumeInteractive, restartInteractive);
+        menuSprite.addChild(resumeInteractive, restartInteractive, menuInteractive);
 
         pauseContainer.visible = false;
     }
@@ -741,7 +751,8 @@ export class LevelController {
 
     public exit(): void {
         this.ticker.destroy();
-        destroyAllChildren(this.container);
+        destroyContainerAndAllChildren(this.container);
+        LevelController.instance = undefined;
     }
 
 
