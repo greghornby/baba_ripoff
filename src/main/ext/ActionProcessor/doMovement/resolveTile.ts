@@ -54,7 +54,7 @@ function searchDirection(
                 failedForward = true;
                 break loop;
             }
-            if (tile.isStopped || (tile.pullEntities && !tile.pullDirection)) {
+            if (tile.isStopped || (tile.pullEntities && !tile.pullDirection && !tile.pushEntities)) {
                 if (tile.entities.find(e => e.id === 17)) {
                     console.log("TILE", JSON.stringify(tile));
                     console.log("PREVIOUS", JSON.stringify(previousTileFromPush));
