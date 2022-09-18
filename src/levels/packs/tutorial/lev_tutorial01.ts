@@ -25,7 +25,7 @@ ______W      W
 ______WWWWWWWW
 `;
 
-export const lev_tutorial01 = new Level("Where do you go?", {
+export const lev_tutorial01 = new Level("0234f0a1", "Where do you go?", {
     width: 18,
     height: 18,
     startingEntities: makeLevelGridFromString(levelText, _commonKey),

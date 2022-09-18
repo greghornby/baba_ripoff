@@ -19,7 +19,7 @@ W_______W_____
 WWWWWWWWW_____
 `;
 
-export const lev_iM01 = new Level("Where Rock?", {
+export const lev_iM01 = new Level("4f7ba2bb", "Where Rock?", {
     width: 14,
     height: 13,
     startingEntities: makeLevelGridFromString(levelText, _commonKey)

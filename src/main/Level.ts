@@ -5,6 +5,8 @@ import type { Entity } from "./Entity.js";
 
 export class Level {
 
+    static store: Map<string, Level> = new Map();
+
     public TILE_SIZE: number = Constants.TILE_SIZE;
 
     public width: number;
@@ -12,7 +14,11 @@ export class Level {
     public height: number;
     public pixelHeight: number;
 
-    constructor(public name: string, public initData: InitLevelData) {
+    constructor(public id: string, public name: string, public initData: InitLevelData) {
+        if (Level.store.has(id)) {
+            throw new Error("Duplicate Level id: " + id);
+        }
+        Level.store.set(this.id, this);
         this.width = initData.width;
         this.pixelWidth = this.width * this.TILE_SIZE;
         this.height = initData.height;

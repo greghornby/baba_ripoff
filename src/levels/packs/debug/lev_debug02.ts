@@ -52,7 +52,7 @@ const key = {
     a: words.float,
 };
 
-export const lev_debug02 = new Level("Debug: Removables", {
+export const lev_debug02 = new Level("b50d1aa8", "Debug: Removables", {
     width: 20,
     height: 11,
     startingEntities: makeLevelGridFromString(levelText, key, [

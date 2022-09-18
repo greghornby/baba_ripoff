@@ -34,7 +34,7 @@ const key = {
     m: words.move
 }
 
-export const lev_iM02 = new Level("Spooky", {
+export const lev_iM02 = new Level("72ed0239", "Spooky", {
     debugPromptCopyInteractions: true,
     width: 19,
     height: 15,

@@ -22,7 +22,7 @@ __
 __wis     rip
 `;
 
-export const lev_tutorial00 = new Level("Welcome", {
+export const lev_tutorial00 = new Level("52d674ab", "Welcome", {
     width: 15,
     height: 14,
     startingEntities: makeLevelGridFromString(levelText, _commonKey, [

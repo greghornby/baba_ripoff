@@ -1,4 +1,5 @@
 import * as pixi from "pixi.js";
+import { mainPack } from "../../levels/mainPack.js";
 import { Constants } from "../../main/Constants.js";
 import { constructs } from "../../objects/constructs.js";
 import { textures } from "../../objects/textures.js";
@@ -8,6 +9,7 @@ import { mapTextureToSheet } from "../pixi/mapTextureToSheet.js";
 export async function initFiles () {
     await setTimeout(res => res, 0);
     console.log("Loaded", Object.keys(words).length, "words and", Object.keys(constructs), "constructs");
+    console.log("Loaded Level Pack", mainPack.name);
     for (const t of Object.values(textures.animations)) {
         const data: pixi.ISpritesheetData = {
             frames: {},

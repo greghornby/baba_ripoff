@@ -22,7 +22,7 @@ const key = {
     "[": words.pull
 }
 
-export const lev_debug01 = new Level("Debug: Playroom", {
+export const lev_debug01 = new Level("8b7f2b23", "Debug: Playroom", {
     width: 20,
     height: 11,
     startingEntities: makeLevelGridFromString(levelText, key)
