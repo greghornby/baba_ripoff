@@ -33,8 +33,6 @@ export namespace IMenuScreens {
                 parent: pixi.Container;
                 page: pixi.Container;
                 previousPackButton?: pixi.Container;
-                // pageNext: pixi.Text;
-                // pagePrevios: pixi.Text;
             }
         }
     }>;

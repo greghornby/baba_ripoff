@@ -2,8 +2,12 @@ import * as pixi from "pixi.js";
 import { LevelPack } from "../../../levels/LevelPack.js";
 import { mainPack } from "../../../levels/mainPack.js";
 import { destroyOnlyChildren } from "../../../util/pixi/destroyOnlyChildren.js";
+import { getContainerCenter } from "../../../util/pixi/getContainerCenter.js";
+import { pivotToCenter } from "../../../util/pixi/pivotToCenter.js";
 import { LevelController } from "../../LevelController.js";
 import { MenuController } from "../MenuController.js";
+import { createMenuButton } from "../util/createMenuButton.js";
+import { menuColor } from "../util/menuColor.js";
 
 /**
 For the given dimensions
@@ -34,15 +38,6 @@ const X_OFFSETS = {
     BUTTON_WIDTH: 240
 };
 
-const colors = {
-    white: 0xffffff,
-    fadedWhite: 0xbbbbbb,
-    gold: 0xffcc00,
-    fadedGold: 0xfce483,
-    pink: 0xff2299,
-    fadedPink: 0xfa8ec8
-};
-
 export function createLevelSelectScreen(this: MenuController): MenuController["screens"]["levels"] {
     const parent = new pixi.Container();
     const page = new pixi.Container();
@@ -50,7 +45,7 @@ export function createLevelSelectScreen(this: MenuController): MenuController["s
     parent.addChild(page);
 
     {
-        const backToMainMenu = new pixi.Text("Back to Main Menu", {fill: colors.white, fontSize: 40});
+        const backToMainMenu = new pixi.Text("Back to Main Menu", {fill: menuColor.white, fontSize: 40});
         backToMainMenu.pivot.set(backToMainMenu.width/2, backToMainMenu.height/2);
         backToMainMenu.transform.position.set(this.width/2, 50);
         backToMainMenu.buttonMode = true;
@@ -80,50 +75,6 @@ export function createLevelSelectScreen(this: MenuController): MenuController["s
     };
 }
 
-// function populateLevelsFromPack(this: MenuController, pack: LevelPack) {
-//     const state = this.screens.levels.state;
-//     const buttons: {text: string; color: number; action: () => void}[] = [];
-//     if (state.previousLevelPacks.length) {
-//         buttons.push({text: "< Back", color: colors.pink, action: () => {
-//             const lastPack = state.previousLevelPacks.pop()!;
-//             populateLevelsFromPack.call(this, lastPack);
-//         }});
-//     }
-//     for (const item of pack.items) {
-//         if (item instanceof LevelPack) {
-//             buttons.push({text: item.name, color: colors.gold, action: () => {
-//                 state.previousLevelPacks.push(pack);
-//                 populateLevelsFromPack.call(this, item);
-//             }})
-//         } else {
-//             buttons.push({
-//                 text: item.name, color: colors.white, action: () => {
-//                     this.exit();
-//                     LevelController.load(item);
-//                 }
-//             });
-//         }
-//     }
-
-//     const buttonsCont = this.screens.levels.containers.levelButtons;
-//     destroyOnlyChildren(buttonsCont);
-//     for (const [index, button] of buttons.entries()) {
-//         const text = new pixi.Text(button.text, {
-//             fontSize: 30,
-//             fill: button.color
-//         });
-//         text.buttonMode = true;
-//         text.interactive = true;
-//         text.on("pointerdown", button.action);
-//         text.pivot.set(text.width/2, text.height/2);
-//         text.transform.position.set(this.width/2, index*35 + 100);
-//         buttonsCont.addChild(text);
-//     }
-// }
-
-
-
-
 
 function getPagesForPack(this: MenuController, pack: LevelPack): LevelPage[] {
     const ITEMS_PER_PAGE = 9;
@@ -150,8 +101,8 @@ function getPagesForPack(this: MenuController, pack: LevelPack): LevelPage[] {
                 text: "Previous Page",
                 row: 3,
                 column: 1,
-                color: colors.fadedPink,
-                borderColor: colors.pink,
+                color: menuColor.fadedPink,
+                borderColor: menuColor.pink,
                 onClick: () => {
                     const state = this.screens.levels.state;
                     state.currentPageIndex--;
@@ -164,8 +115,8 @@ function getPagesForPack(this: MenuController, pack: LevelPack): LevelPage[] {
                 text: "Next Page",
                 row: 3,
                 column: 2,
-                color: colors.fadedPink,
-                borderColor: colors.pink,
+                color: menuColor.fadedPink,
+                borderColor: menuColor.pink,
                 onClick: () => {
                     const state = this.screens.levels.state;
                     state.currentPageIndex++;
@@ -181,8 +132,8 @@ function getPagesForPack(this: MenuController, pack: LevelPack): LevelPage[] {
             const row = Math.floor((itemIndex - itemStartIndex) / 3);
             const column = (itemIndex - itemStartIndex) % 3;
             const text = item instanceof LevelPack ? item.name : item.name;
-            const color = item instanceof LevelPack ? colors.fadedGold : colors.fadedWhite;
-            const borderColor = item instanceof LevelPack ? colors.gold : colors.white;
+            const color = item instanceof LevelPack ? menuColor.fadedGold : menuColor.fadedWhite;
+            const borderColor = item instanceof LevelPack ? menuColor.gold : menuColor.white;
             const onClick = item instanceof LevelPack ?
                 () => {
                     const state = this.screens.levels.state;
@@ -214,7 +165,7 @@ function displayLevelPack(this: MenuController, pack: LevelPack) {
     if (state.previousLevelPacks.length) {
         const yOffset = Y_OFFSETS.ROWS_START + 3 * (Y_OFFSETS.BUTTON_HEIGHT + Y_OFFSETS.BUTTON_GAP);
         const xOffset = X_OFFSETS.ROW_MARGIN;
-        const previousPackButton = createButtonContainer(colors.fadedGold, colors.gold, () => {
+        const previousPackButton = createLevelPageButton(menuColor.fadedGold, menuColor.gold, () => {
             const lastPack = state.previousLevelPacks.pop()!;
             displayLevelPack.call(this, lastPack);
         });
@@ -233,7 +184,7 @@ function displayPage(this: MenuController) {
     destroyOnlyChildren(pageContainer);
 
     for (const button of page.buttons) {
-        const buttonContainer = createButtonContainer(button.color, button.borderColor, button.onClick);
+        const buttonContainer = createLevelPageButton(button.color, button.borderColor, button.onClick);
         pageContainer.addChild(buttonContainer);
         let xOffset = X_OFFSETS.ROW_MARGIN + button.column * (X_OFFSETS.BUTTON_WIDTH + X_OFFSETS.BUTTON_GAP);
         let yOffset = button.row * (Y_OFFSETS.BUTTON_HEIGHT + Y_OFFSETS.BUTTON_GAP);
@@ -242,37 +193,25 @@ function displayPage(this: MenuController) {
     }
 }
 
-function createButtonContainer(color: number, borderColor: number, action: () => void): pixi.Container {
-    const container = new pixi.Container();
-    container.interactive = true;
-    container.buttonMode = true;
-    if (action) {
-        container.on("pointertap", action);
-    }
-    const bg = new pixi.Graphics();
-    container.addChild(bg);
-    bg.beginFill(color);
-    bg.drawRect(0, 0, X_OFFSETS.BUTTON_WIDTH, Y_OFFSETS.BUTTON_HEIGHT);
-    bg.endFill();
-    bg.lineStyle(4, borderColor);
-    bg.drawRoundedRect(0, 0, X_OFFSETS.BUTTON_WIDTH, Y_OFFSETS.BUTTON_HEIGHT, 3);
-    return container;
+
+function createLevelPageButton(color: number, borderColor: number, action: () => void): pixi.Container {
+    return createMenuButton({
+        width: X_OFFSETS.BUTTON_WIDTH,
+        height: Y_OFFSETS.BUTTON_HEIGHT,
+        fillColor: color,
+        borderColor: borderColor,
+        action: action,
+        borderRadius: 3,
+        borderThickness: 4
+    });
 }
 
 /** Text will be centered by default, use offset to move it relative to the center of the button */
 function addTextToButton(button: pixi.Container, text: string, offset?: [x: number | undefined, y: number | undefined]) {
-    const textSprite = new pixi.Text(text, {fill: colors.white, fontSize: 25, wordWrap: true, wordWrapWidth: X_OFFSETS.BUTTON_WIDTH, align: "center"});
+    const textSprite = new pixi.Text(text, {fill: menuColor.white, fontSize: 25, wordWrap: true, wordWrapWidth: X_OFFSETS.BUTTON_WIDTH, align: "center"});
     pivotToCenter(textSprite);
-    textSprite.transform.position.set(...containerCenter(button));
+    textSprite.transform.position.set(...getContainerCenter(button));
     button.addChild(textSprite);
-}
-
-function containerCenter(container: pixi.Container): [x: number, y: number] {
-    return [container.width/2, container.height/2];
-}
-
-function pivotToCenter(container: pixi.Container) {
-    container.pivot.set(...containerCenter(container));
 }
 
 export type LevelPage = {

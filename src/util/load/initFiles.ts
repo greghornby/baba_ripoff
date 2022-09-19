@@ -8,7 +8,7 @@ import { mapTextureToSheet } from "../pixi/mapTextureToSheet.js";
 
 export async function initFiles () {
     await setTimeout(res => res, 0);
-    console.log("Loaded", Object.keys(words).length, "words and", Object.keys(constructs), "constructs");
+    console.log("Loaded", Object.keys(words).length, "words and", Object.keys(constructs).length, "constructs");
     console.log("Loaded Level Pack", mainPack.name);
     for (const t of Object.values(textures.animations)) {
         const data: pixi.ISpritesheetData = {
