@@ -28,7 +28,10 @@ export namespace IMenuScreens {
             };
             containers: {
                 parent: pixi.Container;
-                levelButtons: pixi.Container;
+                page: pixi.Container;
+                previousPackButton?: pixi.Container;
+                // pageNext: pixi.Text;
+                // pagePrevios: pixi.Text;
             }
         }
     }>;
