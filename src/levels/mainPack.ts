@@ -15,15 +15,7 @@ export const mainPack = new LevelPack("Main", [
 
     new LevelPack("Inner Mechinations", [
         lev_iM01,
-        lev_iM02,
-        // lev_iM02,
-        // lev_iM02,
-        // lev_iM02,
-        // lev_iM02,
-        // lev_iM02,
-        // lev_iM02,
-        // lev_iM02,
-        // lev_iM02
+        lev_iM02
     ]),
 
     new LevelPack("Debug", [

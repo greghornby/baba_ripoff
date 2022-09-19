@@ -67,7 +67,9 @@ export function createLevelSelectScreen(this: MenuController): MenuController["s
         containers: {parent, page},
         state: {
             currentLevelPack: mainPack,
-            previousLevelPacks: []
+            previousLevelPacks: [],
+            currentPageIndex: 0,
+            pages: []
         },
         onGoto: () => {
             const state = this.screens.levels.state;
@@ -123,24 +125,54 @@ export function createLevelSelectScreen(this: MenuController): MenuController["s
 
 
 
-function getPagesForPack(this: MenuController, pack: LevelPack): Page[] {
+function getPagesForPack(this: MenuController, pack: LevelPack): LevelPage[] {
     const ITEMS_PER_PAGE = 9;
-    const totalPages = pack.items.length / 9;
+    const totalPages = Math.floor(pack.items.length / 9) + 1;
 
-    const pages: Page[] = [];
+    const pages: LevelPage[] = [];
 
     pages:
     for (let pageIndex = 0; pageIndex < totalPages; pageIndex++) {
         const itemStartIndex = pageIndex * ITEMS_PER_PAGE;
-        const buttons: Button[] = [];
+        const buttons: LevelButton[] = [];
+        const isFirst = pageIndex === 0;
+        const isLast = pageIndex === (totalPages - 1);
         pages.push({
             index: pageIndex,
             pageNumber: pageIndex+1,
             totalPages: totalPages,
-            isFirst: pageIndex === 0,
-            isLast: pageIndex === (totalPages - 1),
+            isFirst: isFirst,
+            isLast: isLast,
             buttons: buttons
         });
+        if (!isFirst) {
+            buttons.push({
+                text: "Previous Page",
+                row: 3,
+                column: 1,
+                color: colors.fadedPink,
+                borderColor: colors.pink,
+                onClick: () => {
+                    const state = this.screens.levels.state;
+                    state.currentPageIndex--;
+                    displayPage.call(this);
+                }
+            });
+        }
+        if (!isLast) {
+            buttons.push({
+                text: "Next Page",
+                row: 3,
+                column: 2,
+                color: colors.fadedPink,
+                borderColor: colors.pink,
+                onClick: () => {
+                    const state = this.screens.levels.state;
+                    state.currentPageIndex++;
+                    displayPage.call(this);
+                }
+            });
+        }
         for (let itemIndex = itemStartIndex; itemIndex < itemStartIndex + ITEMS_PER_PAGE; itemIndex++) {
             const item = pack.items[itemIndex];
             if (!item) {
@@ -170,11 +202,13 @@ function getPagesForPack(this: MenuController, pack: LevelPack): Page[] {
 
 
 function displayLevelPack(this: MenuController, pack: LevelPack) {
+    const state = this.screens.levels.state;
     const pages = getPagesForPack.call(this, pack);
-    displayPage.call(this, pages, 0);
+    state.pages = pages;
+    state.currentPageIndex = 0;
+    displayPage.call(this);
 
     const cons = this.screens.levels.containers;
-    const state = this.screens.levels.state;
     cons.previousPackButton?.destroy();
     cons.previousPackButton = undefined;
     if (state.previousLevelPacks.length) {
@@ -192,8 +226,9 @@ function displayLevelPack(this: MenuController, pack: LevelPack) {
 }
 
 
-function displayPage(this: MenuController, pages: Page[], pageIndex: number) {
-    const page = pages[pageIndex];
+function displayPage(this: MenuController) {
+    const state = this.screens.levels.state;
+    const page = state.pages[state.currentPageIndex];
     const pageContainer = this.screens.levels.containers.page;
     destroyOnlyChildren(pageContainer);
 
@@ -240,7 +275,7 @@ function pivotToCenter(container: pixi.Container) {
     container.pivot.set(...containerCenter(container));
 }
 
-type Page = {
+export type LevelPage = {
     /** starting from 0 */
     index: number;
     /** starting from 1 */
@@ -248,10 +283,10 @@ type Page = {
     totalPages: number;
     isFirst: boolean;
     isLast: boolean;
-    buttons: Button[];
+    buttons: LevelButton[];
 }
 
-type Button = {
+type LevelButton = {
     text: string;
     column: number;
     row: number;

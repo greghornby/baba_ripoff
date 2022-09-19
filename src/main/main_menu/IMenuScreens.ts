@@ -1,5 +1,6 @@
 import * as pixi from "pixi.js";
-import { LevelPack } from "../../levels/LevelPack.js";
+import type { LevelPack } from "../../levels/LevelPack.js";
+import type { LevelPage } from "./screens/createLevelSelectScreen.js";
 
 export namespace IMenuScreens {
     export const screens = ["main", "levels"] as const;
@@ -25,6 +26,8 @@ export namespace IMenuScreens {
             state: {
                 currentLevelPack: LevelPack;
                 previousLevelPacks: LevelPack[];
+                pages: LevelPage[];
+                currentPageIndex: number;
             };
             containers: {
                 parent: pixi.Container;
