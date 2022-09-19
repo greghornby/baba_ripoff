@@ -1,5 +1,5 @@
-import { Level } from "../../../main/Level.js";
-import { textures } from "../../../objects/textures.js";
+import { textures } from "../../../data/textures.js";
+import { Level } from "../../../object_classes/Level.js";
 import { isMobile } from "../../../util/data/isMobile.js";
 import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
 import { _commonKey } from "../../_commonKey.js";

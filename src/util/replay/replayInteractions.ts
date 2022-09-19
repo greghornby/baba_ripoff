@@ -1,4 +1,4 @@
-import { LevelController } from "../../main/LevelController.js";
+import { LevelController } from "../../controllers/LevelController.js";
 import { stringToInteractions } from "./stringToInteractions.js";
 
 export function replayInteractions(text: string) {

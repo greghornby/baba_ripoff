@@ -1,9 +1,9 @@
 import * as pixi from "pixi.js";
+import { constants } from "../../data/constants.js";
+import { constructs } from "../../data/constructs.js";
+import { textures } from "../../data/textures.js";
+import { words } from "../../data/words.js";
 import { mainPack } from "../../levels/mainPack.js";
-import { Constants } from "../../main/Constants.js";
-import { constructs } from "../../objects/constructs.js";
-import { textures } from "../../objects/textures.js";
-import { words } from "../../objects/words.js";
 import { mapTextureToSheet } from "../pixi/mapTextureToSheet.js";
 
 export async function initFiles () {
@@ -16,15 +16,15 @@ export async function initFiles () {
             animations: {main: []},
             meta: {scale: "1"}
         };
-        const count = t.baseTexture.width / Constants.TILE_SIZE;
+        const count = t.baseTexture.width / constants.TILE_SIZE;
         for (let i = 0; i < count; i++) {
             const _i = ""+i;
             data.frames[_i] = {
                 frame: {
-                    x: i*Constants.TILE_SIZE,
+                    x: i*constants.TILE_SIZE,
                     y: 0,
-                    w: Constants.TILE_SIZE,
-                    h: Constants.TILE_SIZE
+                    w: constants.TILE_SIZE,
+                    h: constants.TILE_SIZE
                 }
             };
             data.animations!.main.push(_i);

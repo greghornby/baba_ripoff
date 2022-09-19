@@ -1,5 +1,5 @@
-import { Sentence } from "../src/main/Sentence.js";
-import { convertRulesToPattern } from "../src/util/rules/rulesCancelMap.js";
+import { Sentence } from "../src/object_classes/Sentence.js";
+import { convertRulesToPattern } from "../src/util/rules/rulesCancel.js";
 
 test("convertRulesToPattern", () => {
 

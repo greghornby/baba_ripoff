@@ -1,4 +1,4 @@
-import { loadTextures } from "../../objects/textures.js";
+import { loadTextures } from "../../data/textures.js";
 
 export async function load() {
     await loadTextures();

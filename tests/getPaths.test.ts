@@ -1,4 +1,4 @@
-import { getPaths } from "../src/util/getPaths.js";
+import { getPaths } from "../src/util/data/getPaths.js";
 
 test("getPaths", () => {
 

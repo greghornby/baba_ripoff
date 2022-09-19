@@ -1,11 +1,11 @@
 import { App } from "../app/App.js"
-import { Construct } from "../main/Construct.js"
-import { Level } from "../main/Level.js"
-import { LevelController } from "../main/LevelController.js"
-import { MenuController } from "../main/main_menu/MenuController.js"
-import { Rule } from "../main/Rule.js"
-import { Sentence } from "../main/Sentence.js"
-import { Word } from "../main/Word.js"
+import { LevelController } from "../controllers/LevelController.js"
+import { MenuController } from "../menu/MenuController.js"
+import { Construct } from "../object_classes/Construct.js"
+import { Level } from "../object_classes/Level.js"
+import { Rule } from "../object_classes/Rule.js"
+import { Sentence } from "../object_classes/Sentence.js"
+import { Word } from "../object_classes/Word.js"
 import { replayInteractions } from "../util/replay/replayInteractions.js"
 
 export const exposeGlobals = () => {

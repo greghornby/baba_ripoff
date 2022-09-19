@@ -1,7 +1,7 @@
-import { Entity } from "../../main/Entity.js";
-import { LevelController } from "../../main/LevelController.js";
-import { Rule } from "../../main/Rule.js";
-import { Sentence } from "../../main/Sentence.js";
+import { LevelController } from "../../controllers/LevelController.js";
+import { Entity } from "../../object_classes/Entity.js";
+import { Rule } from "../../object_classes/Rule.js";
+import { Sentence } from "../../object_classes/Sentence.js";
 
 export function visuallyCancelSentences(
     controller: LevelController,

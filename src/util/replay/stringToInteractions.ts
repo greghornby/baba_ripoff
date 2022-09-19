@@ -1,4 +1,4 @@
-import { Interaction } from "../../main/Interaction.js";
+import { Interaction } from "../../types/Interaction.js";
 import { interactionCharMap } from "./interactionCharMap.js";
 
 export function stringToInteractions(text: string): Interaction[] {

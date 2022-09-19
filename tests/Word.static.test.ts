@@ -1,5 +1,6 @@
-import { Word } from "../src/main/Word";
-import { words } from "../src/objects/words";
+import { words } from "../src/data/words.js";
+import { Word } from "../src/object_classes/Word.js";
+
 
 test("findWordFromText", () => {
     const wordsMap: [Word, Word][] = [

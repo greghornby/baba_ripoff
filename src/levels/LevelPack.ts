@@ -1,4 +1,4 @@
-import { Level } from "../main/Level.js";
+import { Level } from "../object_classes/Level.js";
 
 export class LevelPack {
 

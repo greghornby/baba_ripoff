@@ -1,6 +1,6 @@
 import { AppEventInterface } from "../../app/AppEventInterface.js";
-import { Interaction } from "../../main/Interaction.js";
 import { Direction } from "../../types/Direction.js";
+import { Interaction } from "../../types/Interaction.js";
 
 export function getInteractionFromKeyboard(event: AppEventInterface.Keyboard): Interaction | undefined {
     const key = event.key;

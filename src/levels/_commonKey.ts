@@ -1,5 +1,5 @@
-import { constructs } from "../objects/constructs.js";
-import { words } from "../objects/words.js";
+import { constructs } from "../data/constructs.js";
+import { words } from "../data/words.js";
 
 export const _commonKey = {
     _: null,

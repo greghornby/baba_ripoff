@@ -1,5 +1,5 @@
-import { Interaction } from "../../main/Interaction.js";
 import { Direction } from "../../types/Direction.js";
+import { Interaction } from "../../types/Interaction.js";
 
 export function interactionCharMap(interactionOrChar: Interaction): string;
 export function interactionCharMap(interactionOrChar: string): Interaction | undefined;

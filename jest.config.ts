@@ -9,7 +9,7 @@ export default {
         }
     },
     setupFiles: [
-        "./tests/setup/initFiles.ts",
+        "./tests/setup/testInitFiles.ts",
         "jest-canvas-mock",
     ],
     testRegex: "tests/.*\.test\.ts$",

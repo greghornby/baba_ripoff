@@ -1,7 +1,7 @@
 import { AppEventInterface } from "../../app/AppEventInterface.js";
-import { Interaction } from "../../main/Interaction.js";
-import { LevelController } from "../../main/LevelController.js";
+import { LevelController } from "../../controllers/LevelController.js";
 import { Direction } from "../../types/Direction.js";
+import { Interaction } from "../../types/Interaction.js";
 
 export function getInteractionFromSwipe(controller: LevelController, event: AppEventInterface.Swipe): Interaction | undefined {
     let interactionType: Interaction["interaction"];
