@@ -1,19 +1,17 @@
 import * as pixi from "pixi.js";
 import { App } from "../app/App.js";
 import { AppEventInterface } from "../app/AppEventInterface.js";
+import { Category } from "../classes/Category.js";
+import { Construct } from "../classes/Construct.js";
+import { Entity, EntityInitData } from "../classes/Entity.js";
+import { Cell, Level, LevelGrid, LevelRow } from "../classes/Level.js";
+import { Rule } from "../classes/Rule.js";
+import { Sentence } from "../classes/Sentence.js";
+import { Word } from "../classes/Word.js";
 import { winParticlesAnimation } from "../coroutines/winParticlesAnimation.js";
 import { categories } from "../data/categories.js";
-import { textures } from "../data/textures.js";
 import { words } from "../data/words.js";
 import { debugPrint } from "../debug/debugPrint.js";
-import { MenuController } from "../menu/MenuController.js";
-import { Category } from "../object_classes/Category.js";
-import { Construct } from "../object_classes/Construct.js";
-import { Entity, EntityInitData } from "../object_classes/Entity.js";
-import { Cell, Level, LevelGrid, LevelRow } from "../object_classes/Level.js";
-import { Rule } from "../object_classes/Rule.js";
-import { Sentence } from "../object_classes/Sentence.js";
-import { Word } from "../object_classes/Word.js";
 import { Direction } from "../types/Direction.js";
 import { Interaction } from "../types/Interaction.js";
 import { getInteractionFromKeyboard } from "../util/controller/getInteractionFromKeyboard.js";
@@ -33,8 +31,9 @@ import { isNotComplement } from "../util/rules/isNotComplement.js";
 import { rulesCancel } from "../util/rules/rulesCancel.js";
 import { VerbUnion } from "../util/rules/verbEquals.js";
 import { tempWinScreen } from "../util/temp/tempWinScreen.js";
-import { ActionProcessor } from "./ActionProcessor.js";
-import { AnimationSystem } from "./AnimationSystem.js";
+import { ActionController } from "./ActionController.js";
+import { AnimationController } from "./AnimationController.js";
+import { HUDController } from "./HUDController.js";
 
 export class LevelController {
 
@@ -63,20 +62,25 @@ export class LevelController {
         new LevelController(level);
     }
 
-    paused: boolean = false;
-
-    timeLastTick: number | undefined;
-    timeStarted: number = performance.now();
-    timeElapsed: number = 0;
-    ticksElapsed: number = 0;
-
-    levelWon: boolean = false;
-
     //#region Props
-    public actionProcessor: ActionProcessor;
-    public animationSytem: AnimationSystem;
+
+    // Timing information
+    public timeLastTick: number | undefined = undefined;
+    public timeStarted: number = performance.now();
+    public timeElapsed: number = 0;
+    public ticksElapsed: number = 0;
+
+    //controllers
+    public actionProcessor: ActionController;
+    public animationSytem: AnimationController;
+    public hudController: HUDController;
+
+    // game state info
+    public paused: boolean = false;
+    public levelWon: boolean = false;
     public turnNumber: number = 0;
 
+    // pixi
     public ticker: pixi.Ticker;
     public container: pixi.Container;
     public containers: {
@@ -84,10 +88,14 @@ export class LevelController {
         background: pixi.Container;
         categories: Record<string, pixi.Container>;
         particles: pixi.Container;
+        hud: pixi.Container;
         splash: pixi.Container,
-        pause: pixi.Container,
+        // pause: pixi.Container,
     };
 
+    //Entity information
+
+    /** Increments everytime an Entity without a specified id is created, so that the Entity can use this as its id */
     public entityCount: number = 0;
     /** Stores all Entities current present in the level */
     public entities: Set<Entity> = new Set();
@@ -99,17 +107,26 @@ export class LevelController {
     public entityMap: Omit<Map<number, Entity>, typeof Symbol.iterator> = new Map();
     /** A set of entities to remove from entityMap when no longer needed by anything  */
     public entityMapMarkedForCleanup: Set<number> = new Set();
+    /** 2-dimensional array representing all tiles and what Entities are on each tile */
     public entityGrid: LevelGrid<Entity> = [];
 
+    // Rules information
+
+    /** The default rules that don't appear as sentences in the level */
     public defaultRules: Rule[] = [];
+    /** A list of sentences found in the level */
     public sentences: Sentence[] = [];
+    /** A set of rules parsed from `this.sentences` */
     public rules: Set<Rule> = new Set();
-    /** Maps a cancelled out rule to the list of rules with NOT that cancel it out */
+    /** A set of rules that have been cancelled out by other rules. These rules will be removed from `this.rules` */
     public _cancelledRules: Set<Rule> = new Set();
-    public _cancelledWordEntities: Set<Entity> = new Set();
+    /** Maps tags to a set of all Entities in the level that have that tag from rules */
     public tagToEntities: MapOfSets<Word, Entity> = new MapOfSets();
+    /** Maps an Entity to a set of all its Tags from rules */
     public entityToTags: MapOfSets<Entity, Word> = new MapOfSets();
+    /** Maps an Entity to a set of all its Tags it should not have from rules */
     public entityToNotTags: MapOfSets<Entity, Word> = new MapOfSets();
+    /** For each verb, including the negated (NOT) version, maps an Entity to a set of Constructs that relates to it for that verb */
     public entityVerbs: Record<`${VerbUnion}${""|"Not"}`, Map<Entity, Set<Construct>>> = {
         is: new Map(),
         isNot: new Map(),
@@ -118,121 +135,128 @@ export class LevelController {
         make: new Map(),
         makeNot: new Map()
     };
-    public mutationMap: Map<Entity, {
-        sentence: Sentence;
-        subjectWord: Word;
-        constructs: {
-            construct: Construct;
-            complementWord: Word;
-        }[];
-    }[]> = new Map();
+    /** A set of Entities that are forced to be non-mutable from rules */
     public entityStrictlySelfMutations: Set<Entity> = new Set();
+    /** A set of Entity's (of Word Constructs) that are actively part of valid sentences */
     public activeTextEntities: Set<Entity> = new Set();
 
+    // Data information
+
+    /** This becomes set when a user gives a valid input. Becomes unset when the tick function processes it */
     public currentInteraction: Interaction | undefined;
-
-    public tickFlags: {
-        rebuildSentences?: boolean;
-        _debugAlertedYouAreDead?: boolean;
-    } = {};
-
+    /** A set of Iterators that need `next()` to be called on each tick, even if paused */
     public coroutines: Set<Iterator<any, any, any>> = new Set();
+
+    /** Probably just debug info, remove this later */
+    public tickFlags: {
+        _debugAlertedYouAreDead?: boolean;
+    } = {
+        _debugAlertedYouAreDead: true
+    };
 
     //#endregion Props
 
+
+    //#region Constructor
     constructor(
         public level: Level
     ) {
 
-        LevelController.instance = this;
+        //Singleton init
+        {
+            LevelController.instance = this;
 
-        if (!LevelController.staticInitted) {
-            LevelController.initStatic();
-        }
-
-        (globalThis as any)["controller"] = this;
-
-        const app = App.get();
-        const pixiApp = app.pixiApp;
-
-        // remove all children and render empty screen
-        destroyOnlyChildren(pixiApp.stage);
-        pixiApp.render();
-
-        //create new ticker
-        this.ticker = new pixi.Ticker();
-
-        //create container
-        this.container = new pixi.Container();
-        this.containers = {
-            grid: new pixi.Graphics(),
-            background: new pixi.Container(),
-            particles: new pixi.Container(),
-            categories: Object.fromEntries(
-                Object.values(categories).map<[string, pixi.Container]>(c => [c.name, new pixi.Container])
-            ),
-            splash: new pixi.Container(),
-            pause: new pixi.Container()
-        };
-        const containerOrder: pixi.DisplayObject[] = [
-            this.containers.grid,
-            this.containers.background,
-            ...Object.entries(this.containers.categories)
-                .sort(([categoryNameA], [categoryNameB]) => Category.store[categoryNameA].priority - Category.store[categoryNameB].priority)
-                .map(([,container]) => container),
-            this.containers.particles,
-            this.containers.splash,
-            this.containers.pause
-        ];
-        this.container.addChild(...containerOrder);
-        pixiApp.stage.addChild(this.container);
-
-        if (this.level.initData.background) {
-            for (const bg of this.level.initData.background) {
-                const sprite = pixi.Sprite.from(bg.texture);
-                sprite.x = bg.x * this.level.TILE_SIZE;
-                sprite.y = bg.y * this.level.TILE_SIZE;
-                this.containers.background.addChild(sprite);
+            if (!LevelController.staticInitted) {
+                LevelController.initStatic();
             }
         }
 
-        this.defaultRules = [
-            new Rule({
-                subject: Rule.word(words.text),
-                verb: {word: words.is},
-                complement: Rule.word(words.push),
-            })
-        ];
+        //Debug
+        (globalThis as any)["controller"] = this;
 
-        //populate entities
-        this._resetEntitiesToInit();
+        //Controllers
+        {
+            this.actionProcessor = new ActionController(this);
+            this.animationSytem = new AnimationController(this);
+            this.hudController = new HUDController(this);
+        }
 
-        //setup grid graphics object
-        this._drawGrid();
-        this._createPauseScreen();
+        //Pixi init
+        {
+            const app = App.get();
+            const pixiApp = app.pixiApp;
 
-        //setup resize listener
-        this._fitContainerToScreen();
+            // remove all children and render empty screen
+            destroyOnlyChildren(pixiApp.stage);
+            pixiApp.render();
 
+            //create new ticker
+            this.ticker = new pixi.Ticker();
 
-        //add the main `tick` function and start the ticker again
-        type TickFlags = typeof this.tickFlags;
-        Object.assign<TickFlags, TickFlags>(this.tickFlags, {
-            rebuildSentences: true,
-            _debugAlertedYouAreDead: true
-        });
+            //create container
+            this.container = new pixi.Container();
+            this.containers = {
+                grid: new pixi.Graphics(),
+                background: new pixi.Container(),
+                particles: new pixi.Container(),
+                categories: Object.fromEntries(
+                    Object.values(categories).map<[string, pixi.Container]>(c => [c.name, new pixi.Container])
+                ),
+                hud: this.hudController.container,
+                splash: new pixi.Container(),
+            };
+            const containerOrder: pixi.DisplayObject[] = [
+                this.containers.grid,
+                this.containers.background,
+                ...Object.entries(this.containers.categories)
+                    .sort(([categoryNameA], [categoryNameB]) => Category.store[categoryNameA].priority - Category.store[categoryNameB].priority)
+                    .map(([,container]) => container),
+                this.containers.particles,
+                this.containers.hud,
+                this.containers.splash,
+            ];
+            this.container.addChild(...containerOrder);
+            pixiApp.stage.addChild(this.container);
 
-        this.actionProcessor = new ActionProcessor(this);
-        this.animationSytem = new AnimationSystem(this);
+            //setup grid graphics object
+            this._drawGrid();
 
-        this.parseRules();
+            if (this.level.initData.background) {
+                for (const bg of this.level.initData.background) {
+                    const sprite = pixi.Sprite.from(bg.texture);
+                    sprite.x = bg.x * this.level.TILE_SIZE;
+                    sprite.y = bg.y * this.level.TILE_SIZE;
+                    this.containers.background.addChild(sprite);
+                }
+            }
 
+            //fit the pixi container to screen view size
+            this._fitContainerToScreen();
+        }
+
+        //populate sprites and setup rules
+        {
+            //populate entities
+            this._resetEntitiesToInit();
+            this.defaultRules = [
+                new Rule({
+                    subject: Rule.word(words.text),
+                    verb: {word: words.is},
+                    complement: Rule.word(words.push),
+                })
+            ];
+            this.parseRules();
+        }
+
+        // init default coroutines
         this.coroutines.add(winParticlesAnimation(this));
 
+        //init the ticker
         this.ticker.add(() => this.tick());
         this.ticker.start();
         // this.ticker.maxFPS = 30;
     }
+    //#endregion Constructor
 
 
     //#region GRAPHICAL
@@ -283,46 +307,6 @@ export class LevelController {
     }
 
 
-    public _createPauseScreen(): void {
-        const pauseContainer = this.containers.pause;
-        const transparentOverlay = new pixi.Graphics();
-        transparentOverlay.beginFill(0x006e8f, 0.5);
-        transparentOverlay.drawRect(0, 0, this.level.pixelWidth, this.level.pixelHeight);
-        const menuSprite = new pixi.Sprite(textures.menus.pause_menu);
-        menuSprite.anchor.set(0.5, 0.5);
-        menuSprite.transform.position.set(this.level.pixelWidth / 2, this.level.pixelHeight / 2);
-
-        const resumeInteractive = new pixi.Sprite();
-        resumeInteractive.hitArea = new pixi.Rectangle(50 - 200, 25 - 125, 300, 50);
-        resumeInteractive.hitArea
-        resumeInteractive.buttonMode = true;
-        resumeInteractive.interactive = true;
-        resumeInteractive.on("pointertap", () => this.togglePause(false));
-
-        const restartInteractive = new pixi.Sprite();
-        restartInteractive.hitArea = new pixi.Rectangle(50 - 200, 100 - 125, 300, 50);
-        restartInteractive.hitArea
-        restartInteractive.buttonMode = true;
-        restartInteractive.interactive = true;
-        restartInteractive.on("pointertap", () => this.restart());
-
-        const menuInteractive = new pixi.Sprite();
-        menuInteractive.hitArea = new pixi.Rectangle(50 - 200, 175 - 125, 300, 50);
-        menuInteractive.hitArea
-        menuInteractive.buttonMode = true;
-        menuInteractive.interactive = true;
-        menuInteractive.on("pointertap", () => {
-            this.exit();
-            MenuController.load();
-        });
-
-        pauseContainer.addChild(transparentOverlay, menuSprite);
-        menuSprite.addChild(resumeInteractive, restartInteractive, menuInteractive);
-
-        pauseContainer.visible = false;
-    }
-
-
     //#endregion GRAPHICAL
 
 
@@ -348,9 +332,6 @@ export class LevelController {
             entity.entityPixi.setVisible(false);
         }
 
-        if (entityData.construct instanceof Word) {
-            this.tickFlags.rebuildSentences = true;
-        }
         return entity;
     }
 
@@ -363,10 +344,6 @@ export class LevelController {
             if (options.instant !== false) {
                 entity.entityPixi.destroy();
             }
-        }
-
-        if (entity.construct instanceof Word) {
-            this.tickFlags.rebuildSentences = true;
         }
     }
 
@@ -476,10 +453,6 @@ export class LevelController {
         entity.x = endX;
         entity.y = endY;
         this.addEntityToCell(entity, endX, endY);
-
-        if (entity.construct instanceof Word) {
-            this.tickFlags.rebuildSentences = true;
-        }
     }
 
 
@@ -609,7 +582,7 @@ export class LevelController {
             }
         }
 
-        visuallyCancelSentences(this, sentenceToRules);
+        visuallyCancelSentences(this);
 
         for (const rule of this._cancelledRules) {
             this.rules.delete(rule);
@@ -777,13 +750,9 @@ export class LevelController {
         }
 
         if (this.paused) {
-            if (!this.containers.pause.visible) {
-                this.containers.pause.visible = true;
-            }
+            this.hudController.pauseVisibility(true);
         } else {
-            if (this.containers.pause.visible) {
-                this.containers.pause.visible = false;
-            }
+            this.hudController.pauseVisibility(false);
         }
 
         this.ticksElapsed++;

@@ -1,4 +1,4 @@
-import { Level } from "../../../object_classes/Level.js";
+import { Level } from "../../../classes/Level.js";
 import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
 import { _commonKey } from "../../_commonKey.js";
 

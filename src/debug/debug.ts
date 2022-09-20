@@ -1,7 +1,7 @@
+import { Entity } from "../classes/Entity.js";
+import { Sentence } from "../classes/Sentence.js";
+import { Word } from "../classes/Word.js";
 import { LevelController } from "../controllers/LevelController.js";
-import { Entity } from "../object_classes/Entity.js";
-import { Sentence } from "../object_classes/Sentence.js";
-import { Word } from "../object_classes/Word.js";
 
 const _debug = {
 

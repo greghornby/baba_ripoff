@@ -1,5 +1,5 @@
+import { Level } from "../../../classes/Level.js";
 import { words } from "../../../data/words.js";
-import { Level } from "../../../object_classes/Level.js";
 import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
 import { _commonKey } from "../../_commonKey.js";
 

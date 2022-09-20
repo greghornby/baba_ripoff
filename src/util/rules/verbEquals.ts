@@ -1,4 +1,4 @@
-import { Word } from "../../object_classes/Word.js";
+import { Word } from "../../classes/Word.js";
 
 export type VerbUnion = "is" | "has" | "make";
 

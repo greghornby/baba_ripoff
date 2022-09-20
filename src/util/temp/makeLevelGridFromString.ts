@@ -1,6 +1,6 @@
-import { Construct } from "../../object_classes/Construct.js";
-import { Entity } from "../../object_classes/Entity.js";
-import { Cell, InitLevelData, LevelGrid, LevelRow } from "../../object_classes/Level.js";
+import { Construct } from "../../classes/Construct.js";
+import { Entity } from "../../classes/Entity.js";
+import { Cell, InitLevelData, LevelGrid, LevelRow } from "../../classes/Level.js";
 
 export function makeLevelGridFromString(
     _text: string,

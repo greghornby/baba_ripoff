@@ -1,6 +1,6 @@
 import objectHash from "object-hash";
-import { Construct } from "../object_classes/Construct.js";
 import { Direction } from "../types/Direction.js";
+import { Construct } from "./Construct.js";
 
 export class Action {
     public hash: string;

@@ -1,4 +1,4 @@
-import { WordBehavior } from "../../object_classes/Word.js";
+import { WordBehavior } from "../../classes/Word.js";
 
 export const behaviorNoun = (nounSelector: ({} & WordBehavior["noun"])["subject"]): WordBehavior["noun"] => {
     return {

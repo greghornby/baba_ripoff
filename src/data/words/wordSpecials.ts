@@ -1,4 +1,4 @@
-import { NounSelector, Word } from "../../object_classes/Word.js";
+import { NounSelector, Word } from "../../classes/Word.js";
 import { behaviorNoun } from "../../util/words/behaviorNounAndComplement.js";
 import { constructs } from "../constructs.js";
 import { textures } from "../textures.js";

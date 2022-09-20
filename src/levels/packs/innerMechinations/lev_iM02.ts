@@ -1,7 +1,7 @@
+import { Level } from "../../../classes/Level.js";
 import { constructs } from "../../../data/constructs.js";
 import { textures } from "../../../data/textures.js";
 import { words } from "../../../data/words.js";
-import { Level } from "../../../object_classes/Level.js";
 import { Direction } from "../../../types/Direction.js";
 import { isMobile } from "../../../util/data/isMobile.js";
 import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";

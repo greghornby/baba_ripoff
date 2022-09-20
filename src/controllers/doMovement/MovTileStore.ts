@@ -1,4 +1,4 @@
-import { Entity } from "../../object_classes/Entity.js";
+import { Entity } from "../../classes/Entity.js";
 import { Direction } from "../../types/Direction.js";
 import { LevelController } from "../LevelController.js";
 import { MovTileInfo } from "./MovTileInfo.js";

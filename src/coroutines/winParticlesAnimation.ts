@@ -1,11 +1,11 @@
 import * as pixi from "pixi.js";
+import type { Entity } from "../classes/Entity.js";
+import type { Cell } from "../classes/Level.js";
 import type { LevelController } from "../controllers/LevelController.js";
 import { colors } from "../data/colors.js";
 import { constants } from "../data/constants.js";
 import { textures } from "../data/textures.js";
 import { words } from "../data/words.js";
-import type { Entity } from "../object_classes/Entity.js";
-import type { Cell } from "../object_classes/Level.js";
 import { mapTextureToSheet } from "../util/pixi/mapTextureToSheet.js";
 
 

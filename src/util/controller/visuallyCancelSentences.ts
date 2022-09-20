@@ -1,11 +1,10 @@
+import { Entity } from "../../classes/Entity.js";
+import { Rule } from "../../classes/Rule.js";
+import { Sentence } from "../../classes/Sentence.js";
 import { LevelController } from "../../controllers/LevelController.js";
-import { Entity } from "../../object_classes/Entity.js";
-import { Rule } from "../../object_classes/Rule.js";
-import { Sentence } from "../../object_classes/Sentence.js";
 
 export function visuallyCancelSentences(
-    controller: LevelController,
-    sentenceToRules: Map<Sentence, Rule[]>
+    controller: LevelController
 ) {
 
     //@todo optimize this part

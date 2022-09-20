@@ -1,14 +1,14 @@
+import { Action } from "../classes/Action.js";
+import { Entity } from "../classes/Entity.js";
+import { Level } from "../classes/Level.js";
 import { debugPrint } from "../debug/debugPrint.js";
-import { Entity } from "../object_classes/Entity.js";
-import { Level } from "../object_classes/Level.js";
 import { Interaction } from "../types/Interaction.js";
 import { destructiblePairs } from "../util/controller/destructiblePairs.js";
 import { getWordMap } from "../util/words/getWordMap.js";
-import { Action } from "./Action.js";
 import { doMovement } from "./doMovement/doMovement.js";
 import { LevelController } from "./LevelController.js";
 
-export class ActionProcessor {
+export class ActionController {
 
     public level: Level;
     public controller: LevelController;

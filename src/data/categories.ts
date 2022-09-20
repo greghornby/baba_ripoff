@@ -1,4 +1,4 @@
-import { Category } from "../object_classes/Category.js";
+import { Category } from "../classes/Category.js";
 
 export const categories = {
 

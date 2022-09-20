@@ -1,6 +1,6 @@
+import { Level } from "../../../classes/Level.js";
 import { constructs } from "../../../data/constructs.js";
 import { words } from "../../../data/words.js";
-import { Level } from "../../../object_classes/Level.js";
 import { makeLevelGridFromString } from "../../../util/temp/makeLevelGridFromString.js";
 
 const levelText = `

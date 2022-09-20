@@ -1,4 +1,4 @@
-import { Word } from "../../object_classes/Word.js";
+import { Word } from "../../classes/Word.js";
 import { colors } from "../colors.js";
 import { textures } from "../textures.js";
 

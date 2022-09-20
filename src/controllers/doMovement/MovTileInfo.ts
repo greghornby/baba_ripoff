@@ -1,4 +1,4 @@
-import { Entity } from "../../object_classes/Entity.js";
+import { Entity } from "../../classes/Entity.js";
 import { Direction } from "../../types/Direction.js";
 import { EmptyArray } from "../../util/data/EmptyArray.js";
 import { getWordMap } from "../../util/words/getWordMap.js";

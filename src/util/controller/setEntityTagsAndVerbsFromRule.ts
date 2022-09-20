@@ -1,8 +1,8 @@
+import { Construct } from "../../classes/Construct.js";
+import { Entity } from "../../classes/Entity.js";
+import { IRule, Rule } from "../../classes/Rule.js";
+import { INounSelector, NounSelector, Word } from "../../classes/Word.js";
 import { LevelController } from "../../controllers/LevelController.js";
-import { Construct } from "../../object_classes/Construct.js";
-import { Entity } from "../../object_classes/Entity.js";
-import { IRule, Rule } from "../../object_classes/Rule.js";
-import { INounSelector, NounSelector, Word } from "../../object_classes/Word.js";
 import { arrayRemove } from "../data/arrayRemove.js";
 import { setAddMultiple } from "../data/setAddMultiple.js";
 import { mapVerbToString, verbEquals } from "../rules/verbEquals.js";

@@ -1,12 +1,12 @@
+import { Action } from "../classes/Action.js";
 import { constants } from "../data/constants.js";
-import { Action } from "./Action.js";
 import { LevelController } from "./LevelController.js";
 
 
-export class AnimationSystem {
+export class AnimationController {
 
     static ANIMATION_LENGTH_MAGIC_NUMBER = 5;
-    static ANIMATION_SPEED: number = Math.ceil(AnimationSystem.ANIMATION_LENGTH_MAGIC_NUMBER * (constants.FRAMERATE/constants.PIXI_DEFAULT_FRAMERATE));
+    static ANIMATION_SPEED: number = Math.ceil(AnimationController.ANIMATION_LENGTH_MAGIC_NUMBER * (constants.FRAMERATE/constants.PIXI_DEFAULT_FRAMERATE));
     public steps: AnimationStep[] = [];
     animationIterator: Iterator<void> | undefined;
 
@@ -74,7 +74,7 @@ export class AnimationSystem {
     }
 
 
-    public getAnimation(): AnimationSystem["animationIterator"] {
+    public getAnimation(): AnimationController["animationIterator"] {
         if (this.animationIterator) {
             return this.animationIterator;
         }
@@ -88,8 +88,8 @@ export class AnimationSystem {
 
 
     public *_makeAnimationIterator(step: AnimationStep): Generator<void> {
-        for (let f = 0; f < AnimationSystem.ANIMATION_SPEED; f++) {
-            const isLastFrame = f === AnimationSystem.ANIMATION_SPEED - 1;
+        for (let f = 0; f < AnimationController.ANIMATION_SPEED; f++) {
+            const isLastFrame = f === AnimationController.ANIMATION_SPEED - 1;
 
             if (step.movement) {
                 for (const [entityId, {sx, sy, ex, ey}] of step.movement) {
@@ -98,8 +98,8 @@ export class AnimationSystem {
                         console.warn(`Entity not found for id ${entityId}`);
                         continue;
                     }
-                    const dx = (ex - sx) / AnimationSystem.ANIMATION_SPEED;
-                    const dy = (ey - sy) / AnimationSystem.ANIMATION_SPEED;
+                    const dx = (ex - sx) / AnimationController.ANIMATION_SPEED;
+                    const dy = (ey - sy) / AnimationController.ANIMATION_SPEED;
                     const x = isLastFrame ? ex : (sx + (f+1)*dx);
                     const y = isLastFrame ? ey : (sy + (f+1)*dy);
                     entity.entityPixi.setPosition(x, y);
@@ -122,7 +122,7 @@ export class AnimationSystem {
                 if (!entityIds) {
                     continue;
                 }
-                const dy = 1 / AnimationSystem.ANIMATION_SPEED;
+                const dy = 1 / AnimationController.ANIMATION_SPEED;
                 const startValue = isSwapIn ? 0 : 1;
                 const endValue = isSwapIn ? 1 : 0;
                 const direction = isSwapIn ? 1 : -1;

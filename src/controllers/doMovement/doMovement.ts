@@ -1,19 +1,19 @@
-import { Entity } from "../../object_classes/Entity.js";
+import { Action } from "../../classes/Action.js";
+import { Entity } from "../../classes/Entity.js";
 import { Direction } from "../../types/Direction.js";
 import { Interaction } from "../../types/Interaction.js";
 import { addCoordinates } from "../../util/movement/addCoordinates.js";
 import { directionToXY } from "../../util/movement/directionToXY.js";
 import { getOppositeDirection } from "../../util/movement/getOppositeFacing.js";
 import { getWordMap } from "../../util/words/getWordMap.js";
-import { Action } from "../Action.js";
-import { ActionProcessor } from "../ActionProcessor.js";
+import { ActionController } from "../ActionController.js";
 import { MovMovementDirectionStatus, MovTileInfo } from "./MovTileInfo.js";
 import { MovTileStore } from "./MovTileStore.js";
 import { resolveTile } from "./resolveTile.js";
 
 const words = getWordMap("you", "move", "pull", "push", "stop");
 
-export function doMovement(this: ActionProcessor, interaction: Interaction, addStep: boolean): boolean {
+export function doMovement(this: ActionController, interaction: Interaction, addStep: boolean): boolean {
 
     let somethingMoved = false;
 
@@ -169,13 +169,13 @@ export function doMovement(this: ActionProcessor, interaction: Interaction, addS
 }
 
 function addFacingAction(
-    aP: ActionProcessor,
+    actionCont: ActionController,
     actions: Action[],
     entity: Entity,
     direction: Direction
 ) {
     if (entity.facing !== direction) {
-        actions.push(new Action(aP.step, {
+        actions.push(new Action(actionCont.step, {
             type: "facing",
             entityId: entity.id,
             fromDirection: entity.facing,
@@ -185,13 +185,13 @@ function addFacingAction(
 }
 
 function addMovementAction(
-    aP: ActionProcessor,
+    actionCont: ActionController,
     actions: Action[],
     entity: Entity,
     start: readonly [number, number],
     end: readonly [number, number],
 ) {
-    actions.push(new Action(aP.step, {
+    actions.push(new Action(actionCont.step, {
         type: "movement",
         entityId: entity.id,
         startX: start[0],

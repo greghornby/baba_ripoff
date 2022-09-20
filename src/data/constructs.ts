@@ -1,5 +1,5 @@
-import { Construct } from "../object_classes/Construct.js";
-import { Word } from "../object_classes/Word.js";
+import { Construct } from "../classes/Construct.js";
+import { Word } from "../classes/Word.js";
 import { categories } from "./categories.js";
 import { colors } from "./colors.js";
 import { textures } from "./textures.js";

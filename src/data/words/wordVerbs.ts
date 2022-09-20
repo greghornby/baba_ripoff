@@ -1,4 +1,4 @@
-import { Word } from "../../object_classes/Word.js";
+import { Word } from "../../classes/Word.js";
 import { textures } from "../textures.js";
 
 const texturePlaceholder = textures.missing;

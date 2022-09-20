@@ -1,7 +1,7 @@
+import { Entity } from "../../classes/Entity.js";
+import { Word } from "../../classes/Word.js";
 import { LevelController } from "../../controllers/LevelController.js";
 import { words } from "../../data/words.js";
-import { Entity } from "../../object_classes/Entity.js";
-import { Word } from "../../object_classes/Word.js";
 import { iterableFind } from "../data/iterableFind.js";
 
 export function destructiblePairs(): Entity[] {

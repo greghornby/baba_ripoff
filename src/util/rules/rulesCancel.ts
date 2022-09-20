@@ -1,4 +1,4 @@
-import { Rule } from "../../object_classes/Rule.js";
+import { Rule } from "../../classes/Rule.js";
 
 export const rulesCancelMap: Record<string, string> = {
     "X IS NOT A": "X IS A", // baba is rock, baba is not rock
