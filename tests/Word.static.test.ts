@@ -1,5 +1,5 @@
+import { Word } from "../src/classes/Word.js";
 import { words } from "../src/data/words.js";
-import { Word } from "../src/object_classes/Word.js";
 
 
 test("findWordFromText", () => {

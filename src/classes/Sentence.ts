@@ -303,6 +303,8 @@ export class Sentence {
                     valid = true;
                     continue;
                 }
+                valid = false;
+                break;
             }
         }
 

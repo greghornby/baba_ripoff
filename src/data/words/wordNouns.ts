@@ -9,91 +9,91 @@ const texturePlaceholder = textures.missing;
 export default {
 
     baba: new Word("baba", {
-		texture: textures.words.baba_anim,
-		color: colors.pink,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.baba))
-		}
-	}),
+        texture: textures.words.baba_anim,
+        color: colors.pink,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.baba))
+        }
+    }),
 
 
     wall: new Word("wall", {
-		texture: textures.words.wall_anim,
-		color: colors.brightBlue,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.wall))
-		}
-	}),
+        texture: textures.words.wall_anim,
+        color: colors.brightBlue,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.wall))
+        }
+    }),
 
-	key: new Word("key", {
-		texture: textures.words.key,
-		color: colors.gold,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.key))
-		}
-	}),
+    key: new Word("key", {
+        texture: textures.words.key,
+        color: colors.gold,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.key))
+        }
+    }),
 
-	door: new Word("door", {
-		texture: textures.words.door,
-		color: colors.stop,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.door))
-		}
-	}),
+    door: new Word("door", {
+        texture: textures.words.door,
+        color: colors.stop,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.door))
+        }
+    }),
 
-	rock: new Word("rock", {
-		texture: textures.words.rock_anim,
-		color: colors.brightBrown,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.rock))
-		}
-	}),
+    rock: new Word("rock", {
+        texture: textures.words.rock_anim,
+        color: colors.brightBrown,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.rock))
+        }
+    }),
 
-	flag: new Word("flag", {
-		texture: textures.words.flag_anim,
-		color: colors.gold,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.flag))
-		}
-	}),
+    flag: new Word("flag", {
+        texture: textures.words.flag_anim,
+        color: colors.gold,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.flag))
+        }
+    }),
 
     leaf: new Word("leaf", {
-		texture: textures.words.leaf,
-		color: colors.darkGreen,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.leaf))
-		}
-	}),
+        texture: textures.words.leaf,
+        color: colors.darkGreen,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.leaf))
+        }
+    }),
 
-	skull: new Word("skull", {
-		texture: textures.words.skull_anim,
-		color: 0xa61b03,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.skull))
-		}
-	}),
+    skull: new Word("skull", {
+        texture: textures.words.skull_anim,
+        color: 0xa61b03,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.skull))
+        }
+    }),
 
-	belt: new Word("belt", {
-		texture: textures.words.belt,
-		color: colors.white,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.belt))
-		}
-	}),
+    belt: new Word("belt", {
+        texture: textures.words.belt,
+        color: colors.white,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.belt))
+        }
+    }),
 
-	lava: new Word("lava", {
-		texture: textures.words.lava,
-		color: colors.lava,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.lava))
-		}
-	}),
+    lava: new Word("lava", {
+        texture: textures.words.lava,
+        color: colors.lava,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.lava))
+        }
+    }),
 
-	water: new Word("water", {
-		texture: textures.words.water_anim,
-		color: colors.water,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.water))
-		}
-	}),
+    water: new Word("water", {
+        texture: textures.words.water_anim,
+        color: colors.water,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.water))
+        }
+    }),
 }

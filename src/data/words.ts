@@ -5,9 +5,9 @@ import tags from "./words/wordTags.js";
 import verbs from "./words/wordVerbs.js";
 
 export const words = {
-	...special,
-	...nouns,
-	...verbs,
-	...tags,
-	...conditions,
+    ...special,
+    ...nouns,
+    ...verbs,
+    ...tags,
+    ...conditions,
 }

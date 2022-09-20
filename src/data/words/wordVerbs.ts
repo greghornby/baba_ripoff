@@ -6,23 +6,23 @@ const texturePlaceholder = textures.missing;
 export default {
 
     is: new Word("is", {
-		texture: textures.words.is_anim,
-		behavior: {
+        texture: textures.words.is_anim,
+        behavior: {
             verb: true
-		}
-	}),
+        }
+    }),
 
-	has: new Word("has", {
-		texture: texturePlaceholder,
-		behavior: {
+    has: new Word("has", {
+        texture: texturePlaceholder,
+        behavior: {
             verb: true
-		}
-	}),
+        }
+    }),
 
-	make: new Word("make", {
-		texture: texturePlaceholder,
-		behavior: {
+    make: new Word("make", {
+        texture: texturePlaceholder,
+        behavior: {
             verb: true
-		}
-	}),
+        }
+    }),
 }

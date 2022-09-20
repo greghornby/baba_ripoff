@@ -1,4 +1,4 @@
-import { Sentence } from "../src/object_classes/Sentence.js";
+import { Sentence } from "../src/classes/Sentence.js";
 import { rulesCancel } from "../src/util/rules/rulesCancel.js";
 
 const cancels = true;

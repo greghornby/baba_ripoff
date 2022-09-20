@@ -8,33 +8,33 @@ const texturePlaceholder = textures.missing;
 export default {
 
     not: new Word("not", {
-		texture: textures.words.not_anim,
-		behavior: {
+        texture: textures.words.not_anim,
+        behavior: {
             not: true
-		}
-	}),
+        }
+    }),
 
     and: new Word("and", {
-		texture: textures.words.and_anim,
-		behavior: {
+        texture: textures.words.and_anim,
+        behavior: {
             and: true
-		}
-	}),
+        }
+    }),
 
     text: new Word("text", {
-		texture: textures.words.text_anim,
-		behavior: {
-			noun: {
-				subject: new NounSelector.compareLevelConstructs(construct => construct instanceof Word),
-				compliment: new NounSelector.fromEntity(entity => [entity.construct.associatedWord()])
-			}
-		}
-	}),
+        texture: textures.words.text_anim,
+        behavior: {
+            noun: {
+                subject: new NounSelector.compareLevelConstructs(construct => construct instanceof Word),
+                compliment: new NounSelector.fromEntity(entity => [entity.construct.associatedWord()])
+            }
+        }
+    }),
 
     all: new Word("all", {
-		texture: textures.words.all,
-		behavior: {
-			noun: behaviorNoun(new NounSelector.single(constructs.baba)) //@todo placeholder
-		}
-	}),
+        texture: textures.words.all,
+        behavior: {
+            noun: behaviorNoun(new NounSelector.single(constructs.baba)) //@todo placeholder
+        }
+    }),
 }

@@ -1,6 +1,6 @@
+import { IRule, Rule } from "../src/classes/Rule.js";
+import { Sentence } from "../src/classes/Sentence.js";
 import { words } from "../src/data/words.js";
-import { IRule, Rule } from "../src/object_classes/Rule.js";
-import { Sentence } from "../src/object_classes/Sentence.js";
 
 
 const $Word = Rule.word;
