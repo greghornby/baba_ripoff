@@ -26,7 +26,7 @@ export async function initGame() {
             if (isMobile()) {
                 alert("Swipe to Move. Tap to Wait. Double Tap to Undo. Long Press to Pause.");
             } else {
-                alert("WASD/Arrows to Move. Spacebar to Wait. Z to Undo. P to Pause.");
+                alert("WASD/Arrows to Move. Spacebar to Wait. Z to Undo. P to Pause. T to restart");
             }
             LevelController.load(level);
         }

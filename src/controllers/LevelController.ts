@@ -189,6 +189,12 @@ export class LevelController {
 
             //create container
             this.container = new pixi.Container();
+
+            const mask = new pixi.Sprite(pixi.Texture.WHITE);
+            mask.width = this.level.pixelWidth;
+            mask.height = this.level.pixelHeight;
+            this.container.mask = mask;
+            this.container.addChild(mask);
             this.containers = {
                 grid: new pixi.Graphics(),
                 background: new pixi.Container(),
