@@ -66,6 +66,7 @@ export class LevelController {
 
     // Timing information
     public timeLastTick: number | undefined = undefined;
+    public deltaTime: number = 0;
     public timeStarted: number = performance.now();
     public timeElapsed: number = 0;
     public ticksElapsed: number = 0;
@@ -146,13 +147,6 @@ export class LevelController {
     public currentInteraction: Interaction | undefined;
     /** A set of Iterators that need `next()` to be called on each tick, even if paused */
     public coroutines: Set<Iterator<any, any, any>> = new Set();
-
-    /** Probably just debug info, remove this later */
-    public tickFlags: {
-        _debugAlertedYouAreDead?: boolean;
-    } = {
-        _debugAlertedYouAreDead: true
-    };
 
     //#endregion Props
 
@@ -644,16 +638,12 @@ export class LevelController {
 
 
     public checkYouAreDead(): boolean {
-        const flags = this.tickFlags;
         const youEntities = this.tagToEntities.get(wordYou);
         if (!youEntities || youEntities.size === 0) {
-            if (!flags._debugAlertedYouAreDead) {
-                alert("You are dead. Undo or Restart");
-                flags._debugAlertedYouAreDead = true;
-            }
+            this.hudController.displayDeathScreen();
             return true;
         } else {
-            flags._debugAlertedYouAreDead = false;
+            this.hudController.hideDeathScreen();
             return false;
         }
     }
@@ -759,6 +749,7 @@ export class LevelController {
         const now = performance.now();
         this.timeElapsed = now - this.timeStarted;
         const deltaTime = this.timeLastTick ? now - this.timeLastTick : 0;
+        this.deltaTime = deltaTime;
         this.timeLastTick = now;
         // console.log("Delta Time", deltaTime);
         // if (deltaTime >= 20) {
@@ -820,6 +811,7 @@ export class LevelController {
         if (interaction.interaction.type === "undo") {
             const actions = this.actionProcessor.doUndo();
             this.parseRules();
+            this.checkYouAreDead();
             this.animationSytem!.createAnimationsFromActions(actions, true);
             return;
         }
