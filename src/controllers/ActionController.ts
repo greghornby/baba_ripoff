@@ -187,7 +187,7 @@ export class ActionController {
             for (const construct of constructsToChangeTo) {
                 const debugData = {
                     fromEntity: entityToChange.name,
-                    construct: construct.associatedWord()._string
+                    construct: construct.name
                 }
                 const swapInAction = new Action(this.step, {
                     type: "swapin",

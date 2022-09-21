@@ -6,7 +6,7 @@ import { LevelController } from "../controllers/LevelController.js";
 const _debug = {
 
     printEntityTags(controller: LevelController) {
-        const wordString = (w: Word) => w._string;
+        const wordString = (w: Word) => w.text;
         const entityString = (e: Entity) => `${e.name}:${e.x}:${e.y}`;
 
         const objTagToEntities: any = {};

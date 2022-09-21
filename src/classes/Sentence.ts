@@ -42,31 +42,31 @@ export class Sentence {
 
             ...insertAnds(
                 rule.preCondition,
-                (a, b) => a.word._string.localeCompare(b.word._string),
-                item => [item.not ? "not" : undefined, item.word._string]
+                (a, b) => a.word.text.localeCompare(b.word.text),
+                item => [item.not ? "not" : undefined, item.word.text]
             ),
 
             rule.subject.not ? "not" : undefined,
-            rule.subject.word._string,
+            rule.subject.word.text,
 
             ...insertAnds(
                 rule.postCondition,
-                (a, b) => a.word._string.localeCompare(b.word._string),
+                (a, b) => a.word.text.localeCompare(b.word.text),
                 item => [
                     item.not ? "not" : undefined,
-                    item.word._string,
+                    item.word.text,
                     ...insertAnds(
                         item.selector,
-                        (a, b) => a.word._string.localeCompare(b.word._string),
-                        item => [item.not ? "not" : undefined, item.word._string]
+                        (a, b) => a.word.text.localeCompare(b.word.text),
+                        item => [item.not ? "not" : undefined, item.word.text]
                     )
                 ]
             ),
 
-            rule.verb.word._string,
+            rule.verb.word.text,
 
             rule.complement.not ? "not" : undefined,
-            rule.complement.word._string
+            rule.complement.word.text
         ];
         return sentence.filter(e => e) as string[];
     }

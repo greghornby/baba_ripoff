@@ -6,6 +6,17 @@ import type { Word } from "./Word.js";
 
 
 export class Construct {
+
+    static constructs: Construct[] = [];
+
+    static findConstructFromName(name: string): Construct {
+        const result = this.constructs.find(c => c.name === name);
+        if (!result) {
+            throw new Error(`Could not find Construct from name "${name}"`);
+        }
+        return result;
+    }
+
     static nextId: number = 0;
     public id: number;
     public texture: pixi.Texture;
@@ -14,16 +25,19 @@ export class Construct {
     };
     public totalFrames: number = 0;
 
-    public associatedWord: () => Word;
+    // public associatedWord: () => Word;
+    public word!: Word;
     public category: Category;
     public defaultColor: number;
     constructor(
+        public name: string,
         public data: ConstructData
     ) {
+        Construct.constructs.push(this);
         this.id = Construct.nextId;
         Construct.nextId++;
         this.texture = data.texture;
-        this.associatedWord = data.associatedWord;
+        // this.associatedWord = data.findWord;
         this.category = data.category;
         this.defaultColor = data.color;
 
@@ -72,5 +86,5 @@ export interface ConstructData {
     texture: pixi.Texture;
     category: Category;
     color: number;
-    associatedWord: () => Word;
+    findWord?: () => Word;
 }

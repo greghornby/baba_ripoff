@@ -28,8 +28,7 @@ export class Entity {
     } = {};
 
     constructor(public readonly id: number, public initData: EntityInitData) {
-        const associatedWord = initData.construct.associatedWord()._string;
-        this.name = initData.construct instanceof Word ? `text:${associatedWord}` : associatedWord;
+        this.name = initData.construct.name;
         this.level = initData.level;
         this.controller = initData.controller;
         this.construct = initData.construct;

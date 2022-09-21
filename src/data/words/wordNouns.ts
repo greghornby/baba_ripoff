@@ -1,7 +1,5 @@
-import { NounSelector, Word } from "../../classes/Word.js";
-import { behaviorNoun } from "../../util/words/behaviorNounAndComplement.js";
+import { Word } from "../../classes/Word.js";
 import { colors } from "../colors.js";
-import { constructs } from "../constructs.js";
 import { textures } from "../textures.js";
 
 const texturePlaceholder = textures.missing;
@@ -12,7 +10,7 @@ export default {
         texture: textures.words.baba_anim,
         color: colors.pink,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.baba))
+            noun: true
         }
     }),
 
@@ -21,7 +19,7 @@ export default {
         texture: textures.words.wall_anim,
         color: colors.brightBlue,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.wall))
+            noun: true
         }
     }),
 
@@ -29,7 +27,7 @@ export default {
         texture: textures.words.key,
         color: colors.gold,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.key))
+            noun: true
         }
     }),
 
@@ -37,7 +35,7 @@ export default {
         texture: textures.words.door,
         color: colors.stop,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.door))
+            noun: true
         }
     }),
 
@@ -45,7 +43,7 @@ export default {
         texture: textures.words.rock_anim,
         color: colors.brightBrown,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.rock))
+            noun: true
         }
     }),
 
@@ -53,7 +51,7 @@ export default {
         texture: textures.words.flag_anim,
         color: colors.gold,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.flag))
+            noun: true
         }
     }),
 
@@ -61,7 +59,7 @@ export default {
         texture: textures.words.leaf,
         color: colors.darkGreen,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.leaf))
+            noun: true
         }
     }),
 
@@ -69,7 +67,7 @@ export default {
         texture: textures.words.skull_anim,
         color: 0xa61b03,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.skull))
+            noun: true
         }
     }),
 
@@ -77,7 +75,7 @@ export default {
         texture: textures.words.belt,
         color: colors.white,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.belt))
+            noun: true
         }
     }),
 
@@ -85,7 +83,7 @@ export default {
         texture: textures.words.lava,
         color: colors.lava,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.lava))
+            noun: true
         }
     }),
 
@@ -93,7 +91,7 @@ export default {
         texture: textures.words.water_anim,
         color: colors.water,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.water))
+            noun: true
         }
     }),
 }

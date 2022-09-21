@@ -52,13 +52,13 @@ export function convertRulesToPattern(ruleX: Rule, ruleY: Rule): [string, string
     const rX = ruleX.rule;
     const rY = ruleY.rule;
 
-    const _xVerb = rX.verb.word._string.toUpperCase();
-    const _yVerb = rY.verb.word._string.toUpperCase();
+    const _xVerb = rX.verb.word.text.toUpperCase();
+    const _yVerb = rY.verb.word.text.toUpperCase();
 
-    const _xString = rX.subject.word._string === allString ? "ALL" : "X";
-    const _yString = rY.subject.word._string === allString ? "ALL" : "Y";
-    const _aString = rX.complement.word._string === allString ? "ALL": "A";
-    const _bString = rY.complement.word._string === allString ? "ALL": "B";
+    const _xString = rX.subject.word.text === allString ? "ALL" : "X";
+    const _yString = rY.subject.word.text === allString ? "ALL" : "Y";
+    const _aString = rX.complement.word.text === allString ? "ALL": "A";
+    const _bString = rY.complement.word.text === allString ? "ALL": "B";
 
     const X = _xString;
     const Y = rY.subject.word === rX.subject.word ? X : _yString;

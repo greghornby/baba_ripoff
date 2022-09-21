@@ -1,4 +1,5 @@
 import * as pixi from "pixi.js";
+import { Word } from "../../classes/Word.js";
 import { constants } from "../../data/constants.js";
 import { constructs } from "../../data/constructs.js";
 import { textures } from "../../data/textures.js";
@@ -10,6 +11,9 @@ export async function initFiles () {
     await setTimeout(res => res, 0);
     console.log("Loaded", Object.keys(words).length, "words and", Object.keys(constructs).length, "constructs");
     console.log("Loaded Level Pack", mainPack.name);
+    for (const c of Object.values(constructs)) {
+        c.word = c.data.findWord ? c.data.findWord() : Word.findWordFromText(c.name);
+    }
     for (const t of Object.values(textures.animations)) {
         const data: pixi.ISpritesheetData = {
             frames: {},

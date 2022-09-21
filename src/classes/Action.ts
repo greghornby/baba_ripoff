@@ -49,7 +49,7 @@ export class Action {
         }
         else if (data.type === "swapin" || data.type === "swapout") {
             this.debug = {
-                constructName: data.construct.associatedWord()._string
+                constructName: data.construct.name
             };
         } else {
             this.debug = {};

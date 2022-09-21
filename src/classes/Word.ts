@@ -8,7 +8,7 @@ export class Word extends Construct {
     static words: Word[] = [];
 
     static findWordFromText(text: string): Word {
-        const result = this.words.find(word => word._string === text);
+        const result = this.words.find(word => word.text === text);
         if (!result) {
             throw new Error(`Could not find Word from text "${text}"`);
         }
@@ -18,27 +18,36 @@ export class Word extends Construct {
     public behavior: WordBehavior
 
     constructor(
-        public readonly _string: string,
+        public readonly text: string,
         data:
             & Omit<ConstructData, "associatedWord" | "category" | "color">
             & Partial<Pick<ConstructData, "color">>
-            & {behavior: WordBehavior},
+            & {behavior: WordBehaviorInputOverride},
     ) {
-        super({
-            associatedWord: () => this,
+        super(`text:${text}`, {
+            findWord: () => this,
             category: categories.text,
             color: colors.textActive,
             ...data,
         });
-        this._string = this._string.toLowerCase();
-        this.behavior = data.behavior;
+        this.text = this.text.toLowerCase();
+        const behavior = data.behavior;
+        behavior.noun;
+        if (behavior.noun === true) {
+            const selector = new NounSelector.single(Construct.findConstructFromName(text));
+            behavior.noun = {
+                subject: selector,
+                compliment: selector
+            };
+        }
+        this.behavior = behavior as WordBehavior;
         Word.words.push(this);
     }
 
     toJSON() {
         return {
             ...super.toJSON(),
-            word: this._string,
+            word: this.text,
             behavior: this.behavior
         };
     }
@@ -60,6 +69,10 @@ export interface WordBehavior {
     postCondition?: {
         wordTypes: (keyof WordBehavior)[];
     };
+}
+
+interface WordBehaviorInputOverride extends Omit<WordBehavior, "noun"> {
+    noun?: WordBehavior["noun"] | true;
 }
 
 export type NounSelectorCompareLevelConstructsFunction = (testConstruct: Construct, thisWord: Word) => boolean;

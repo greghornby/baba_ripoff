@@ -1,5 +1,5 @@
 import { NounSelector, Word } from "../../classes/Word.js";
-import { behaviorNoun } from "../../util/words/behaviorNounAndComplement.js";
+import { behaviorNounBoth } from "../../util/words/behaviorNounAndComplement.js";
 import { constructs } from "../constructs.js";
 import { textures } from "../textures.js";
 
@@ -26,7 +26,7 @@ export default {
         behavior: {
             noun: {
                 subject: new NounSelector.compareLevelConstructs(construct => construct instanceof Word),
-                compliment: new NounSelector.fromEntity(entity => [entity.construct.associatedWord()])
+                compliment: new NounSelector.fromEntity(entity => [entity.construct.word])
             }
         }
     }),
@@ -34,7 +34,7 @@ export default {
     all: new Word("all", {
         texture: textures.words.all,
         behavior: {
-            noun: behaviorNoun(new NounSelector.single(constructs.baba)) //@todo placeholder
+            noun: behaviorNounBoth(new NounSelector.single(constructs.baba)) //@todo placeholder
         }
     }),
 }
