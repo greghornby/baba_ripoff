@@ -1,6 +1,5 @@
-import { Entity } from "../../classes/Entity.js";
-import { Direction } from "../../types/Direction.js";
 import { LevelController } from "../LevelController.js";
+import { IMainMoveEntity } from "./IMainMoveEntity.js";
 import { MovTileInfo } from "./MovTileInfo.js";
 import { MovTilePointerTuple } from "./MovTilePointer.js";
 
@@ -10,9 +9,7 @@ export class MovTileStore {
 
     constructor(
         public controller: LevelController,
-        public mainMoveEntities: Entity[],
-        /** Parallel array with `mainMoveEntities` */
-        public mainMoveEntityDirections: Direction[]
+        public mainMoveEntities: IMainMoveEntity[]
     ) {}
 
     _xyToTileNumber(x: number, y: number): number;
@@ -44,7 +41,7 @@ export class MovTileStore {
         if (this.tiles[tileNumber]) {
             return this.tiles[tileNumber]!;
         }
-        const info = new MovTileInfo(this.controller, this.mainMoveEntities, this.mainMoveEntityDirections, x, y);
+        const info = new MovTileInfo(this.controller, this.mainMoveEntities, x, y);
         this.tiles[tileNumber] = info;
         return info;
     }

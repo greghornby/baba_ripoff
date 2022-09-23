@@ -7,6 +7,7 @@ import { directionToXY } from "../../util/movement/directionToXY.js";
 import { getOppositeDirection } from "../../util/movement/getOppositeFacing.js";
 import { getWordMap } from "../../util/words/getWordMap.js";
 import { ActionController } from "../ActionController.js";
+import { IMainMoveEntity } from "./IMainMoveEntity.js";
 import { MovMovementDirectionStatus, MovTileInfo } from "./MovTileInfo.js";
 import { MovTileStore } from "./MovTileStore.js";
 import { resolveTile } from "./resolveTile.js";
@@ -24,6 +25,7 @@ export function doMovement(this: ActionController, interaction: Interaction, add
 
     const youEntities = Array.from(controller.getEntitiesByTag(words.you));
     const moveEntities = Array.from(controller.getEntitiesByTag(words.move));
+    const shiftedEntities = [];
 
     let mustDoReboundStep = false;
 
@@ -37,30 +39,19 @@ export function doMovement(this: ActionController, interaction: Interaction, add
             continue;
         }
 
-        const mainEntities =
-            type === "you" ? youEntities :
-            type === "move" || type === "moveRebound" ? moveEntities :
+        const mainEntities: IMainMoveEntity[] =
+            type === "you" ? youEntities.map<IMainMoveEntity>(y => ({entity: y, direction: youDirection!})) :
+            type === "move" || type === "moveRebound" ? moveEntities.map<IMainMoveEntity>(m => ({entity: m, direction: m.facing})) :
             [];
 
-        /** Parallel array with `mainEntities` */
-        const mainEntityDirections: Direction[] = [];
-        for (const entity of mainEntities) {
-            const direction = (
-                type === "you" ? youDirection! :
-                type === "move" || type === "moveRebound" ? entity.facing :
-                Direction.down  //default by won't get hit
-            );
-            mainEntityDirections.push(direction);
-        }
-
-        const tileStore: MovTileStore = new MovTileStore(controller, mainEntities, mainEntityDirections);
+        const tileStore: MovTileStore = new MovTileStore(controller, mainEntities);
 
         const mainTiles: MovTileInfo[] = [];
 
-        for (const mainEntity of mainEntities) {
-            if (!tileStore.getInfoAt(mainEntity.x, mainEntity.y)) {
+        for (const {entity} of mainEntities) {
+            if (!tileStore.getInfoAt(entity.x, entity.y)) {
                 mainTiles.push(
-                    tileStore.createInfoAt(mainEntity.x, mainEntity.y)
+                    tileStore.createInfoAt(entity.x, entity.y)
                 );
             }
         }
@@ -77,12 +68,12 @@ export function doMovement(this: ActionController, interaction: Interaction, add
                     }
                     mustDoReboundStep = true;
                     for (const e of tile.mainMoveEntities!) {
-                        if (e.facing === direction as Direction) {
+                        if (e.direction === direction as Direction) {
                             topOfStack.push(new Action(this.step, {
                                 type: "facing",
-                                entityId: e.id,
-                                fromDirection: e.facing,
-                                toDirection: getOppositeDirection(e.facing)
+                                entityId: e.entity.id,
+                                fromDirection: e.direction,
+                                toDirection: getOppositeDirection(e.direction)
                             }));
                         }
                     }
@@ -101,14 +92,13 @@ export function doMovement(this: ActionController, interaction: Interaction, add
             const expendedEntities: Set<Entity> = new Set();
 
             if (tile.mainMoveEntities) {
-                const startPos = [tile.x, tile.y] as const;
-                const len = tile.mainMoveEntities.length;
-                for (let i = 0; i < len; i++) {
-                    const entity = tile.mainMoveEntities[i];
-                    const direction = tile.mainMoveEntityDirections![i];
+                const startPos: [number, number] = [tile.x, tile.y];
+                const endPos: [number, number] = [...startPos];
+                for (const {entity, direction} of tile.mainMoveEntities) {
                     addFacingAction(this, movementActions, entity, direction);
+                    const directionCoords = directionToXY(direction);
                     if (tile.status![direction] === MovMovementDirectionStatus.clear) {
-                        const endPos = addCoordinates(startPos, directionToXY(direction), false);
+                        addCoordinates(endPos, directionCoords, true);
                         expendedEntities.add(entity);
                         addMovementAction(this, movementActions, entity, startPos, endPos);
                     }
@@ -117,36 +107,36 @@ export function doMovement(this: ActionController, interaction: Interaction, add
 
             pull:
             if (tile.pullEntities) {
-                const direction = tile.pullDirection;
-                if (!direction) {
+                const pullDirection = tile.pullDirection;
+                if (!pullDirection) {
                     break pull;
                 }
                 const startPos = [tile.x, tile.y] as const;
-                const endPos = addCoordinates(startPos, directionToXY(direction), false);
+                const endPos = addCoordinates(startPos, directionToXY(pullDirection), false);
                 for (const entity of tile.pullEntities) {
                     if (expendedEntities.has(entity)) {
                         continue;
                     }
                     expendedEntities.add(entity);
-                    addFacingAction(this, movementActions, entity, direction);
+                    addFacingAction(this, movementActions, entity, pullDirection);
                     addMovementAction(this, movementActions, entity, startPos, endPos);
                 }
             }
 
             push:
             if (tile.pushEntities) {
-                const direction = tile.pushDirection;
-                if (!direction) {
+                const pushDirection = tile.pushDirection;
+                if (!pushDirection) {
                     break push;
                 }
                 const startPos = [tile.x, tile.y] as const;
-                const endPos = addCoordinates(startPos, directionToXY(direction), false);
+                const endPos = addCoordinates(startPos, directionToXY(pushDirection), false);
                 for (const entity of tile.pushEntities) {
                     if (expendedEntities.has(entity)) {
                         continue;
                     }
                     expendedEntities.add(entity);
-                    addFacingAction(this, movementActions, entity, direction);
+                    addFacingAction(this, movementActions, entity, pushDirection);
                     addMovementAction(this, movementActions, entity, startPos, endPos);
                 }
             }
