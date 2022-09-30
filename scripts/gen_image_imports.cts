@@ -61,4 +61,4 @@ export async function loadTextures() {
     });
 }
 `
-fs.writeFileSync(path.join(__dirname, "../src/objects/textures.ts"), fileContent);
+fs.writeFileSync(path.join(__dirname, "../src/data/textures.ts"), fileContent);

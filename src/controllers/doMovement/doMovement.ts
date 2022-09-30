@@ -7,6 +7,7 @@ import { directionToXY } from "../../util/movement/directionToXY.js";
 import { getOppositeDirection } from "../../util/movement/getOppositeFacing.js";
 import { getWordMap } from "../../util/words/getWordMap.js";
 import { ActionController } from "../ActionController.js";
+import { getShiftedEntities } from "./getShiftedEntities.js";
 import { IMainMoveEntity } from "./IMainMoveEntity.js";
 import { MovMovementDirectionStatus, MovTileInfo } from "./MovTileInfo.js";
 import { MovTileStore } from "./MovTileStore.js";
@@ -22,15 +23,10 @@ export function doMovement(this: ActionController, interaction: Interaction, add
     const topOfStack = this.getTopOfStack();
 
     const youDirection: Direction | undefined = interaction.interaction.type === "move" ? interaction.interaction.direction : undefined;
-
-    const youEntities = Array.from(controller.getEntitiesByTag(words.you));
-    const moveEntities = Array.from(controller.getEntitiesByTag(words.move));
-    const shiftedEntities = [];
-
     let mustDoReboundStep = false;
 
     mainLoop:
-    for (const type of ["you", "move", "moveRebound"] as const) {
+    for (const type of ["you", "move", "moveRebound", "shift"] as const) {
 
         if (type === "you" && !youDirection) {
             continue;
@@ -40,8 +36,9 @@ export function doMovement(this: ActionController, interaction: Interaction, add
         }
 
         const mainEntities: IMainMoveEntity[] =
-            type === "you" ? youEntities.map<IMainMoveEntity>(y => ({entity: y, direction: youDirection!})) :
-            type === "move" || type === "moveRebound" ? moveEntities.map<IMainMoveEntity>(m => ({entity: m, direction: m.facing})) :
+            type === "you" ? Array.from(controller.getEntitiesByTag(words.you)).map<IMainMoveEntity>(y => ({entity: y, direction: youDirection!})) :
+            type === "move" || type === "moveRebound" ? Array.from(controller.getEntitiesByTag(words.move)).map<IMainMoveEntity>(m => ({entity: m, direction: m.facing})) :
+            type === "shift" ? getShiftedEntities(this) :
             [];
 
         const tileStore: MovTileStore = new MovTileStore(controller, mainEntities);

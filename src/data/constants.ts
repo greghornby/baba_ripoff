@@ -7,9 +7,8 @@ export const constants = {
 
     INACTIVE_TEXT_DARKEN_MULT: 0.6,
 
-    ANIMATED_SPRITE_TOTAL_FRAMES: 3,
-    DIRECTIONAL_SPRITE_TOTAL_FRAMES: 3,
-    DIRECTION_FRAMES: {
+    TEXTURE_ANIMATED_TOTAL_FRAMES: 3,
+    TEXTURE_DIRECTION_ROW: {
         right: 0,
         down: 1,
         up: 2

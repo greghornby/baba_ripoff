@@ -89,7 +89,7 @@ export class MovTileInfo {
         if (!this.pushEntities) {
             return false;
         }
-        this.pushDirection = this._getHighestDirectionOrder("push", this.pushDirection, direction);
+        this.pushDirection = MovTileInfo._getHighestDirectionOrder("push", this.pushDirection, direction);
         return true;
     }
 
@@ -97,7 +97,7 @@ export class MovTileInfo {
         if (!this.pullEntities) {
             return false;
         }
-        this.pullDirection = this._getHighestDirectionOrder("pull", this.pullDirection, direction);
+        this.pullDirection = MovTileInfo._getHighestDirectionOrder("pull", this.pullDirection, direction);
         return true;
     }
 
@@ -131,7 +131,7 @@ export class MovTileInfo {
      * PUSH: LEFT, UP, DOWN, RIGHT
      * PULL: RIGHT, DOWN, UP, LEFT
      */
-    _getHighestDirectionOrder(type: keyof typeof MovTileInfo["movementRanks"], currentDirection: Direction | undefined, newDirection: Direction): Direction {
+    static _getHighestDirectionOrder(type: keyof typeof MovTileInfo["movementRanks"], currentDirection: Direction | undefined, newDirection: Direction): Direction {
         if (!currentDirection) {
             return newDirection;
         }

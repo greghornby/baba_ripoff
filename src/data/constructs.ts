@@ -56,7 +56,8 @@ export const constructs = {
     }),
 
     belt: new Construct("belt", {
-        texture: textures.objects.belt,
+        texture: textures.objects.belt_anim,
+        rotableTexture: true,
         category: categories.floor,
         color: 0x999999
     }),
