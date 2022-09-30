@@ -1,24 +1,22 @@
 import { Entity } from "../../classes/Entity.js";
+import { words } from "../../data/words.js";
 import { Direction } from "../../types/Direction.js";
 import { EmptyArray } from "../../util/data/EmptyArray.js";
-import { getWordMap } from "../../util/words/getWordMap.js";
 import { LevelController } from "../LevelController.js";
-
-const words = getWordMap("pull", "push", "stop", "shift", "open", "shut");
+import { IMainMoveEntity } from "./IMainMoveEntity.js";
 
 export class MovTileInfo {
 
     static movementRanks: {[T in Exclude<MovMovementTypes, "main">]: [Direction, Direction, Direction, Direction]} = {
         push: [Direction.left, Direction.up, Direction.down, Direction.right],
         pull: [Direction.right, Direction.down, Direction.up, Direction.left],
-        shift: [Direction.left, Direction.up, Direction.down, Direction.right] //@todo this array is placeholder
+        shift: [Direction.right, Direction.up, Direction.down, Direction.left]
     };
 
     outOfBounds: boolean = false;
 
     pushDirection?: Direction;
     pullDirection?: Direction;
-    shiftDirection?: Direction;
 
     isStopped: boolean = false;
     allStopsCanBeOpened: boolean = false;
@@ -32,16 +30,13 @@ export class MovTileInfo {
     pullEntities?: Entity[];
     /** Only defined if it has pull entities */
     pushEntities?: Entity[];
-    mainMoveEntities?: Entity[];
-    mainMoveEntityDirections?: Direction[];
+    mainMoveEntities?: IMainMoveEntity[];
 
     expendedEntities?: Set<Entity>;
 
     constructor(
         public controller: LevelController,
-        allMainMoveEntities: Entity[],
-        /** Parallel array with `allMainMoveEntities` */
-        allMainMoveEntityDirections: Direction[],
+        allMainMoveEntities: IMainMoveEntity[],
         public x: number,
         public y: number
     ) {
@@ -78,14 +73,13 @@ export class MovTileInfo {
                 }
             }
 
-            const mainEntityIndex = allMainMoveEntities.indexOf(e);
-            if (mainEntityIndex > -1) {
-                const mainEntityDirection = allMainMoveEntityDirections[mainEntityIndex];
+            const mainMoveEntity = allMainMoveEntities.find(item => item.entity === e);
+            if (mainMoveEntity) {
+                const mainEntityDirection = mainMoveEntity.direction;
                 if (!isStopWithoutPushOrPull) {
                     (this.status = this.status ?? {})[mainEntityDirection] = MovMovementDirectionStatus.pending;
                 }
-                (this.mainMoveEntities ??= []).push(e);
-                (this.mainMoveEntityDirections ??= []).push(mainEntityDirection);
+                (this.mainMoveEntities ??= []).push(mainMoveEntity);
             }
         }
         this.allStopsCanBeOpened = allStopsCanBeOpened;
@@ -95,7 +89,7 @@ export class MovTileInfo {
         if (!this.pushEntities) {
             return false;
         }
-        this.pushDirection = this._getHighestDirectionOrder("push", this.pushDirection, direction);
+        this.pushDirection = MovTileInfo._getHighestDirectionOrder("push", this.pushDirection, direction);
         return true;
     }
 
@@ -103,7 +97,7 @@ export class MovTileInfo {
         if (!this.pullEntities) {
             return false;
         }
-        this.pullDirection = this._getHighestDirectionOrder("pull", this.pullDirection, direction);
+        this.pullDirection = MovTileInfo._getHighestDirectionOrder("pull", this.pullDirection, direction);
         return true;
     }
 
@@ -137,7 +131,7 @@ export class MovTileInfo {
      * PUSH: LEFT, UP, DOWN, RIGHT
      * PULL: RIGHT, DOWN, UP, LEFT
      */
-    _getHighestDirectionOrder(type: keyof typeof MovTileInfo["movementRanks"], currentDirection: Direction | undefined, newDirection: Direction): Direction {
+    static _getHighestDirectionOrder(type: keyof typeof MovTileInfo["movementRanks"], currentDirection: Direction | undefined, newDirection: Direction): Direction {
         if (!currentDirection) {
             return newDirection;
         }

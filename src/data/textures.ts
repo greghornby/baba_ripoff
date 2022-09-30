@@ -11,6 +11,7 @@ import _missing from "../images/missing.png";
 import objects_baba from "../images/objects/baba.png";
 import objects_baba_anim from "../images/objects/baba_anim.png";
 import objects_belt from "../images/objects/belt.png";
+import objects_belt_anim from "../images/objects/belt_anim.png";
 import objects_brick from "../images/objects/brick.png";
 import objects_door from "../images/objects/door.png";
 import objects_flag from "../images/objects/flag.png";
@@ -104,6 +105,7 @@ export const textures = {
         "baba": makeTextureFromBase64(objects_baba),
         "baba_anim": makeTextureFromBase64(objects_baba_anim),
         "belt": makeTextureFromBase64(objects_belt),
+        "belt_anim": makeTextureFromBase64(objects_belt_anim),
         "brick": makeTextureFromBase64(objects_brick),
         "door": makeTextureFromBase64(objects_door),
         "flag": makeTextureFromBase64(objects_flag),

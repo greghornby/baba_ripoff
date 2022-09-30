@@ -55,10 +55,6 @@ function searchDirection(
                 break loop;
             }
             if (tile.isStopped || (tile.pullEntities && !tile.pullDirection && !tile.pushEntities)) {
-                if (tile.entities.find(e => e.id === 17)) {
-                    console.log("TILE", JSON.stringify(tile));
-                    console.log("PREVIOUS", JSON.stringify(previousTileFromPush));
-                }
                 const pushingOpenOntoStop = tile.allStopsCanBeOpened && previousTileFromPush.hasPushableOpen;
                 if (!pushingOpenOntoStop) {
                     failedForward = true;
@@ -74,7 +70,7 @@ function searchDirection(
             }
             if (!tile.pushEntities) {
                 inPushCheck = false;
-                pointer.reset();
+                    pointer.reset();
                 startTileInfo.status![direction] = MovMovementDirectionStatus.clear;
                 continue;
             }
@@ -116,7 +112,7 @@ function searchDirection(
     if (!failedForward) {
         for (const t of addPush) {
             t.addPush(direction);
-        }
+    }
     }
     if (!failedPull) {
         for (const t of addPushFromPull) {
