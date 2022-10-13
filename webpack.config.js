@@ -1,6 +1,6 @@
 import path from "path";
 import ResolveTypeScriptPlugin from "resolve-typescript-plugin";
-import * as fs from "fs";
+// import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
 
 export default {
     entry: {
@@ -28,6 +28,9 @@ export default {
             new ResolveTypeScriptPlugin(),
         ]
     },
+    plugins: [
+        // new BundleAnalyzerPlugin(),
+    ],
     optimization: {
         splitChunks: {
             chunks: "all",
