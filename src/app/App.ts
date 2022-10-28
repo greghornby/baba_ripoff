@@ -1,5 +1,4 @@
 import * as pixi from "pixi.js";
-import { AppEventEnum } from "./AppEventEnum.js";
 import { AppEventSystem } from "./AppEventSystem.js";
 
 export class App {
@@ -19,6 +18,9 @@ export class App {
             resizeTo: containerElement,
             backgroundColor: 0x012101,
         });
+
+        // this.pixiApp.renderer.plugins.interaction.moveWhenInside = true;
+
 
         this.events = new AppEventSystem();
 

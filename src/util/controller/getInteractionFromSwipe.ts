@@ -6,7 +6,7 @@ import { Interaction } from "../../types/Interaction.js";
 export function getInteractionFromSwipe(controller: LevelController, event: AppEventInterface.Swipe): Interaction | undefined {
     let interactionType: Interaction["interaction"];
 
-    const requiredDistance = controller.level.TILE_SIZE * controller.container.scale.x;
+    const requiredDistance = controller.level.TILE_SIZE * controller.mainContainer.scale.x;
     if (event.adjacentDistance < requiredDistance) {
         return;
     }

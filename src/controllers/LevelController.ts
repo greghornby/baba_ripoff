@@ -33,6 +33,7 @@ import { VerbUnion } from "../util/rules/verbEquals.js";
 import { tempWinScreen } from "../util/temp/tempWinScreen.js";
 import { ActionController } from "./ActionController.js";
 import { AnimationController } from "./AnimationController.js";
+import { EditorController } from "./EditorController.js";
 import { HUDController } from "./HUDController.js";
 
 export class LevelController {
@@ -58,8 +59,8 @@ export class LevelController {
         this._resizeListener = app.events.addListener("resize", () => this.instance ? this.instance._fitContainerToScreen() : undefined);
     }
 
-    static load(level: Level) {
-        new LevelController(level);
+    static load(level: Level, editorController?: EditorController): LevelController {
+        return new LevelController(level, editorController);
     }
 
     //#region Props
@@ -83,7 +84,9 @@ export class LevelController {
 
     // pixi
     public ticker: pixi.Ticker;
-    public container: pixi.Container;
+    // public container: pixi.Container;
+    public mainContainer: pixi.Container;
+    public levelContainer: pixi.Container;
     public containers: {
         grid: pixi.Graphics;
         background: pixi.Container;
@@ -153,8 +156,11 @@ export class LevelController {
 
     //#region Constructor
     constructor(
-        public level: Level
+        public level: Level,
+        public editorController?: EditorController
     ) {
+
+        console.log("Creating Level Controller");
 
         //Singleton init
         {
@@ -188,13 +194,16 @@ export class LevelController {
             this.ticker = new pixi.Ticker();
 
             //create container
-            this.container = new pixi.Container();
+            this.levelContainer = new pixi.Container();
+            this.mainContainer = this.levelContainer;
+            this.mainContainer = new pixi.Container();
+            this.mainContainer.addChild(this.levelContainer);
 
             const mask = new pixi.Sprite(pixi.Texture.WHITE);
             mask.width = this.level.pixelWidth;
             mask.height = this.level.pixelHeight;
-            this.container.mask = mask;
-            this.container.addChild(mask);
+            this.levelContainer.mask = mask;
+            this.levelContainer.addChild(mask);
             this.containers = {
                 grid: new pixi.Graphics(),
                 background: new pixi.Container(),
@@ -215,8 +224,8 @@ export class LevelController {
                 this.containers.hud,
                 this.containers.splash,
             ];
-            this.container.addChild(...containerOrder);
-            pixiApp.stage.addChild(this.container);
+            this.levelContainer.addChild(...containerOrder);
+            pixiApp.stage.addChild(this.mainContainer);
 
             //setup grid graphics object
             this._drawGrid();
@@ -265,30 +274,40 @@ export class LevelController {
     public _getScale(): number {
         const app = App.get();
         const view = app.pixiApp.view;
+        const containerSize = this._getMainContainerDimensions();
 
-        const xMult = view.width / this.level.pixelWidth;
-        const yMult = view.height / this.level.pixelHeight;
+        const xMult = view.width / containerSize.width;
+        const yMult = view.height / containerSize.height;
 
-        return this.level.pixelHeight * xMult > view.height ? yMult : xMult;
+        return containerSize.height * xMult > view.height ? yMult : xMult;
     }
 
 
     public _getCenter(type: "view" | "level" = "view"): [number, number] {
         const app = App.get();
         const view = app.pixiApp.view;
-        return type === "view" ? [view.width/2, view.height/2] : [this.level.pixelWidth/2, this.level.pixelHeight/2];
+        const containerSize = this._getMainContainerDimensions();
+        return type === "view" ? [view.width/2, view.height/2] : [containerSize.width/2, containerSize.height/2];
+    }
+
+
+    public _getMainContainerDimensions() {
+        return this.editorController ? this.editorController._getMainContainerDimensions() : {
+            width: this.level.pixelWidth,
+            height: this.level.pixelHeight
+        };
     }
 
 
     public _fitContainerToScreen(): void {
         const center = this._getCenter();
-        const level = this.level;
-        this.container.pivot.set(level.pixelWidth/2, level.pixelHeight/2);
-        this.container.transform.position.set(center[0], center[1]);
+        const containerSize = this._getMainContainerDimensions();
+        this.mainContainer.pivot.set(containerSize.width/2, containerSize.height/2);
+        this.mainContainer.transform.position.set(center[0], center[1]);
 
         const scaleMultiplier = this._getScale();
 
-        this.container.scale = {x: scaleMultiplier, y: scaleMultiplier};
+        this.mainContainer.scale = {x: scaleMultiplier, y: scaleMultiplier};
     }
 
 
@@ -719,7 +738,7 @@ export class LevelController {
 
     public exit(): void {
         this.ticker.destroy();
-        destroyContainerAndAllChildren(this.container);
+        destroyContainerAndAllChildren(this.mainContainer);
         LevelController.instance = undefined;
     }
 
@@ -741,14 +760,16 @@ export class LevelController {
 
     tick(): void {
 
-        if (this.currentInteraction?.interaction.type === "pause") {
-            this.togglePause();
-        }
+        if (!this.editorController) {
+            if (this.currentInteraction?.interaction.type === "pause") {
+                this.togglePause();
+            }
 
-        if (this.paused) {
-            this.hudController.pauseVisibility(true);
-        } else {
-            this.hudController.pauseVisibility(false);
+            if (this.paused) {
+                this.hudController.pauseVisibility(true);
+            } else {
+                this.hudController.pauseVisibility(false);
+            }
         }
 
         this.ticksElapsed++;
@@ -782,7 +803,7 @@ export class LevelController {
             }
         }
 
-        const animation = this.animationSytem!.getAnimation();
+        const animation = this.animationSytem.getAnimation();
         if (animation) {
             animation.next();
             return;
